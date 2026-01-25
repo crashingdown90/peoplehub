@@ -24,7 +24,7 @@ export function DashboardHero({ userName, role, className }: DashboardHeroProps)
 
     const roleLabel = useMemo(() => {
         switch (role) {
-            case "ADMIN": return "Administrator";
+            case "SUPER_ADMIN": return "Super Administrator";
             case "HRD": return "HR Manager";
             case "MANAGER": return "Manager";
             case "EMPLOYEE": return "Karyawan";

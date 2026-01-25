@@ -40,7 +40,11 @@ export async function GET() {
         }
 
         // Execute queries in parallel based on role
-        const [employeeStats, adminStats, managerStats] = await Promise.all([
+        const [userProfile, employeeStats, adminStats, managerStats] = await Promise.all([
+            prisma.user.findUnique({
+                where: { id: context.userId },
+                select: { fullName: true }
+            }),
             context.employeeId ? getEmployeeStats(context.tenantId, context.employeeId, today) : Promise.resolve(null),
             isHrdOrAdmin ? getAdminStats(context.tenantId, today) : Promise.resolve(null),
             (isManager && context.employeeId) ? getManagerStats(context.tenantId, context.employeeId, today) : Promise.resolve(null),
@@ -48,6 +52,7 @@ export async function GET() {
 
         const result = {
             role: context.role,
+            userName: userProfile?.fullName || "Pengguna",
             employee: employeeStats,
             admin: adminStats,
             manager: managerStats,

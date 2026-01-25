@@ -22,6 +22,7 @@ import {
 
 interface DashboardData {
     role: string;
+    userName: string;
     employee?: {
         today: { hasClockedIn: boolean; hasClockedOut: boolean; status: string };
         leaveBalance: number;
@@ -31,9 +32,14 @@ interface DashboardData {
         teamAttendance: { present: number; late: number; absent: number };
         pendingApprovals: number;
     };
-    hrd?: {
-        companyStats: { totalEmployees: number; todayPresent: number; todayLate: number };
-        pendingRegistrations: number;
+    admin?: {
+        overview: { 
+            totalEmployees: number; 
+            todayPresent: number; 
+            todayLate: number;
+            pendingRegistrations: number;
+            pendingLeaveApprovals: number;
+        };
     };
     finance?: {
         pendingPayroll: number;
@@ -75,22 +81,23 @@ export default function DashboardPage() {
     // Render based on role
     switch (data?.role) {
         case "EMPLOYEE":
-            return <EmployeeDashboard data={data.employee} />;
+            return <EmployeeDashboard data={data.employee} userName={data.userName} role={data.role} />;
         case "MANAGER":
-            return <ManagerDashboard data={data.manager} employee={data.employee} />;
+            return <ManagerDashboard data={data.manager} employee={data.employee} userName={data.userName} role={data.role} />;
         case "HRD":
-            return <HrdDashboard data={data.hrd} />;
+        case "SUPER_ADMIN":
+            return <HrdDashboard data={data.admin} userName={data.userName} role={data.role} />;
         case "FINANCE":
-            return <FinanceDashboard data={data.finance} />;
+            return <FinanceDashboard data={data.finance} userName={data.userName} role={data.role} />;
         case "IT_OPS":
-            return <ItDashboard data={data.it} />;
+            return <ItDashboard data={data.it} userName={data.userName} role={data.role} />;
         default:
-            return <EmployeeDashboard data={data?.employee} />;
+            return <EmployeeDashboard data={data?.employee} userName={data?.userName || "Pengguna"} role={data?.role || "EMPLOYEE"} />;
     }
 }
 
 // Employee Dashboard Component
-function EmployeeDashboard({ data }: { data: DashboardData['employee'] }) {
+function EmployeeDashboard({ data, userName, role }: { data: DashboardData['employee'], userName: string, role: string }) {
     // Generate mock shift data - uses current day index
     const shiftData = generateWeekShifts();
 
@@ -133,7 +140,7 @@ function EmployeeDashboard({ data }: { data: DashboardData['employee'] }) {
 
     return (
         <div className="space-y-8">
-            <DashboardHero userName={data?.today?.status || "Pengguna"} role="EMPLOYEE" />
+            <DashboardHero userName={userName} role={role} />
 
             {/* Primary Stats Row */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -208,7 +215,7 @@ function EmployeeDashboard({ data }: { data: DashboardData['employee'] }) {
 
 
 // HRD Dashboard Component
-function HrdDashboard({ data }: { data: DashboardData['hrd'] }) {
+function HrdDashboard({ data, userName, role }: { data: DashboardData['admin'], userName: string, role: string }) {
     // Mock approval data - in production this would come from API
     // Using static dates for mock data to avoid React strict mode warnings
     const pendingApprovals = useMemo(() => [
@@ -243,14 +250,14 @@ function HrdDashboard({ data }: { data: DashboardData['hrd'] }) {
 
     return (
         <div className="space-y-8">
-            <DashboardHero userName="HR Manager" role="HRD" />
+            <DashboardHero userName={userName} role={role} />
 
             {/* Primary Stats Row - Enhanced with trends */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {/* Total Employees */}
                 <EnhancedMetricCard
                     title="Total Karyawan"
-                    value={data?.companyStats?.totalEmployees || 245}
+                    value={data?.overview?.totalEmployees || 245}
                     subtitle="Karyawan aktif"
                     icon={Users}
                     trend={{
@@ -267,8 +274,8 @@ function HrdDashboard({ data }: { data: DashboardData['hrd'] }) {
                 {/* Today's Present */}
                 <EnhancedMetricCard
                     title="Hadir Hari Ini"
-                    value={data?.companyStats?.todayPresent || 215}
-                    subtitle={`${data?.companyStats?.todayLate || 15} terlambat`}
+                    value={data?.overview?.todayPresent || 215}
+                    subtitle={`${data?.overview?.todayLate || 15} terlambat`}
                     icon={CheckCircle}
                     variant="success"
                     trend={{
@@ -281,10 +288,10 @@ function HrdDashboard({ data }: { data: DashboardData['hrd'] }) {
                 {/* Pending Registrations */}
                 <EnhancedMetricCard
                     title="Registrasi Pending"
-                    value={data?.pendingRegistrations || 3}
+                    value={data?.overview?.pendingRegistrations || 3}
                     subtitle="Menunggu verifikasi"
                     icon={AlertCircle}
-                    variant={(data?.pendingRegistrations ?? 0) > 0 ? "warning" : "default"}
+                    variant={(data?.overview?.pendingRegistrations ?? 0) > 0 ? "warning" : "default"}
                     action={{
                         label: "Review Sekarang",
                         href: "/admin/registrations"
@@ -294,7 +301,7 @@ function HrdDashboard({ data }: { data: DashboardData['hrd'] }) {
                 {/* Cuti Request */}
                 <EnhancedMetricCard
                     title="Pengajuan Cuti"
-                    value={12}
+                    value={data?.overview?.pendingLeaveApprovals || 12}
                     subtitle="Pending approval"
                     icon={Calendar}
                     variant="info"
@@ -356,10 +363,10 @@ function HrdDashboard({ data }: { data: DashboardData['hrd'] }) {
 }
 
 // Manager Dashboard Component
-function ManagerDashboard({ data, employee }: { data: DashboardData['manager']; employee: DashboardData['employee'] }) {
+function ManagerDashboard({ data, employee, userName, role }: { data: DashboardData['manager']; employee: DashboardData['employee'], userName: string, role: string }) {
     return (
         <div className="space-y-8">
-            <DashboardHero userName="Manager" role="MANAGER" />
+            <DashboardHero userName={userName} role={role} />
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {/* Team Attendance */}
@@ -442,10 +449,10 @@ function ManagerDashboard({ data, employee }: { data: DashboardData['manager']; 
 }
 
 // Finance Dashboard Component
-function FinanceDashboard({ data }: { data: DashboardData['finance'] }) {
+function FinanceDashboard({ data, userName, role }: { data: DashboardData['finance'], userName: string, role: string }) {
     return (
         <div className="space-y-8">
-            <DashboardHero userName="Specialist" role="FINANCE" />
+            <DashboardHero userName={userName} role={role} />
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {/* Pending Payroll */}
@@ -506,10 +513,10 @@ function FinanceDashboard({ data }: { data: DashboardData['finance'] }) {
 }
 
 // IT Dashboard Component
-function ItDashboard({ data }: { data: DashboardData['it'] }) {
+function ItDashboard({ data, userName, role }: { data: DashboardData['it'], userName: string, role: string }) {
     return (
         <div className="space-y-8">
-            <DashboardHero userName="Support" role="IT_OPS" />
+            <DashboardHero userName={userName} role={role} />
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {/* Active Users */}
