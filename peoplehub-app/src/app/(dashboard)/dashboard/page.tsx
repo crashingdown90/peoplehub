@@ -278,7 +278,7 @@ function HrdDashboard({ data, userName, role }: { data: DashboardData['admin'], 
                 {/* Total Employees */}
                 <EnhancedMetricCard
                     title="Total Karyawan"
-                    value={data?.overview?.totalEmployees || 245}
+                    value={data?.overview?.totalEmployees ?? 0}
                     subtitle="Karyawan aktif"
                     icon={Users}
                     trend={{
@@ -295,8 +295,8 @@ function HrdDashboard({ data, userName, role }: { data: DashboardData['admin'], 
                 {/* Today's Present */}
                 <EnhancedMetricCard
                     title="Hadir Hari Ini"
-                    value={data?.overview?.todayPresent || 215}
-                    subtitle={`${data?.overview?.todayLate || 15} terlambat`}
+                    value={data?.overview?.todayPresent ?? 0}
+                    subtitle={`${data?.overview?.todayLate ?? 0} terlambat`}
                     icon={CheckCircle}
                     variant="success"
                     trend={{
@@ -309,7 +309,7 @@ function HrdDashboard({ data, userName, role }: { data: DashboardData['admin'], 
                 {/* Pending Registrations */}
                 <EnhancedMetricCard
                     title="Registrasi Pending"
-                    value={data?.overview?.pendingRegistrations || 3}
+                    value={data?.overview?.pendingRegistrations ?? 0}
                     subtitle="Menunggu verifikasi"
                     icon={AlertCircle}
                     variant={(data?.overview?.pendingRegistrations ?? 0) > 0 ? "warning" : "default"}
@@ -322,7 +322,7 @@ function HrdDashboard({ data, userName, role }: { data: DashboardData['admin'], 
                 {/* Cuti Request */}
                 <EnhancedMetricCard
                     title="Pengajuan Cuti"
-                    value={data?.overview?.pendingLeaveApprovals || 12}
+                    value={data?.overview?.pendingLeaveApprovals ?? 0}
                     subtitle="Pending approval"
                     icon={Calendar}
                     variant="info"
