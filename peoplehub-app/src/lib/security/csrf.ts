@@ -1,9 +1,8 @@
 // @ai:cl - CSRF Protection Utility
 import { cookies } from "next/headers";
 import crypto from "crypto";
+import { CSRF_TOKEN_NAME, CSRF_HEADER_NAME, CSRF_CONFIG } from "./csrf-constants";
 
-const CSRF_TOKEN_NAME = "csrf-token";
-const CSRF_HEADER_NAME = "x-csrf-token";
 const TOKEN_LENGTH = 32;
 
 /**
@@ -110,8 +109,5 @@ export function getCsrfErrorResponse() {
     };
 }
 
-// Export constants for use in frontend
-export const CSRF_CONFIG = {
-    tokenName: CSRF_TOKEN_NAME,
-    headerName: CSRF_HEADER_NAME,
-} as const;
+// Export constants from shared file
+export { CSRF_CONFIG };

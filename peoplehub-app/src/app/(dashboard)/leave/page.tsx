@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui";
 import { leaveRequestSchema, type LeaveRequestInput } from "@/lib/validations";
 import { ArrowLeft, Calendar, FileText } from "lucide-react";
+import { useCsrf } from "@/hooks/useCsrf";
 
 interface LeaveType {
     id: string;
@@ -39,6 +40,7 @@ interface LeaveRequest {
 
 export default function LeavePage() {
     const router = useRouter();
+    const { getHeaders } = useCsrf();
     const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([]);
     const [balances, setBalances] = useState<LeaveBalance[]>([]);
     const [requests, setRequests] = useState<LeaveRequest[]>([]);
@@ -113,7 +115,10 @@ export default function LeavePage() {
         try {
             const response = await fetch("/api/leave/requests", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    ...getHeaders(),
+                },
                 body: JSON.stringify(data),
             });
 
@@ -139,7 +144,12 @@ export default function LeavePage() {
         if (!confirm("Yakin ingin membatalkan pengajuan cuti ini?")) return;
 
         try {
-            const response = await fetch(`/api/leave/requests/${id}`, { method: "DELETE" });
+            const response = await fetch(`/api/leave/requests/${id}`, { 
+                method: "DELETE",
+                headers: {
+                    ...getHeaders(),
+                }
+            });
             const result = await response.json();
 
             if (!response.ok) {

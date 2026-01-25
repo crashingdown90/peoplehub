@@ -11,6 +11,7 @@ import { PersonalDataStep } from "@/components/auth/steps/PersonalDataStep";
 import { BankDataStep } from "@/components/auth/steps/BankDataStep";
 import { DocumentUploadStep } from "@/components/auth/steps/DocumentUploadStep";
 import { AgreementStep } from "@/components/auth/steps/AgreementStep";
+import { useCsrf } from "@/hooks/useCsrf";
 
 // Registration form data structure for Phase 1A
 interface RegistrationData {
@@ -45,6 +46,7 @@ interface RegistrationData {
 
 export default function RegisterPage() {
     const router = useRouter();
+    const { getHeaders } = useCsrf();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -91,7 +93,10 @@ export default function RegisterPage() {
 
             const response = await fetch("/api/auth/register", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    ...getHeaders(),
+                },
                 body: JSON.stringify(registrationData),
             });
 
@@ -129,7 +134,7 @@ export default function RegisterPage() {
                 <div className="fixed top-4 right-4 z-50 max-w-md">
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg">
                         <div className="flex items-start gap-3">
-                            <div className="flex-shrink-0">
+                            <div className="shrink-0">
                                 <svg
                                     className="h-5 w-5 text-red-600"
                                     viewBox="0 0 20 20"
@@ -148,7 +153,7 @@ export default function RegisterPage() {
                             </div>
                             <button
                                 onClick={() => setError(null)}
-                                className="flex-shrink-0 text-red-600 hover:text-red-800"
+                                className="shrink-0 text-red-600 hover:text-red-800"
                             >
                                 <span className="sr-only">Tutup</span>
                                 <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

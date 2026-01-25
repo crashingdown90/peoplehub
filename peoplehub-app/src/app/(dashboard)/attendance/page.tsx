@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui";
 import { Camera, Clock, MapPin, RefreshCw } from "lucide-react";
+import { useCsrf } from "@/hooks/useCsrf";
 
 interface AttendanceStatus {
     hasAttendance: boolean;
@@ -31,6 +32,7 @@ export default function AttendancePage() {
     const router = useRouter();
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const { getHeaders } = useCsrf();
 
     const [status, setStatus] = useState<AttendanceStatus | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -145,6 +147,9 @@ export default function AttendancePage() {
             const endpoint = action === "clock-in" ? "/api/attendance/clock-in" : "/api/attendance/clock-out";
             const res = await fetch(endpoint, {
                 method: "POST",
+                headers: {
+                    ...getHeaders(),
+                },
                 body: formData,
             });
 
