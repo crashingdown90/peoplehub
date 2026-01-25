@@ -115,14 +115,14 @@ export function DepartmentBreakdown({ data, className }: DepartmentBreakdownProp
                                 key={index}
                                 className="flex items-center justify-between group cursor-pointer hover:bg-muted/50 p-2 rounded-md transition-colors"
                             >
-                                <div className="flex items-center gap-3 flex-1">
+                                <div className="flex items-center gap-2 min-w-0 flex-1 mr-3">
                                     <div
-                                        className="h-3 w-3 rounded-full flex-shrink-0"
+                                        className="h-3 w-3 rounded-full shrink-0"
                                         style={{ backgroundColor: segment.color }}
                                     />
-                                    <span className="text-sm font-medium truncate">{segment.name}</span>
+                                    <span className="text-sm font-medium truncate" title={segment.name}>{segment.name}</span>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 shrink-0">
                                     <span className="text-sm font-semibold">{segment.count}</span>
                                     <Badge variant="outline" className="text-xs">
                                         {segment.percentage.toFixed(1)}%

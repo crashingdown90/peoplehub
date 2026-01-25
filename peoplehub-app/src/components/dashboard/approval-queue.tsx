@@ -17,7 +17,7 @@ interface ApprovalItem {
     employeeName: string;
     employeePhoto?: string;
     description: string;
-    submittedAt: string;
+    submittedAt: string | Date; // Allow Date object
     status: "pending" | "in_review";
 }
 
@@ -27,6 +27,17 @@ interface ApprovalQueueProps {
     onReject?: (ids: string[]) => void;
     className?: string;
 }
+
+// Helper to format date
+const formatDate = (date: string | Date) => {
+    const d = new Date(date);
+    return new Intl.DateTimeFormat('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(d);
+};
 
 const typeLabels: Record<string, string> = {
     leave: "Cuti",
@@ -143,11 +154,11 @@ export function ApprovalQueue({ items, onApprove, onReject, className }: Approva
                                         {item.description}
                                     </p>
                                 </div>
-                                <span className="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
-                                    {item.submittedAt}
+                                <span className="hidden md:block text-xs text-[var(--color-text-muted)] whitespace-nowrap min-w-[100px] text-right">
+                                    {formatDate(item.submittedAt)}
                                 </span>
-                                <div className="flex gap-1">
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-[var(--color-success)]">
+                                <div className="flex gap-1 flex-shrink-0">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-[var(--color-success)] hidden sm:inline-flex">
                                         <Check className="h-4 w-4" />
                                     </Button>
                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-[var(--color-error)]">
