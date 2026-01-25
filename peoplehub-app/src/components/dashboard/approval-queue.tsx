@@ -90,14 +90,14 @@ export function ApprovalQueue({ items, onApprove, onReject, className }: Approva
         <div className={cn("rounded-xl border border-slate-200 bg-white", className)}>
             <div className="flex items-center justify-between border-b border-slate-200 p-4">
                 <div className="flex items-center gap-2">
-                    <ClipboardList className="h-5 w-5 text-[var(--color-accent)]" />
-                    <h3 className="font-semibold text-[var(--color-text)]">Antrean Approval</h3>
+                    <ClipboardList className="h-5 w-5 text-(--color-accent)" />
+                    <h3 className="font-semibold text-(--color-text)">Antrean Approval</h3>
                     <Badge variant="secondary" className="ml-2">
                         {items.length}
                     </Badge>
                 </div>
                 <Link href="/approvals">
-                    <Button variant="ghost" size="sm" className="text-[var(--color-accent)]">
+                    <Button variant="ghost" size="sm" className="text-(--color-accent)">
                         Lihat Semua
                         <ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
@@ -106,8 +106,8 @@ export function ApprovalQueue({ items, onApprove, onReject, className }: Approva
 
             {items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <ClipboardList className="h-12 w-12 text-[var(--color-text-muted)]" />
-                    <p className="mt-3 text-sm text-[var(--color-text-subtle)]">
+                    <ClipboardList className="h-12 w-12 text-(--color-text-muted)" />
+                    <p className="mt-3 text-sm text-(--color-text-subtle)">
                         Tidak ada pengajuan yang perlu diproses
                     </p>
                 </div>
@@ -123,7 +123,7 @@ export function ApprovalQueue({ items, onApprove, onReject, className }: Approva
                                     checked={selectedIds.includes(item.id)}
                                     onCheckedChange={() => toggleSelect(item.id)}
                                 />
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-bg)] text-[var(--color-text-subtle)]">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-(--color-bg) text-(--color-text-subtle)">
                                     {item.employeePhoto ? (
                                         <Image
                                             src={item.employeePhoto}
@@ -140,7 +140,7 @@ export function ApprovalQueue({ items, onApprove, onReject, className }: Approva
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
-                                        <span className="font-medium text-[var(--color-text)] truncate">
+                                        <span className="font-medium text-(--color-text) truncate">
                                             {item.employeeName}
                                         </span>
                                         <span className={cn(
@@ -150,18 +150,18 @@ export function ApprovalQueue({ items, onApprove, onReject, className }: Approva
                                             {typeLabels[item.type]}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-[var(--color-text-subtle)] truncate">
+                                    <p className="text-sm text-(--color-text-subtle) truncate">
                                         {item.description}
                                     </p>
                                 </div>
-                                <span className="hidden md:block text-xs text-[var(--color-text-muted)] whitespace-nowrap min-w-[100px] text-right">
+                                <span className="hidden md:block text-xs text-(--color-text-muted) whitespace-nowrap min-w-[100px] text-right">
                                     {formatDate(item.submittedAt)}
                                 </span>
-                                <div className="flex gap-1 flex-shrink-0">
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-[var(--color-success)] hidden sm:inline-flex">
+                                <div className="flex gap-1 shrink-0">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-(--color-success) hidden sm:inline-flex">
                                         <Check className="h-4 w-4" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-[var(--color-error)]">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-(--color-error)">
                                         <X className="h-4 w-4" />
                                     </Button>
                                     <Link href={`/approvals/${item.id}`}>
@@ -181,7 +181,7 @@ export function ApprovalQueue({ items, onApprove, onReject, className }: Approva
                                     checked={selectedIds.length === items.length}
                                     onCheckedChange={toggleSelectAll}
                                 />
-                                <span className="text-sm text-[var(--color-text-subtle)]">
+                                <span className="text-sm text-(--color-text-subtle)">
                                     {selectedIds.length} dipilih
                                 </span>
                             </div>
