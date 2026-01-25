@@ -8,12 +8,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] focus-visible:ring-[var(--color-accent)]",
-        secondary: "bg-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-border)]/80 focus-visible:ring-[var(--color-border)]",
-        outline: "border border-[var(--color-border)] bg-transparent text-[var(--color-text)] hover:bg-[var(--color-border)] focus-visible:ring-[var(--color-border)]",
-        ghost: "text-[var(--color-text)] hover:bg-[var(--color-border)] focus-visible:ring-[var(--color-border)]",
-        destructive: "bg-[var(--color-error)] text-white hover:bg-[var(--color-error)]/90 focus-visible:ring-[var(--color-error)]",
-        link: "text-[var(--color-accent)] underline-offset-4 hover:underline",
+        default: "bg-(--color-accent) text-white hover:bg-(--color-accent-hover) focus-visible:ring-(--color-accent)",
+        secondary: "bg-(--color-border) text-(--color-text) hover:bg-(--color-border)/80 focus-visible:ring-(--color-border)",
+        outline: "border border-(--color-border) bg-transparent text-(--color-text) hover:bg-(--color-border) focus-visible:ring-(--color-border)",
+        ghost: "text-(--color-text) hover:bg-(--color-border) focus-visible:ring-(--color-border)",
+        destructive: "bg-(--color-error) text-white hover:bg-(--color-error)/90 focus-visible:ring-(--color-error)",
+        link: "text-(--color-accent) underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 min-h-[44px] px-4 py-2",

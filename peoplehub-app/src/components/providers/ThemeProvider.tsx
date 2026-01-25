@@ -19,42 +19,23 @@ interface ThemeProviderProps {
     defaultTheme?: Theme;
 }
 
-export function ThemeProvider({ children, defaultTheme = "system" }: ThemeProviderProps) {
-    const [theme, setThemeState] = useState<Theme>(() => {
-        if (typeof window === "undefined") return defaultTheme;
-        const stored = localStorage.getItem("theme") as Theme | null;
-        if (stored && ["light", "dark", "system"].includes(stored)) {
-            return stored;
-        }
-        return defaultTheme;
-    });
-    const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
-
-    // Resolve system theme and apply to document
-    useEffect(() => {
-        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
-        const updateResolvedTheme = () => {
-            let resolved: "light" | "dark";
-            if (theme === "system") {
-                resolved = mediaQuery.matches ? "dark" : "light";
-            } else {
-                resolved = theme;
-            }
-            setResolvedTheme(resolved);
-            document.documentElement.setAttribute("data-theme", resolved);
-        };
-
-        updateResolvedTheme();
-
-        mediaQuery.addEventListener("change", updateResolvedTheme);
-        return () => mediaQuery.removeEventListener("change", updateResolvedTheme);
-    }, [theme]);
-
-    const setTheme = (newTheme: Theme) => {
-        setThemeState(newTheme);
-        localStorage.setItem("theme", newTheme);
+export function ThemeProvider({ children }: ThemeProviderProps) {
+    // Always strict light mode
+    const theme = "light";
+    const resolvedTheme = "light";
+    
+    const setTheme = (_newTheme: Theme) => {
+        // No-op: theme cannot be changed
+        console.log("Theme is locked to light mode");
     };
+
+    // Force data-theme attribute on mount to ensure CSS variables work correctly
+    useEffect(() => {
+        document.documentElement.setAttribute("data-theme", "light");
+        // Remove potentially conflicting class
+        document.documentElement.classList.remove("dark");
+        document.documentElement.classList.add("light");
+    }, []);
 
     return (
         <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>

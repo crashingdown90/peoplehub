@@ -49,10 +49,10 @@ export function AgreementStep({ initialData, onNext, onBack, isSubmitting, isLas
                 <div className="flex items-start gap-3">
                     <FileText className="h-5 w-5 text-blue-600 mt-0.5" />
                     <div className="flex-1">
-                        <h3 className="font-semibold text-slate-900 mb-2">
+                        <h3 className="font-semibold text-(--color-text) mb-2">
                             Ketentuan Penggunaan (Terms of Service)
                         </h3>
-                        <div className="text-sm text-slate-600 space-y-2 max-h-48 overflow-y-auto pr-2">
+                        <div className="text-sm text-(--color-text-subtle) space-y-2 max-h-48 overflow-y-auto pr-2">
                             <p>Dengan menggunakan sistem PeopleHub HRIS, Anda setuju untuk:</p>
                             <ul className="list-disc list-inside space-y-1 pl-2">
                                 <li>Menggunakan sistem sesuai dengan kebijakan perusahaan</li>
@@ -97,7 +97,7 @@ export function AgreementStep({ initialData, onNext, onBack, isSubmitting, isLas
                         <h3 className="font-semibold text-slate-900 mb-2">
                             Kebijakan Privasi (Privacy Policy)
                         </h3>
-                        <div className="text-sm text-slate-600 space-y-2 max-h-48 overflow-y-auto pr-2">
+                        <div className="text-sm text-(--color-text-subtle) space-y-2 max-h-48 overflow-y-auto pr-2">
                             <p>Kami menghargai privasi Anda. Data yang kami kumpulkan:</p>
                             <ul className="list-disc list-inside space-y-1 pl-2">
                                 <li>Data pribadi (nama, email, nomor telepon)</li>
@@ -135,7 +135,7 @@ export function AgreementStep({ initialData, onNext, onBack, isSubmitting, isLas
                     />
                     <Label
                         htmlFor="privacy"
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-(--color-text)"
                     >
                         Saya telah membaca dan menyetujui Kebijakan Privasi
                     </Label>
@@ -149,7 +149,7 @@ export function AgreementStep({ initialData, onNext, onBack, isSubmitting, isLas
             )}
 
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                <p className="text-xs text-slate-600">
+                <p className="text-xs text-slate-700">
                     Dengan menyelesaikan registrasi, data Anda akan dikirim kepada HRD untuk diverifikasi. Anda akan menerima notifikasi melalui email setelah akun Anda disetujui atau ditolak.
                 </p>
             </div>

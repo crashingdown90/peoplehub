@@ -19,32 +19,31 @@ import {
     Pie,
     Cell,
 } from "recharts";
-import { useTheme } from "@/components/providers";
 
-// Theme colors for charts
-const getChartColors = (isDark: boolean) => ({
-    primary: isDark ? "#3b82f6" : "#2563eb",
-    secondary: isDark ? "#22c55e" : "#16a34a",
-    tertiary: isDark ? "#f59e0b" : "#d97706",
-    quaternary: isDark ? "#ec4899" : "#db2777",
-    grid: isDark ? "#334155" : "#e2e8f0",
-    text: isDark ? "#94a3b8" : "#64748b",
-    background: isDark ? "#1e293b" : "#ffffff",
-});
+// Theme colors for charts - strict light mode
+const CHART_COLORS = {
+    primary: "#2563eb",
+    secondary: "#16a34a",
+    tertiary: "#d97706",
+    quaternary: "#db2777",
+    grid: "#e2e8f0",
+    text: "#64748b",
+    background: "#ffffff",
+};
 
-// Shared tooltip styles
-const getTooltipStyle = (isDark: boolean) => ({
+// Shared tooltip styles - strict light mode
+const TOOLTIP_STYLE = {
     contentStyle: {
-        backgroundColor: isDark ? "#1e293b" : "#ffffff",
-        borderColor: isDark ? "#334155" : "#e2e8f0",
+        backgroundColor: "#ffffff",
+        borderColor: "#e2e8f0",
         borderRadius: "8px",
-        color: isDark ? "#f1f5f9" : "#0f172a",
+        color: "#0f172a",
     },
     labelStyle: {
-        color: isDark ? "#f1f5f9" : "#0f172a",
+        color: "#0f172a",
         fontWeight: 600,
     },
-});
+};
 
 // ============================================
 // Line Chart
@@ -71,10 +70,9 @@ export function LineChart({
     showGrid = true,
     showLegend = true,
 }: LineChartProps) {
-    const { resolvedTheme } = useTheme();
-    const isDark = resolvedTheme === "dark";
-    const colors = getChartColors(isDark);
-    const tooltipStyle = getTooltipStyle(isDark);
+
+    const colors = CHART_COLORS;
+    const tooltipStyle = TOOLTIP_STYLE;
 
     const defaultColors = [colors.primary, colors.secondary, colors.tertiary, colors.quaternary];
 
@@ -130,10 +128,9 @@ export function BarChart({
     showLegend = true,
     stacked = false,
 }: BarChartProps) {
-    const { resolvedTheme } = useTheme();
-    const isDark = resolvedTheme === "dark";
-    const colors = getChartColors(isDark);
-    const tooltipStyle = getTooltipStyle(isDark);
+
+    const colors = CHART_COLORS;
+    const tooltipStyle = TOOLTIP_STYLE;
 
     const defaultColors = [colors.primary, colors.secondary, colors.tertiary, colors.quaternary];
 
@@ -185,10 +182,9 @@ export function AreaChart({
     showGrid = true,
     showLegend = true,
 }: AreaChartProps) {
-    const { resolvedTheme } = useTheme();
-    const isDark = resolvedTheme === "dark";
-    const colors = getChartColors(isDark);
-    const tooltipStyle = getTooltipStyle(isDark);
+
+    const colors = CHART_COLORS;
+    const tooltipStyle = TOOLTIP_STYLE;
 
     const defaultColors = [colors.primary, colors.secondary, colors.tertiary, colors.quaternary];
 
@@ -243,10 +239,9 @@ export function DonutChart({
     outerRadius = 100,
     showLabel = true,
 }: DonutChartProps) {
-    const { resolvedTheme } = useTheme();
-    const isDark = resolvedTheme === "dark";
-    const colors = getChartColors(isDark);
-    const tooltipStyle = getTooltipStyle(isDark);
+
+    const colors = CHART_COLORS;
+    const tooltipStyle = TOOLTIP_STYLE;
 
     const defaultColors = [colors.primary, colors.secondary, colors.tertiary, colors.quaternary, "#8b5cf6", "#06b6d4"];
 

@@ -105,8 +105,8 @@ export function TenantSelectionStep({ initialData, onNext }: TenantSelectionStep
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="text-center mb-6">
                 <Building2 className="h-12 w-12 mx-auto text-blue-600 mb-3" />
-                <h2 className="text-lg font-semibold text-slate-800">Pilih Perusahaan</h2>
-                <p className="text-sm text-slate-600 mt-1">
+                <h2 className="text-lg font-semibold text-(--color-text)">Pilih Perusahaan</h2>
+                <p className="text-sm text-(--color-text-subtle) mt-1">
                     Pilih perusahaan tempat Anda bekerja
                 </p>
             </div>
@@ -138,10 +138,10 @@ export function TenantSelectionStep({ initialData, onNext }: TenantSelectionStep
                                 className="sr-only"
                             />
                             <div className="flex-1">
-                                <div className="font-medium text-slate-800">
+                                <div className="font-medium text-(--color-text)">
                                     {tenant.name}
                                 </div>
-                                <div className="text-sm text-slate-500 mt-0.5">
+                                <div className="text-sm text-(--color-text-subtle) mt-0.5">
                                     Kode: {tenant.code}
                                 </div>
                             </div>

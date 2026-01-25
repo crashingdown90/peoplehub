@@ -4,11 +4,10 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { Bell, Menu, Moon, Search, Settings, Sun, User } from "lucide-react";
+import { Bell, Menu, Search, Settings, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useTheme } from "@/components/providers";
 
 interface HeaderProps {
     onMenuToggle?: () => void;
@@ -48,8 +47,6 @@ export function Header({ onMenuToggle, showSearch = true }: HeaderProps) {
             </div>
 
             <div className="flex items-center gap-3">
-                <ThemeToggle />
-
                 <Link
                     href="/notifications"
                     className="relative rounded-lg p-2 text-[var(--color-text-subtle)] transition hover:bg-[var(--color-border)]"
@@ -83,29 +80,6 @@ export function Header({ onMenuToggle, showSearch = true }: HeaderProps) {
                 </div>
             </div>
         </header>
-    );
-}
-
-function ThemeToggle() {
-    const { resolvedTheme, setTheme } = useTheme();
-
-    const toggleTheme = () => {
-        setTheme(resolvedTheme === "light" ? "dark" : "light");
-    };
-
-    return (
-        <button
-            type="button"
-            onClick={toggleTheme}
-            className="rounded-lg p-2 text-[var(--color-text-subtle)] transition hover:bg-[var(--color-border)]"
-            aria-label={resolvedTheme === "light" ? "Aktifkan Mode Gelap" : "Aktifkan Mode Terang"}
-        >
-            {resolvedTheme === "light" ? (
-                <Moon className="h-5 w-5" />
-            ) : (
-                <Sun className="h-5 w-5" />
-            )}
-        </button>
     );
 }
 

@@ -55,7 +55,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 px-4">
+        <div className="flex min-h-screen items-center justify-center bg-(--color-bg) px-4 text-(--color-text)">
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">
                     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-xl font-bold text-white">
@@ -99,7 +99,7 @@ export default function LoginPage() {
                                     className="rounded border-slate-300"
                                     aria-describedby="remember-description"
                                 />
-                                <span className="text-slate-600">Ingat saya</span>
+                                <span className="text-(--color-text-subtle)">Ingat saya</span>
                             </label>
                             <Link href="/forgot-password" className="text-blue-600 hover:underline">
                                 Lupa password?
@@ -112,7 +112,7 @@ export default function LoginPage() {
                             Masuk
                         </Button>
 
-                        <p className="text-center text-sm text-slate-600">
+                        <p className="text-center text-sm text-(--color-text-subtle)">
                             Belum punya akun?{" "}
                             <Link href="/register" className="font-medium text-blue-600 hover:underline">
                                 Daftar sekarang

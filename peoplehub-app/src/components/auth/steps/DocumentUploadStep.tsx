@@ -122,11 +122,11 @@ export function DocumentUploadStep({ initialData, onNext, onBack }: DocumentUplo
                             htmlFor="photo"
                             className="flex flex-col items-center cursor-pointer"
                         >
-                            <Camera className={`h-12 w-12 mb-2 ${errors.photo ? "text-red-400" : "text-slate-400"}`} />
-                            <p className={`text-sm font-medium ${errors.photo ? "text-red-700" : "text-slate-700"}`}>
+                            <Camera className={`h-12 w-12 mb-2 ${errors.photo ? "text-red-400" : "text-(--color-text-muted)"}`} />
+                            <p className={`text-sm font-medium ${errors.photo ? "text-(--color-error)" : "text-(--color-text)"}`}>
                                 Klik untuk upload foto diri
                             </p>
-                            <p className="text-xs text-slate-500 mt-1">
+                            <p className="text-xs text-(--color-text-subtle) mt-1 font-medium">
                                 JPG, JPEG, atau PNG (Maks. 5MB)
                             </p>
                         </label>
@@ -154,7 +154,7 @@ export function DocumentUploadStep({ initialData, onNext, onBack }: DocumentUplo
                     <p className="text-sm text-red-600">{errors.photo}</p>
                 )}
 
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-700 mt-1">
                     Gunakan foto formal dengan wajah terlihat jelas dan latar belakang polos
                 </p>
             </div>
@@ -162,7 +162,7 @@ export function DocumentUploadStep({ initialData, onNext, onBack }: DocumentUplo
             {/* KTP Upload - OPTIONAL */}
             <div className="space-y-3">
                 <Label htmlFor="ktp">
-                    Foto KTP <span className="text-slate-500">(Opsional)</span>
+                    Foto KTP <span className="text-slate-700">(Opsional)</span>
                 </Label>
 
                 {!ktpPhotoUrl ? (
@@ -178,11 +178,11 @@ export function DocumentUploadStep({ initialData, onNext, onBack }: DocumentUplo
                             htmlFor="ktp"
                             className="flex flex-col items-center cursor-pointer"
                         >
-                            <FileImage className="h-12 w-12 text-slate-400 mb-2" />
-                            <p className="text-sm font-medium text-slate-700">
+                            <FileImage className="h-12 w-12 text-(--color-text-muted) mb-2" />
+                            <p className="text-sm font-medium text-(--color-text)">
                                 Klik untuk upload foto KTP
                             </p>
-                            <p className="text-xs text-slate-500 mt-1">
+                            <p className="text-xs text-(--color-text-subtle) mt-1 font-medium">
                                 JPG, JPEG, atau PNG (Maks. 5MB)
                             </p>
                         </label>
@@ -212,7 +212,7 @@ export function DocumentUploadStep({ initialData, onNext, onBack }: DocumentUplo
             </div>
 
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                <p className="text-xs text-slate-600">
+                <p className="text-xs text-slate-700">
                     <strong>Tips:</strong> Pastikan foto jelas dan dapat terbaca.
                     Untuk foto diri, gunakan latar belakang polos dengan pencahayaan yang baik.
                 </p>

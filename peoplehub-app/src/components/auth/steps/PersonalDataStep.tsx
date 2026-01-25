@@ -114,7 +114,7 @@ export function PersonalDataStep({ initialData, onNext, onBack }: PersonalDataSt
                 {errors.email && (
                     <p className="text-sm text-red-600">{errors.email.message}</p>
                 )}
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-(--color-text-subtle) font-medium">
                     Email akan digunakan untuk login ke sistem
                 </p>
             </div>
@@ -148,16 +148,16 @@ export function PersonalDataStep({ initialData, onNext, onBack }: PersonalDataSt
                             {...register("gender")}
                             className="w-4 h-4 text-blue-600"
                         />
-                        <span>Laki-laki</span>
+                        <span className="text-(--color-text)">Laki-laki</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                         <input
                             type="radio"
                             value="FEMALE"
                             {...register("gender")}
-                            className="w-4 h-4 text-blue-600"
+                            className="w-4 h-4 text-(--color-accent)"
                         />
-                        <span>Perempuan</span>
+                        <span className="text-(--color-text)">Perempuan</span>
                     </label>
                 </div>
                 {errors.gender && (
@@ -223,8 +223,8 @@ export function PersonalDataStep({ initialData, onNext, onBack }: PersonalDataSt
                 {errors.password && (
                     <p className="text-sm text-red-600">{errors.password.message}</p>
                 )}
-                <div className="text-xs text-slate-600 space-y-1">
-                    <p>Password harus mengandung:</p>
+                <div className="text-xs text-(--color-text-subtle) space-y-1">
+                    <p className="font-medium">Password harus mengandung:</p>
                     <ul className="list-disc list-inside pl-2 space-y-0.5">
                         <li>Minimal 8 karakter</li>
                         <li>Huruf besar (A-Z)</li>

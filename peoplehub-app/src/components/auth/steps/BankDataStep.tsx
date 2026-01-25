@@ -104,7 +104,7 @@ export function BankDataStep({ initialData, onNext, onBack }: BankDataStepProps)
                 {errors.bankAccountNumber && (
                     <p className="text-sm text-red-600">{errors.bankAccountNumber.message}</p>
                 )}
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-(--color-text-subtle)">
                     Masukkan nomor rekening tanpa spasi atau tanda baca (10-16 digit)
                 </p>
             </div>
@@ -124,7 +124,7 @@ export function BankDataStep({ initialData, onNext, onBack }: BankDataStepProps)
                 {errors.bankAccountHolder && (
                     <p className="text-sm text-red-600">{errors.bankAccountHolder.message}</p>
                 )}
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-(--color-text-subtle)">
                     Nama pemilik rekening harus sesuai dengan yang tertera di buku tabungan
                 </p>
             </div>

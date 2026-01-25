@@ -112,15 +112,15 @@ export function RegistrationWizard({ children, onComplete, isSubmitting = false 
     const progress = (currentStep / STEPS.length) * 100;
 
     return (
-        <div className="min-h-screen bg-slate-50 py-8 px-4">
+        <div className="min-h-screen bg-(--color-bg) py-8 px-4 text-(--color-text)">
             <div className="max-w-2xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-600 text-white text-2xl font-bold mb-4">
                         P
                     </div>
-                    <h1 className="text-3xl font-bold text-slate-900">Registrasi Karyawan</h1>
-                    <p className="text-slate-600 mt-2">
+                    <h1 className="text-3xl font-bold text-(--color-text)">Registrasi Karyawan</h1>
+                    <p className="text-(--color-text-subtle) mt-2">
                         Lengkapi data Anda untuk memulai proses registrasi
                     </p>
                 </div>
@@ -128,10 +128,10 @@ export function RegistrationWizard({ children, onComplete, isSubmitting = false 
                 {/* Progress Bar */}
                 <div className="mb-8">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-slate-700">
+                        <span className="text-sm font-medium text-(--color-text)">
                             Langkah {currentStep} dari {STEPS.length}
                         </span>
-                        <span className="text-sm text-slate-600">{Math.round(progress)}%</span>
+                        <span className="text-sm text-(--color-text-subtle)">{Math.round(progress)}%</span>
                     </div>
                     <Progress value={progress} className="h-2" />
                 </div>
@@ -148,14 +148,14 @@ export function RegistrationWizard({ children, onComplete, isSubmitting = false 
                                                 ? "bg-green-600 text-white"
                                                 : currentStep === step.id
                                                     ? "bg-blue-600 text-white"
-                                                    : "bg-slate-200 text-slate-500"
+                                                    : "bg-(--color-border) text-(--color-text-muted)"
                                             }`}
                                     >
                                         {currentStep > step.id ? "✓" : step.id}
                                     </div>
                                     <div className="text-center mt-2 hidden md:block">
                                         <p
-                                            className={`text-xs font-medium ${currentStep >= step.id ? "text-slate-900" : "text-slate-500"
+                                            className={`text-xs font-medium ${currentStep >= step.id ? "text-(--color-text)" : "text-(--color-text-muted)"
                                                 }`}
                                         >
                                             {step.title}
@@ -165,7 +165,7 @@ export function RegistrationWizard({ children, onComplete, isSubmitting = false 
                                 {/* Connector Line */}
                                 {index < STEPS.length - 1 && (
                                     <div
-                                        className={`hidden md:block flex-1 h-0.5 mx-2 ${currentStep > step.id ? "bg-green-600" : "bg-slate-200"
+                                        className={`hidden md:block flex-1 h-0.5 mx-2 ${currentStep > step.id ? "bg-green-600" : "bg-(--color-border)"
                                             }`}
                                     />
                                 )}
@@ -228,7 +228,7 @@ export function WizardNavigation({
     onSkip?: () => void;
 }) {
     return (
-        <div className="flex items-center justify-between mt-6 pt-6 border-t">
+        <div className="flex items-center justify-between mt-6 pt-6 border-t border-(--color-border)">
             <div>
                 {!isFirstStep && (
                     <Button type="button" variant="outline" onClick={onBack}>
