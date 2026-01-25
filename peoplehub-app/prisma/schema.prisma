@@ -410,7 +410,7 @@ model Attendance {
   lateDeductionAmount Decimal          @default(0)
   status              AttendanceStatus @default(PRESENT)
   isCorrected         Boolean          @default(false)
-  geofenceStatus      String?          // 'INSIDE', 'OUTSIDE', 'UNKNOWN'
+  geofenceStatus      String? // 'INSIDE', 'OUTSIDE', 'UNKNOWN'
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 

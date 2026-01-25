@@ -9,8 +9,25 @@ import { EmailService } from "@/services/email";
 import { Gender } from "@prisma/client";
 import { formatDate } from "@/constants/locale";
 
+import { validateCsrf, getCsrfErrorResponse } from "@/lib/security/csrf";
+
 export async function POST(request: NextRequest) {
     try {
+        // Validate CSRF token
+        const csrfResult = await validateCsrf(request.headers);
+        if (!csrfResult.valid) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: {
+                        code: "CSRF_ERROR",
+                        message: csrfResult.error || "CSRF token validation failed",
+                    },
+                },
+                { status: 403 }
+            );
+        }
+
         const body = await request.json();
 
         // Validate input

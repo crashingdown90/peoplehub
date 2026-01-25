@@ -3,9 +3,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyPassword, generateToken, AUTH_CONFIG, type JWTPayload } from "@/lib/auth";
 import { loginSchema } from "@/lib/validations";
+import { validateCsrf } from "@/lib/security/csrf";
 
 export async function POST(request: NextRequest) {
     try {
+        // Validate CSRF token
+        const csrfResult = await validateCsrf(request.headers);
+        if (!csrfResult.valid) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: {
+                        code: "CSRF_ERROR",
+                        message: csrfResult.error || "CSRF token validation failed",
+                    },
+                },
+                { status: 403 }
+            );
+        }
+
         const body = await request.json();
 
         // Validate input
