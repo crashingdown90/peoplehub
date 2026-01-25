@@ -5,6 +5,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { RegistrationWizard } from "@/components/auth/RegistrationWizard";
 import { TenantSelectionStep } from "@/components/auth/steps/TenantSelectionStep";
 import { PersonalDataStep } from "@/components/auth/steps/PersonalDataStep";
@@ -129,58 +130,87 @@ export default function RegisterPage() {
     };
 
     return (
-        <>
-            {error && (
-                <div className="fixed top-4 right-4 z-50 max-w-md">
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg">
-                        <div className="flex items-start gap-3">
-                            <div className="shrink-0">
-                                <svg
-                                    className="h-5 w-5 text-red-600"
-                                    viewBox="0 0 20 20"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                                        clipRule="evenodd"
-                                    />
-                                </svg>
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="text-sm font-medium text-red-800">Registrasi Gagal</h3>
-                                <p className="text-sm text-red-600 mt-1">{error}</p>
-                            </div>
-                            <button
-                                onClick={() => setError(null)}
-                                className="shrink-0 text-red-600 hover:text-red-800"
-                            >
-                                <span className="sr-only">Tutup</span>
-                                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                        clipRule="evenodd"
-                                    />
-                                </svg>
-                            </button>
+        <div className="flex min-h-screen bg-(--color-bg) text-(--color-text)">
+            {/* Left side: Branding & Visuals (Hidden on mobile) */}
+            <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-blue-600">
+                <Image
+                    src="/auth-hero.png"
+                    alt="Corporate background"
+                    fill
+                    className="object-cover mix-blend-overlay opacity-60"
+                    priority
+                />
+                <div className="relative z-10 flex flex-col items-start justify-between p-12 text-white">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-blue-600 text-xl font-bold">
+                            P
                         </div>
+                        <span className="text-2xl font-bold tracking-tight">PeopleHub</span>
+                    </div>
+                    
+                    <div>
+                        <h2 className="text-4xl font-bold leading-tight mb-4">
+                            Platform HR Modern untuk Tim yang Dinamis
+                        </h2>
+                        <p className="text-blue-50 text-lg max-w-md">
+                            Kelola administrasi karyawan, absensi, dan penggajian dalam satu dashboard yang terintegrasi dan aman.
+                        </p>
+                    </div>
+
+                    <div className="text-blue-200 text-sm">
+                        &copy; {new Date().getFullYear()} PeopleHub.
                     </div>
                 </div>
-            )}
+            </div>
 
-            <RegistrationWizard onComplete={handleComplete} isSubmitting={isSubmitting}>
-                {/* Step 1: Pilih Perusahaan - props injected by wizard */}
-                <TenantSelectionStep />
-                {/* Step 2: Data Pribadi - props injected by wizard */}
-                <PersonalDataStep />
-                {/* Step 3: Data Bank - props injected by wizard */}
-                <BankDataStep />
-                {/* Step 4: Foto & Dokumen - props injected by wizard */}
-                <DocumentUploadStep />
-                {/* Step 5: Persetujuan - props injected by wizard */}
-                <AgreementStep />
-            </RegistrationWizard>
-        </>
+            {/* Right side: Form Wizard */}
+            <div className="w-full lg:w-1/2 flex flex-col py-12 px-4 sm:px-12 items-center justify-start overflow-y-auto">
+                <div className="w-full max-w-xl">
+                    {/* Mobile Branding (Show only on small screens) */}
+                    <div className="flex lg:hidden flex-col items-center mb-10">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white text-2xl font-bold mb-4">
+                            P
+                        </div>
+                        <h1 className="text-2xl font-bold">PeopleHub</h1>
+                    </div>
+
+                    {error && (
+                        <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 animate-in fade-in slide-in-from-top-4">
+                            <div className="flex items-start gap-3">
+                                <div className="shrink-0">
+                                    <svg className="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-sm font-semibold text-red-800">Gagal melanjutkan</p>
+                                    <p className="text-sm text-red-600 mt-1">{error}</p>
+                                </div>
+                                <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600">
+                                    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <RegistrationWizard onComplete={handleComplete} isSubmitting={isSubmitting}>
+                        <TenantSelectionStep />
+                        <PersonalDataStep />
+                        <BankDataStep />
+                        <DocumentUploadStep />
+                        <AgreementStep />
+                    </RegistrationWizard>
+
+                    <p className="mt-8 text-center text-sm text-(--color-text-subtle)">
+                        Sudah punya akun?{" "}
+                        <a href="/login" className="font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+                            Masuk di sini
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
     );
 }

@@ -5,7 +5,7 @@
 
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
-import { Upload, X, FileImage, Camera } from "lucide-react";
+import { Upload, X, FileImage, Camera, CheckCircle2, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { WizardNavigation } from "../RegistrationWizard";
 
@@ -49,10 +49,8 @@ export function DocumentUploadStep({ initialData, onNext, onBack }: DocumentUplo
             return;
         }
 
-        // Clear error
         setErrors((prev) => ({ ...prev, [type]: undefined }));
 
-        // Convert to base64
         const reader = new FileReader();
         reader.onloadend = () => {
             const base64 = reader.result as string;
@@ -61,11 +59,6 @@ export function DocumentUploadStep({ initialData, onNext, onBack }: DocumentUplo
             } else {
                 setPhotoUrl(base64);
             }
-        };
-        reader.onerror = () => {
-            setErrors((prev) => ({ ...prev, [type]: "Gagal membaca file. Silakan coba lagi." }));
-            // Reset input so user can retry with the same file
-            event.target.value = "";
         };
         reader.readAsDataURL(file);
     };
@@ -80,7 +73,6 @@ export function DocumentUploadStep({ initialData, onNext, onBack }: DocumentUplo
     };
 
     const handleNext = () => {
-        // Validate photo is required
         if (!photoUrl) {
             setErrors((prev) => ({ ...prev, photo: "Foto diri wajib diupload" }));
             return;
@@ -88,140 +80,134 @@ export function DocumentUploadStep({ initialData, onNext, onBack }: DocumentUplo
         onNext?.({ ktpPhotoUrl, photoUrl });
     };
 
-    const canProceed = !!photoUrl;
-
     return (
-        <div className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-900">
-                    <strong>Informasi:</strong> Foto diri wajib diupload untuk verifikasi identitas.
-                    Foto KTP bersifat opsional dan dapat dilengkapi nanti.
-                </p>
+        <div className="space-y-10 p-4">
+            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-6">
+                <div className="flex gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center shrink-0">
+                        <Upload className="h-5 w-5 text-slate-600" />
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-slate-900 mb-1">Upload Dokumen</h4>
+                        <p className="text-sm text-slate-500 leading-relaxed">
+                            Pastikan dokumen terlihat jelas, tidak terpotong, dan memiliki pencahayaan yang cukup untuk mempermudah proses verifikasi.
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            {/* Photo Upload - REQUIRED */}
-            <div className="space-y-3">
-                <Label htmlFor="photo">
-                    Foto Diri <span className="text-red-500">*</span>
-                </Label>
-
-                {!photoUrl ? (
-                    <div className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
-                        errors.photo
-                            ? "border-red-300 bg-red-50 hover:border-red-500"
-                            : "border-slate-300 hover:border-blue-500"
-                    }`}>
-                        <input
-                            id="photo"
-                            type="file"
-                            accept="image/jpeg,image/jpg,image/png"
-                            onChange={(e) => handleFileChange(e, "photo")}
-                            className="hidden"
-                        />
-                        <label
-                            htmlFor="photo"
-                            className="flex flex-col items-center cursor-pointer"
-                        >
-                            <Camera className={`h-12 w-12 mb-2 ${errors.photo ? "text-red-400" : "text-(--color-text-muted)"}`} />
-                            <p className={`text-sm font-medium ${errors.photo ? "text-(--color-error)" : "text-(--color-text)"}`}>
-                                Klik untuk upload foto diri
-                            </p>
-                            <p className="text-xs text-(--color-text-subtle) mt-1 font-medium">
-                                JPG, JPEG, atau PNG (Maks. 5MB)
-                            </p>
-                        </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Photo Upload - REQUIRED */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <Label className="text-slate-700 font-bold">Foto Diri (Profile)</Label>
+                        <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Wajib</span>
                     </div>
-                ) : (
-                    <div className="relative border rounded-lg overflow-hidden max-w-xs mx-auto">
-                        <Image
-                            src={photoUrl}
-                            alt="Photo Preview"
-                            width={300}
-                            height={400}
-                            className="w-full h-auto"
-                        />
-                        <button
-                            type="button"
-                            onClick={() => handleRemove("photo")}
-                            className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full hover:bg-red-700"
-                        >
-                            <X className="h-4 w-4" />
-                        </button>
+
+                    {!photoUrl ? (
+                        <div className={`
+                            relative border-2 border-dashed rounded-3xl p-8 transition-all duration-300 group
+                            ${errors.photo ? "border-red-200 bg-red-50/30" : "border-slate-200 bg-slate-50/50 hover:border-blue-400 hover:bg-white hover:shadow-xl hover:shadow-blue-500/5"}
+                        `}>
+                            <input
+                                id="photo"
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleFileChange(e, "photo")}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                            <div className="flex flex-col items-center text-center">
+                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-colors ${
+                                    errors.photo ? "bg-red-100 text-red-500" : "bg-white text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500"
+                                }`}>
+                                    <Camera className="h-8 w-8" />
+                                </div>
+                                <h5 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Pilih Foto Diri</h5>
+                                <p className="text-xs text-slate-400 mt-2 font-medium">PNG, JPG up to 5MB</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="relative group rounded-3xl overflow-hidden border-2 border-blue-100 shadow-lg shadow-blue-500/5 aspect-[3/4] max-w-[240px] mx-auto">
+                            <Image src={photoUrl} alt="Photo" fill className="object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                <button
+                                    onClick={() => handleRemove("photo")}
+                                    className="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center hover:scale-110 transition-transform"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <div className="absolute bottom-3 right-3">
+                                <CheckCircle2 className="text-green-500 bg-white rounded-full h-6 w-6" />
+                            </div>
+                        </div>
+                    )}
+                    {errors.photo && (
+                        <div className="flex items-center gap-2 text-red-500 text-xs font-bold px-2">
+                            <AlertCircle size={14} />
+                            {errors.photo}
+                        </div>
+                    )}
+                </div>
+
+                {/* KTP Upload - OPTIONAL */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <Label className="text-slate-700 font-bold">Foto KTP</Label>
+                        <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Opsional</span>
                     </div>
-                )}
 
-                {errors.photo && (
-                    <p className="text-sm text-red-600">{errors.photo}</p>
-                )}
-
-                <p className="text-xs text-slate-700 mt-1">
-                    Gunakan foto formal dengan wajah terlihat jelas dan latar belakang polos
-                </p>
-            </div>
-
-            {/* KTP Upload - OPTIONAL */}
-            <div className="space-y-3">
-                <Label htmlFor="ktp">
-                    Foto KTP <span className="text-slate-700">(Opsional)</span>
-                </Label>
-
-                {!ktpPhotoUrl ? (
-                    <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 hover:border-blue-500 transition-colors">
-                        <input
-                            id="ktp"
-                            type="file"
-                            accept="image/jpeg,image/jpg,image/png"
-                            onChange={(e) => handleFileChange(e, "ktp")}
-                            className="hidden"
-                        />
-                        <label
-                            htmlFor="ktp"
-                            className="flex flex-col items-center cursor-pointer"
-                        >
-                            <FileImage className="h-12 w-12 text-(--color-text-muted) mb-2" />
-                            <p className="text-sm font-medium text-(--color-text)">
-                                Klik untuk upload foto KTP
-                            </p>
-                            <p className="text-xs text-(--color-text-subtle) mt-1 font-medium">
-                                JPG, JPEG, atau PNG (Maks. 5MB)
-                            </p>
-                        </label>
-                    </div>
-                ) : (
-                    <div className="relative border rounded-lg overflow-hidden">
-                        <Image
-                            src={ktpPhotoUrl}
-                            alt="KTP Preview"
-                            width={400}
-                            height={250}
-                            className="w-full h-auto"
-                        />
-                        <button
-                            type="button"
-                            onClick={() => handleRemove("ktp")}
-                            className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full hover:bg-red-700"
-                        >
-                            <X className="h-4 w-4" />
-                        </button>
-                    </div>
-                )}
-
-                {errors.ktp && (
-                    <p className="text-sm text-red-600">{errors.ktp}</p>
-                )}
-            </div>
-
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-                <p className="text-xs text-slate-700">
-                    <strong>Tips:</strong> Pastikan foto jelas dan dapat terbaca.
-                    Untuk foto diri, gunakan latar belakang polos dengan pencahayaan yang baik.
-                </p>
+                    {!ktpPhotoUrl ? (
+                        <div className={`
+                            relative border-2 border-dashed rounded-3xl p-8 transition-all duration-300 group
+                            ${errors.ktp ? "border-red-200 bg-red-50/30" : "border-slate-200 bg-slate-50/50 hover:border-blue-400 hover:bg-white hover:shadow-xl hover:shadow-blue-500/5"}
+                        `}>
+                            <input
+                                id="ktp"
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleFileChange(e, "ktp")}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                            <div className="flex flex-col items-center text-center">
+                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-colors ${
+                                    errors.ktp ? "bg-red-100 text-red-500" : "bg-white text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500"
+                                }`}>
+                                    <FileImage className="h-8 w-8" />
+                                </div>
+                                <h5 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Pilih Foto KTP</h5>
+                                <p className="text-xs text-slate-400 mt-2 font-medium">PNG, JPG up to 5MB</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="relative group rounded-3xl overflow-hidden border-2 border-blue-100 shadow-lg shadow-blue-500/5 aspect-[1.618/1]">
+                            <Image src={ktpPhotoUrl} alt="KTP" fill className="object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                <button
+                                    onClick={() => handleRemove("ktp")}
+                                    className="w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center hover:scale-110 transition-transform"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <div className="absolute bottom-3 right-3">
+                                <CheckCircle2 className="text-green-500 bg-white rounded-full h-6 w-6" />
+                            </div>
+                        </div>
+                    )}
+                    {errors.ktp && (
+                        <div className="flex items-center gap-2 text-red-500 text-xs font-bold px-2">
+                            <AlertCircle size={14} />
+                            {errors.ktp}
+                        </div>
+                    )}
+                </div>
             </div>
 
             <WizardNavigation
                 onBack={onBack}
                 onNext={handleNext}
-                canProceed={canProceed}
+                canProceed={!!photoUrl}
             />
         </div>
     );

@@ -72,196 +72,171 @@ export function PersonalDataStep({ initialData, onNext, onBack }: PersonalDataSt
     const {
         register,
         handleSubmit,
-        formState: { errors, isValid },
+        watch,
+        formState: { errors },
     } = useForm<PersonalDataForm>({
         resolver: zodResolver(personalDataSchema),
         defaultValues: initialData,
-        mode: "onBlur", // Validate on blur for better UX
+        mode: "onBlur",
     });
+
+    const genderValue = watch("gender");
 
     const onSubmit = (data: PersonalDataForm) => {
         onNext?.(data);
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Full Name */}
-            <div className="space-y-2">
-                <Label htmlFor="fullName">
-                    Nama Lengkap <span className="text-red-600">*</span>
-                </Label>
-                <Input
-                    id="fullName"
-                    placeholder="Contoh: John Doe"
-                    {...register("fullName")}
-                />
-                {errors.fullName && (
-                    <p className="text-sm text-red-600">{errors.fullName.message}</p>
-                )}
-            </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 p-4">
+            {/* Account Information Section */}
+            <div>
+                <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6">Informasi Akun</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="fullName" className="text-slate-700 font-semibold">Nama Lengkap</Label>
+                            <Input
+                                id="fullName"
+                                placeholder="John Doe"
+                                className="rounded-xl border-slate-300 focus:ring-blue-500/10 focus:border-blue-500 h-11"
+                                {...register("fullName")}
+                            />
+                        {errors.fullName && <p className="text-xs text-red-500 font-medium">{errors.fullName.message}</p>}
+                    </div>
 
-            {/* Email */}
-            <div className="space-y-2">
-                <Label htmlFor="email">
-                    Alamat Email <span className="text-red-600">*</span>
-                </Label>
-                <Input
-                    id="email"
-                    type="email"
-                    placeholder="nama@email.com"
-                    {...register("email")}
-                />
-                {errors.email && (
-                    <p className="text-sm text-red-600">{errors.email.message}</p>
-                )}
-                <p className="text-xs text-(--color-text-subtle) font-medium">
-                    Email akan digunakan untuk login ke sistem
-                </p>
-            </div>
-
-            {/* Phone */}
-            <div className="space-y-2">
-                <Label htmlFor="phone">
-                    Nomor Telepon <span className="text-red-600">*</span>
-                </Label>
-                <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="08123456789"
-                    {...register("phone")}
-                />
-                {errors.phone && (
-                    <p className="text-sm text-red-600">{errors.phone.message}</p>
-                )}
-            </div>
-
-            {/* Gender */}
-            <div className="space-y-2">
-                <Label>
-                    Jenis Kelamin <span className="text-red-600">*</span>
-                </Label>
-                <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                            type="radio"
-                            value="MALE"
-                            {...register("gender")}
-                            className="w-4 h-4 text-blue-600"
+                    <div className="space-y-2">
+                        <Label htmlFor="email" className="text-slate-700 font-semibold">Alamat Email</Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            placeholder="nama@email.com"
+                            className="rounded-xl border-slate-300 focus:ring-blue-500/10 focus:border-blue-500 h-11"
+                            {...register("email")}
                         />
-                        <span className="text-(--color-text)">Laki-laki</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                            type="radio"
-                            value="FEMALE"
-                            {...register("gender")}
-                            className="w-4 h-4 text-(--color-accent)"
+                        {errors.email && <p className="text-xs text-red-500 font-medium">{errors.email.message}</p>}
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="phone" className="text-slate-700 font-semibold">Nomor Telepon</Label>
+                        <Input
+                            id="phone"
+                            type="tel"
+                            placeholder="08123456789"
+                            className="rounded-xl border-slate-300 focus:ring-blue-500/10 focus:border-blue-500 h-11"
+                            {...register("phone")}
                         />
-                        <span className="text-(--color-text)">Perempuan</span>
-                    </label>
-                </div>
-                {errors.gender && (
-                    <p className="text-sm text-red-600">{errors.gender.message}</p>
-                )}
-            </div>
+                        {errors.phone && <p className="text-xs text-red-500 font-medium">{errors.phone.message}</p>}
+                    </div>
 
-            {/* Birth Place & Date */}
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="birthPlace">
-                        Tempat Lahir <span className="text-red-600">*</span>
-                    </Label>
-                    <Input
-                        id="birthPlace"
-                        placeholder="Contoh: Jakarta"
-                        {...register("birthPlace")}
-                    />
-                    {errors.birthPlace && (
-                        <p className="text-sm text-red-600">{errors.birthPlace.message}</p>
-                    )}
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="birthDate">
-                        Tanggal Lahir <span className="text-red-600">*</span>
-                    </Label>
-                    <Input
-                        id="birthDate"
-                        type="date"
-                        max={new Date(new Date().setFullYear(new Date().getFullYear() - 17)).toISOString().split("T")[0]}
-                        {...register("birthDate")}
-                    />
-                    {errors.birthDate && (
-                        <p className="text-sm text-red-600">{errors.birthDate.message}</p>
-                    )}
+                    <div className="space-y-2">
+                        <Label className="text-slate-700 font-semibold">Jenis Kelamin</Label>
+                        <div className="flex gap-4 h-11 items-center">
+                            <label className={`flex-1 flex items-center justify-center gap-2 h-full rounded-xl border-2 cursor-pointer transition-all ${
+                                genderValue === "MALE" ? "border-blue-600 bg-blue-50 text-blue-700 font-bold" : "border-slate-100 hover:bg-slate-50 text-slate-600"
+                            }`}>
+                                <input type="radio" value="MALE" {...register("gender")} className="sr-only" />
+                                <span>Laki-laki</span>
+                            </label>
+                            <label className={`flex-1 flex items-center justify-center gap-2 h-full rounded-xl border-2 cursor-pointer transition-all ${
+                                genderValue === "FEMALE" ? "border-blue-600 bg-blue-50 text-blue-700 font-bold" : "border-slate-100 hover:bg-slate-50 text-slate-600"
+                            }`}>
+                                <input type="radio" value="FEMALE" {...register("gender")} className="sr-only" />
+                                <span>Perempuan</span>
+                            </label>
+                        </div>
+                        {errors.gender && <p className="text-xs text-red-500 font-medium">{errors.gender.message}</p>}
+                    </div>
                 </div>
             </div>
 
-            {/* Password */}
-            <div className="space-y-2">
-                <Label htmlFor="password">
-                    Kata Sandi <span className="text-red-600">*</span>
-                </Label>
-                <div className="relative">
-                    <Input
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Minimal 8 karakter"
-                        {...register("password")}
-                    />
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
-                    >
-                        {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                        ) : (
-                            <Eye className="h-4 w-4" />
-                        )}
-                    </button>
-                </div>
-                {errors.password && (
-                    <p className="text-sm text-red-600">{errors.password.message}</p>
-                )}
-                <div className="text-xs text-(--color-text-subtle) space-y-1">
-                    <p className="font-medium">Password harus mengandung:</p>
-                    <ul className="list-disc list-inside pl-2 space-y-0.5">
-                        <li>Minimal 8 karakter</li>
-                        <li>Huruf besar (A-Z)</li>
-                        <li>Huruf kecil (a-z)</li>
-                        <li>Angka (0-9)</li>
-                        <li>Karakter khusus (!@#$%^&*)</li>
-                    </ul>
+            {/* Identity Information Section */}
+            <div>
+                <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6">Identitas</h3>
+                <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="birthPlace" className="text-slate-700 font-semibold">Tempat Lahir</Label>
+                        <Input
+                            id="birthPlace"
+                            placeholder="Jakarta"
+                            className="rounded-xl border-slate-300 h-11"
+                            {...register("birthPlace")}
+                        />
+                        {errors.birthPlace && <p className="text-xs text-red-500 font-medium">{errors.birthPlace.message}</p>}
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="birthDate" className="text-slate-700 font-semibold">Tanggal Lahir</Label>
+                        <Input
+                            id="birthDate"
+                            type="date"
+                            className="rounded-xl border-slate-300 h-11"
+                            {...register("birthDate")}
+                        />
+                        {errors.birthDate && <p className="text-xs text-red-500 font-medium">{errors.birthDate.message}</p>}
+                    </div>
                 </div>
             </div>
 
-            {/* Confirm Password */}
-            <div className="space-y-2">
-                <Label htmlFor="passwordConfirmation">
-                    Konfirmasi Kata Sandi <span className="text-red-600">*</span>
-                </Label>
-                <div className="relative">
-                    <Input
-                        id="passwordConfirmation"
-                        type={showConfirmPassword ? "text" : "password"}
-                        placeholder="Ulangi kata sandi"
-                        {...register("passwordConfirmation")}
-                    />
-                    <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
-                    >
-                        {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                        ) : (
-                            <Eye className="h-4 w-4" />
-                        )}
-                    </button>
+            {/* Security Section */}
+            <div>
+                <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-6">Keamanan</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2 relative">
+                        <Label htmlFor="password" className="text-slate-700 font-semibold">Kata Sandi</Label>
+                        <div className="relative">
+                            <Input
+                                id="password"
+                                type={showPassword ? "text" : "password"}
+                                className="rounded-xl border-slate-300 h-11 pr-10"
+                                {...register("password")}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+                        {errors.password && <p className="text-xs text-red-500 font-medium">{errors.password.message}</p>}
+                    </div>
+
+                    <div className="space-y-2 relative">
+                        <Label htmlFor="passwordConfirmation" className="text-slate-700 font-semibold">Ulangi Sandi</Label>
+                        <div className="relative">
+                            <Input
+                                id="passwordConfirmation"
+                                type={showConfirmPassword ? "text" : "password"}
+                                className="rounded-xl border-slate-300 h-11 pr-10"
+                                {...register("passwordConfirmation")}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                            >
+                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                        </div>
+                        {errors.passwordConfirmation && <p className="text-xs text-red-500 font-medium">{errors.passwordConfirmation.message}</p>}
+                    </div>
                 </div>
-                {errors.passwordConfirmation && (
-                    <p className="text-sm text-red-600">{errors.passwordConfirmation.message}</p>
-                )}
+                
+                <div className="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-2">Persyaratan Sandi</p>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                        {[
+                            { label: "8+ Karakter", regex: /.{8,}/ },
+                            { label: "Huruf Besar", regex: /[A-Z]/ },
+                            { label: "Huruf Kecil", regex: /[a-z]/ },
+                            { label: "Angka", regex: /[0-9]/ },
+                            { label: "Simbol (!@#$)", regex: /[^A-Za-z0-9]/ }
+                        ].map((req, i) => (
+                            <div key={i} className="flex items-center gap-2 text-[11px] text-slate-600 font-semibold">
+                                <div className="w-1 h-1 rounded-full bg-slate-300" />
+                                {req.label}
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             <WizardNavigation

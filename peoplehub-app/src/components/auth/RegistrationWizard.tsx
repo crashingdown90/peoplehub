@@ -2,11 +2,9 @@
 
 "use client";
 
-import { useState, useEffect, cloneElement, isValidElement, ReactElement } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useState, useEffect, cloneElement, isValidElement, ReactElement, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 interface Step {
     id: number;
@@ -16,7 +14,7 @@ interface Step {
 
 interface RegistrationWizardProps {
     children: React.ReactNode[];
-    onComplete: (data: any) => void;
+    onComplete: (data: Record<string, unknown>) => void;
     isSubmitting?: boolean;
 }
 
@@ -53,21 +51,30 @@ const STORAGE_KEY = "peoplehub_registration_draft";
 
 export function RegistrationWizard({ children, onComplete, isSubmitting = false }: RegistrationWizardProps) {
     const [currentStep, setCurrentStep] = useState(1);
-    const [formData, setFormData] = useState<any>({});
+    const [formData, setFormData] = useState<Record<string, unknown>>({});
 
-    // Load draft from localStorage on mount (SSR guard)
+    // Use a secondary effect or handle state restoration more carefully if needed, 
+    // but for now let's just use a ref or check if we already loaded.
+    const hasLoaded = useRef(false);
+
     useEffect(() => {
-        if (typeof window === "undefined") return;
+        if (typeof window === "undefined" || hasLoaded.current) return;
 
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 const parsed = JSON.parse(saved);
-                if (parsed.data) setFormData(parsed.data);
-                if (parsed.step) setCurrentStep(parsed.step);
+                if (parsed.data) {
+                    setFormData(parsed.data);
+                }
+                if (parsed.step) {
+                    setCurrentStep(parsed.step);
+                }
             }
         } catch (error) {
             console.error("Failed to load draft:", error);
+        } finally {
+            hasLoaded.current = true;
         }
     }, []);
 
@@ -90,7 +97,7 @@ export function RegistrationWizard({ children, onComplete, isSubmitting = false 
         }
     }, [formData, currentStep]);
 
-    const handleNext = (stepData: any) => {
+    const handleNext = (stepData: Record<string, unknown>) => {
         const updatedData = { ...formData, ...stepData };
         setFormData(updatedData);
 
@@ -109,99 +116,70 @@ export function RegistrationWizard({ children, onComplete, isSubmitting = false 
         }
     };
 
-    const progress = (currentStep / STEPS.length) * 100;
-
     return (
-        <div className="min-h-screen bg-(--color-bg) py-8 px-4 text-(--color-text)">
-            <div className="max-w-2xl mx-auto">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-600 text-white text-2xl font-bold mb-4">
-                        P
-                    </div>
-                    <h1 className="text-3xl font-bold text-(--color-text)">Registrasi Karyawan</h1>
-                    <p className="text-(--color-text-subtle) mt-2">
-                        Lengkapi data Anda untuk memulai proses registrasi
-                    </p>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-(--color-text)">
-                            Langkah {currentStep} dari {STEPS.length}
-                        </span>
-                        <span className="text-sm text-(--color-text-subtle)">{Math.round(progress)}%</span>
-                    </div>
-                    <Progress value={progress} className="h-2" />
-                </div>
-
-                {/* Steps Indicator */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-between">
-                        {STEPS.map((step, index) => (
-                            <div key={step.id} className="flex items-center flex-1 last:flex-none">
-                                {/* Step Circle */}
-                                <div className="flex flex-col items-center">
-                                    <div
-                                        className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${currentStep > step.id
-                                                ? "bg-green-600 text-white"
-                                                : currentStep === step.id
-                                                    ? "bg-blue-600 text-white"
-                                                    : "bg-(--color-border) text-(--color-text-muted)"
+        <div className="w-full">
+            {/* Progress & Steps Indicator */}
+            <div className="mb-10">
+                <div className="flex items-center justify-between mb-4">
+                    {STEPS.map((step, index) => (
+                        <div key={step.id} className="flex items-center flex-1 last:flex-none group">
+                            <div className="flex flex-col items-center relative">
+                                <div
+                                    className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold transition-all duration-300 shadow-sm ${currentStep > step.id
+                                            ? "bg-green-500 text-white shadow-green-200"
+                                            : currentStep === step.id
+                                                ? "bg-blue-600 text-white shadow-blue-200"
+                                                : "bg-white border-2 border-slate-100 text-slate-300"
+                                        }`}
+                                >
+                                    {currentStep > step.id ? "✓" : step.id}
+                                </div>
+                                <div className="absolute top-14 w-24 text-center hidden md:block">
+                                    <p
+                                        className={`text-[10px] uppercase tracking-wider font-bold ${currentStep >= step.id ? "text-slate-900" : "text-slate-400"
                                             }`}
                                     >
-                                        {currentStep > step.id ? "✓" : step.id}
-                                    </div>
-                                    <div className="text-center mt-2 hidden md:block">
-                                        <p
-                                            className={`text-xs font-medium ${currentStep >= step.id ? "text-(--color-text)" : "text-(--color-text-muted)"
-                                                }`}
-                                        >
-                                            {step.title}
-                                        </p>
-                                    </div>
+                                        {step.title}
+                                    </p>
                                 </div>
-                                {/* Connector Line */}
-                                {index < STEPS.length - 1 && (
-                                    <div
-                                        className={`hidden md:block flex-1 h-0.5 mx-2 ${currentStep > step.id ? "bg-green-600" : "bg-(--color-border)"
-                                            }`}
-                                    />
-                                )}
                             </div>
-                        ))}
-                    </div>
+                            {index < STEPS.length - 1 && (
+                                <div
+                                    className={`hidden md:block flex-1 h-[2px] mx-4 rounded-full transition-colors duration-500 ${currentStep > step.id ? "bg-green-500" : "bg-slate-100"
+                                        }`}
+                                />
+                            )}
+                        </div>
+                    ))}
                 </div>
+            </div>
 
-                {/* Step Content */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>{STEPS[currentStep - 1].title}</CardTitle>
-                        <CardDescription>{STEPS[currentStep - 1].description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {/* Render the current step's component with injected props */}
-                        {isValidElement(children[currentStep - 1])
-                            ? cloneElement(children[currentStep - 1] as ReactElement<{
-                                onBack?: () => void;
-                                onNext?: (data: any) => void;
-                                initialData?: any;
-                                isSubmitting?: boolean;
-                                isLastStep?: boolean;
-                            }>, {
-                                onBack: currentStep > 1 ? handleBack : undefined,
-                                onNext: handleNext,
-                                initialData: formData,
-                                isSubmitting: currentStep === STEPS.length ? isSubmitting : false,
-                                isLastStep: currentStep === STEPS.length,
-                            })
-                            : children[currentStep - 1]
-                        }
-                    </CardContent>
-                </Card>
-
-                {/* Navigation Buttons - will be controlled by step components */}
+            {/* Step Content */}
+            <div className="mt-16">
+                <div className="mb-8">
+                    <h2 className="text-2xl font-bold text-slate-900">{STEPS[currentStep - 1].title}</h2>
+                    <p className="text-slate-500 mt-1">{STEPS[currentStep - 1].description}</p>
+                </div>
+                
+                <div className="bg-white rounded-3xl border border-slate-200 p-1 sm:p-2 shadow-sm">
+                    {/* Render the current step's component with injected props */}
+                    {isValidElement(children[currentStep - 1])
+                        ? cloneElement(children[currentStep - 1] as ReactElement<{
+                            onBack?: () => void;
+                            onNext?: (data: Record<string, unknown>) => void;
+                            initialData?: Record<string, unknown>;
+                            isSubmitting?: boolean;
+                            isLastStep?: boolean;
+                        }>, {
+                            onBack: currentStep > 1 ? handleBack : undefined,
+                            onNext: handleNext,
+                            initialData: formData,
+                            isSubmitting: currentStep === STEPS.length ? isSubmitting : false,
+                            isLastStep: currentStep === STEPS.length,
+                        })
+                        : children[currentStep - 1]
+                    }
+                </div>
             </div>
         </div>
     );
@@ -228,35 +206,54 @@ export function WizardNavigation({
     onSkip?: () => void;
 }) {
     return (
-        <div className="flex items-center justify-between mt-6 pt-6 border-t border-(--color-border)">
+        <div className="flex items-center justify-between mt-10 pt-8 border-t border-slate-200">
             <div>
                 {!isFirstStep && (
-                    <Button type="button" variant="outline" onClick={onBack}>
+                    <Button 
+                        type="button" 
+                        variant="ghost" 
+                        onClick={onBack}
+                        className="text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-xl px-6 h-12 font-semibold"
+                    >
                         <ChevronLeft className="mr-2 h-4 w-4" />
                         Kembali
                     </Button>
                 )}
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-3">
                 {showSkip && onSkip && (
-                    <Button type="button" variant="ghost" onClick={onSkip}>
+                    <Button 
+                        type="button" 
+                        variant="ghost" 
+                        onClick={onSkip}
+                        className="text-slate-500 hover:text-slate-900 rounded-xl px-6 h-12 font-semibold"
+                    >
                         Lewati
                     </Button>
                 )}
-                <Button type="button" onClick={onNext} disabled={!canProceed || isLoading}>
+                <Button 
+                    type="button" 
+                    onClick={onNext} 
+                    disabled={!canProceed || isLoading}
+                    className={`rounded-xl px-8 h-12 font-bold shadow-lg transition-all active:scale-95 ${
+                        isLastStep 
+                        ? "bg-green-500 hover:bg-green-600 text-white shadow-green-100" 
+                        : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-100"
+                    }`}
+                >
                     {isLoading ? (
-                        <>
-                            <span className="mr-2">Memproses...</span>
-                            <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        </>
+                        <div className="flex items-center gap-2">
+                            <span>Memproses</span>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        </div>
                     ) : isLastStep ? (
-                        "Daftar"
+                        "Selesaikan Registrasi"
                     ) : (
-                        <>
-                            Lanjutkan
-                            <ChevronRight className="ml-2 h-4 w-4" />
-                        </>
+                        <div className="flex items-center gap-2">
+                            <span>Lanjutkan</span>
+                            <ChevronRight className="h-4 w-4" />
+                        </div>
                     )}
                 </Button>
             </div>

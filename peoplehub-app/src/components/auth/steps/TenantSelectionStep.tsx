@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Label } from "@/components/ui/label";
 import { WizardNavigation } from "../RegistrationWizard";
 import { Building2, Loader2 } from "lucide-react";
 
@@ -102,30 +101,18 @@ export function TenantSelectionStep({ initialData, onNext }: TenantSelectionStep
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="text-center mb-6">
-                <Building2 className="h-12 w-12 mx-auto text-blue-600 mb-3" />
-                <h2 className="text-lg font-semibold text-(--color-text)">Pilih Perusahaan</h2>
-                <p className="text-sm text-(--color-text-subtle) mt-1">
-                    Pilih perusahaan tempat Anda bekerja
-                </p>
-            </div>
-
-            <div className="space-y-3">
-                <Label>
-                    Perusahaan <span className="text-red-600">*</span>
-                </Label>
-
-                <div className="grid gap-3">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 p-4">
+            <div className="space-y-4">
+                <div className="grid gap-4">
                     {tenants.map((tenant) => (
                         <label
                             key={tenant.id}
                             className={`
-                                relative flex items-center p-4 border-2 rounded-lg cursor-pointer
-                                transition-all duration-200
+                                relative flex items-center p-6 border-2 rounded-2xl cursor-pointer
+                                transition-all duration-300 group
                                 ${selectedTenantId === tenant.id
-                                    ? "border-blue-600 bg-blue-50"
-                                    : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                                    ? "border-blue-600 bg-blue-50/50 shadow-md shadow-blue-100/50"
+                                    : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"
                                 }
                             `}
                         >
@@ -137,25 +124,34 @@ export function TenantSelectionStep({ initialData, onNext }: TenantSelectionStep
                                 onChange={(e) => setValue("tenantId", e.target.value)}
                                 className="sr-only"
                             />
-                            <div className="flex-1">
-                                <div className="font-medium text-(--color-text)">
-                                    {tenant.name}
+                            <div className="flex-1 flex items-center gap-4">
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                                    selectedTenantId === tenant.id ? "bg-blue-600 text-white" : "bg-slate-50 text-slate-400 group-hover:bg-slate-100"
+                                }`}>
+                                    <Building2 className="h-6 w-6" />
                                 </div>
-                                <div className="text-sm text-(--color-text-subtle) mt-0.5">
-                                    Kode: {tenant.code}
+                                <div>
+                                    <div className={`font-bold text-lg transition-colors ${
+                                        selectedTenantId === tenant.id ? "text-blue-900" : "text-slate-900"
+                                    }`}>
+                                        {tenant.name}
+                                    </div>
+                                    <div className="text-sm text-slate-500 font-medium">
+                                        Domain: {tenant.domain}
+                                    </div>
                                 </div>
                             </div>
                             <div
                                 className={`
-                                    w-5 h-5 rounded-full border-2 flex items-center justify-center
+                                    w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300
                                     ${selectedTenantId === tenant.id
-                                        ? "border-blue-600 bg-blue-600"
-                                        : "border-slate-300"
+                                        ? "border-blue-600 bg-blue-600 ring-4 ring-blue-100"
+                                        : "border-slate-200"
                                     }
                                 `}
                             >
                                 {selectedTenantId === tenant.id && (
-                                    <div className="w-2 h-2 bg-white rounded-full" />
+                                    <div className="w-2.5 h-2.5 bg-white rounded-full" />
                                 )}
                             </div>
                         </label>
@@ -163,7 +159,12 @@ export function TenantSelectionStep({ initialData, onNext }: TenantSelectionStep
                 </div>
 
                 {errors.tenantId && (
-                    <p className="text-sm text-red-600">{errors.tenantId.message}</p>
+                    <div className="flex items-center gap-2 text-red-600 text-sm font-semibold bg-red-50 p-3 rounded-xl">
+                        <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                        <span>{errors.tenantId.message}</span>
+                    </div>
                 )}
             </div>
 
