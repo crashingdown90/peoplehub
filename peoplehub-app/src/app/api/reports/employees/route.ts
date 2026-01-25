@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { ReportService } from "@/services/report";
+import { successResponse, ApiResponses } from "@/lib/api-response";
+import { logger } from "@/lib/monitoring/logger";
 
 // GET /api/reports/employees - Generate employee summary report
 export async function GET(request: NextRequest) {
@@ -9,10 +11,7 @@ export async function GET(request: NextRequest) {
         const context = await getRequestContext();
 
         if (!context) {
-            return NextResponse.json(
-                { success: false, error: { code: "UNAUTHORIZED", message: "Authentication required" } },
-                { status: 401 }
-            );
+            return ApiResponses.unauthorized();
         }
 
         const { searchParams } = new URL(request.url);
@@ -40,15 +39,10 @@ export async function GET(request: NextRequest) {
             });
         }
 
-        return NextResponse.json({
-            success: true,
-            ...result.data,
-        });
+        return successResponse(result.data);
+// ...
     } catch (error) {
-        console.error("Generate employee report error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        logger.error("Generate employee report error", { error: error instanceof Error ? error.message : "Unknown error" });
+        return ApiResponses.internalError();
     }
 }

@@ -5,8 +5,23 @@ import { verifyPassword, generateToken, AUTH_CONFIG, type JWTPayload } from "@/l
 import { loginSchema } from "@/lib/validations";
 import { validateCsrf } from "@/lib/security/csrf";
 
+import { checkRateLimit, createRateLimitResponse, getClientIP, getRateLimitKey } from "@/lib/rate-limit";
+
 export async function POST(request: NextRequest) {
     try {
+        // Rate Limiting
+        const ip = getClientIP(request.headers);
+        const key = getRateLimitKey(ip);
+        const rateLimitResult = await checkRateLimit("auth", key);
+
+        if (rateLimitResult && !rateLimitResult.success) {
+            const response = createRateLimitResponse(rateLimitResult);
+            return NextResponse.json(response.body, {
+                status: response.status,
+                headers: response.headers,
+            });
+        }
+
         // Validate CSRF token
         const csrfResult = await validateCsrf(request.headers);
         if (!csrfResult.valid) {

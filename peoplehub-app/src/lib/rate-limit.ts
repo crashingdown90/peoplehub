@@ -1,4 +1,5 @@
 // @ai:cl - Rate limiting utility (Redis-ready)
+import Redis from "ioredis";
 
 // ==========================================
 // TYPES
@@ -108,9 +109,9 @@ class InMemoryStore implements RateLimitStore {
  * Supports distributed deployments with multiple instances
  */
 class RedisStore implements RateLimitStore {
-  private redis: any; // Use 'any' for now to avoid ioredis dependency in development
+  private redis: Redis;
 
-  constructor(redisClient: any) {
+  constructor(redisClient: Redis) {
     this.redis = redisClient;
   }
 
@@ -333,9 +334,13 @@ export function getRateLimiter(type: keyof typeof RATE_LIMIT_CONFIG): RateLimite
  * const limiter = new RateLimiter(RATE_LIMIT_CONFIG.api, store);
  * ```
  */
-export function createRateLimitStore(redisClient?: any): RateLimitStore {
-  if (redisClient && process.env.NODE_ENV === 'production') {
+export function createRateLimitStore(redisClient?: Redis): RateLimitStore {
+  if (redisClient) {
     return new RedisStore(redisClient);
+  }
+  if (process.env.REDIS_URL) {
+    const client = new Redis(process.env.REDIS_URL);
+    return new RedisStore(client);
   }
   return new InMemoryStore();
 }

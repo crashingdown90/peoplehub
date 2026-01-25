@@ -563,6 +563,7 @@ model LeaveRequest {
   @@index([tenantId, employeeId, status])
   @@index([startDate, endDate])
   @@index([tenantId, employeeId, startDate]) // Added: Calendar queries optimization
+  @@index([tenantId, approvedByManagerId, status])
   @@map("leave_requests")
 }
 
@@ -798,6 +799,7 @@ model TravelRequest {
 
   @@index([tenantId, status])
   @@index([employeeId, status])
+  @@index([tenantId, approvedByManagerId, status])
   @@map("travel_requests")
 }
 
@@ -826,6 +828,7 @@ model ReimburseRequest {
 
   @@index([tenantId, status])
   @@index([employeeId, status])
+  @@index([tenantId, approvedByManagerId, status])
   @@map("reimburse_requests")
 }
 

@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
+import { successResponse, ApiResponses } from "@/lib/api-response";
+import { logger } from "@/lib/monitoring/logger";
 
 // GET /api/analytics/employees - Employee analytics (turnover, demographics)
 export async function GET(request: NextRequest) {
@@ -8,17 +10,13 @@ export async function GET(request: NextRequest) {
         const context = await getRequestContext();
 
         if (!context) {
-            return NextResponse.json(
-                { success: false, error: { code: "UNAUTHORIZED", message: "Authentication required" } },
-                { status: 401 }
-            );
+            return ApiResponses.unauthorized();
         }
 
         if (!hasRole(context, ["HRD", "SUPER_ADMIN"])) {
-            return NextResponse.json(
-                { success: false, error: { code: "FORBIDDEN", message: "Access denied" } },
-                { status: 403 }
-            );
+            if (!hasRole(context, ["HRD", "SUPER_ADMIN"])) {
+            return ApiResponses.forbidden();
+        }
         }
 
         const { searchParams } = new URL(request.url);
@@ -109,9 +107,7 @@ export async function GET(request: NextRequest) {
         const activeCount = employeesByStatus.find(e => e.status === "ACTIVE")?._count || 0;
         const turnoverRate = activeCount > 0 ? Math.round((terminations / activeCount) * 100) : 0;
 
-        return NextResponse.json({
-            success: true,
-            data: {
+        return successResponse({
                 overview: {
                     total: employeesByStatus.reduce((sum, e) => sum + e._count, 0),
                     active: activeCount,
@@ -142,13 +138,9 @@ export async function GET(request: NextRequest) {
                     monthName: new Date(month + "-01").toLocaleDateString("id-ID", { month: "short" }),
                     count,
                 })).sort((a, b) => a.month.localeCompare(b.month)),
-            },
-        });
+            });
     } catch (error) {
-        console.error("Get employee analytics error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        logger.error("Get employee analytics error", { error: error instanceof Error ? error.message : "Unknown error" });
+        return ApiResponses.internalError();
     }
 }

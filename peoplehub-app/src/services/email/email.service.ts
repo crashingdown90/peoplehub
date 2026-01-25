@@ -1,5 +1,6 @@
 // @ai:cl - Email Service with SMTP/SendGrid support
 import { prisma } from "@/lib/db";
+import { logger } from "@/lib/monitoring/logger";
 import { ServiceResponse, success, error, ErrorCodes } from "../types";
 
 // ==========================================
@@ -60,6 +61,7 @@ interface EmailProvider {
  * SMTP Provider using nodemailer
  */
 class SmtpProvider implements EmailProvider {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private transporter: any;
 
   constructor() {
@@ -80,7 +82,7 @@ class SmtpProvider implements EmailProvider {
         },
       });
     } catch {
-      console.warn("Nodemailer not available, email sending disabled");
+      logger.warn("Nodemailer not available, email sending disabled");
     }
   }
 
@@ -269,7 +271,7 @@ export class EmailService {
       return success(result);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to send email";
-      console.error("Email send error:", errorMessage);
+      logger.error("Email send error", { error: errorMessage });
 
       // Log failed email
       await this.logEmail({
