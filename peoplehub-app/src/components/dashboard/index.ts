@@ -29,6 +29,7 @@ export { RecentActivityWidget } from "./recent-activity-widget";
 export type { ActivityItem, RecentActivityWidgetProps } from "./recent-activity-widget";
 
 // Enhanced dashboard widgets
+export { DashboardHero } from "./dashboard-hero";
 export { EnhancedMetricCard } from "./enhanced-metric-card";
 export type { MetricCardProps } from "./enhanced-metric-card";
 export { AttendanceHeatmap } from "./attendance-heatmap";

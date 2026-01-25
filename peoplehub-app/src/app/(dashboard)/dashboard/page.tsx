@@ -5,7 +5,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Clock, Calendar, FileText, Users, AlertCircle, DollarSign, TrendingUp, CheckCircle } from "lucide-react";
+import { Clock, Calendar, FileText, Users, AlertCircle, DollarSign, TrendingUp, CheckCircle, ChevronRight } from "lucide-react";
 import {
     DashboardSkeleton as DashboardSkeletonComponent,
     LeaveBalanceWidget,
@@ -14,7 +14,10 @@ import {
     ApprovalQueue,
     EnhancedMetricCard,
     AttendanceHeatmap,
-    DepartmentBreakdown
+    DepartmentBreakdown,
+    RecentActivityWidget,
+    ActivityItem,
+    DashboardHero
 } from "@/components/dashboard";
 
 interface DashboardData {
@@ -98,98 +101,105 @@ function EmployeeDashboard({ data }: { data: DashboardData['employee'] }) {
         { type: 'Cuti Pribadi', balance: 3, used: 0, total: 3, color: 'bg-purple-500' },
     ];
 
+    // Mock recent activities
+    const recentActivities: ActivityItem[] = useMemo(() => {
+        const now = new Date();
+        return [
+            {
+                id: '1',
+                type: 'attendance',
+                title: 'Kehadiran Tercatat',
+                description: 'Anda telah melakukan Clock In pada pukul 08:00',
+                timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 2), // 2 hours ago
+                status: 'success'
+            },
+            {
+                id: '2',
+                type: 'leave',
+                title: 'Pengajuan Cuti Disetujui',
+                description: 'Cuti Tahunan (3 hari) telah disetujui oleh Manager',
+                timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 24), // 1 day ago
+                status: 'success'
+            },
+            {
+                id: '3',
+                type: 'payslip',
+                title: 'Slip Gaji Tersedia',
+                description: 'Slip gaji periode Januari 2026 sudah dapat diunduh',
+                timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
+            }
+        ];
+    }, []);
+
     return (
-        <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Dashboard</h1>
+        <div className="space-y-8">
+            <DashboardHero userName={data?.today?.status || "Pengguna"} role="EMPLOYEE" />
 
             {/* Primary Stats Row */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                {/* Attendance Status Card */}
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Status Kehadiran</CardTitle>
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">
-                            {data?.today?.hasClockedIn ? (
-                                data?.today?.hasClockedOut ? "Selesai" : "Sudah Masuk"
-                            ) : "Belum Absen"}
-                        </div>
-                        <Link href="/attendance">
-                            <Button className="mt-2 w-full" size="sm">
-                                {data?.today?.hasClockedIn && !data?.today?.hasClockedOut
-                                    ? "Clock Out"
-                                    : "Clock In"}
-                            </Button>
-                        </Link>
-                    </CardContent>
-                </Card>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <EnhancedMetricCard
+                    title="Status Kehadiran"
+                    value={data?.today?.hasClockedIn ? (data?.today?.hasClockedOut ? "Selesai" : "Sudah Masuk") : "Belum Absen"}
+                    subtitle={data?.today?.hasClockedIn ? "Tetap produktif!" : "Jangan lupa untuk absen"}
+                    icon={Clock}
+                    variant={data?.today?.hasClockedIn ? "success" : "warning"}
+                    action={{
+                        label: "Lakukan Absensi",
+                        href: "/attendance"
+                    }}
+                />
 
-                {/* Leave Balance Summary Card */}
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Sisa Cuti</CardTitle>
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{data?.leaveBalance || 0} hari</div>
-                        <Link href="/leave">
-                            <Button variant="outline" className="mt-2 w-full" size="sm">
-                                Ajukan Cuti
-                            </Button>
-                        </Link>
-                    </CardContent>
-                </Card>
+                <EnhancedMetricCard
+                    title="Sisa Cuti"
+                    value={`${data?.leaveBalance || 0} Hari`}
+                    subtitle="Cuti tahunan tersedia"
+                    icon={Calendar}
+                    variant="info"
+                    action={{
+                        label: "Ajukan Cuti",
+                        href: "/leave"
+                    }}
+                />
 
-                {/* Pending Submissions Card */}
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Pengajuan Pending</CardTitle>
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{data?.pendingSubmissions || 0}</div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            Menunggu approval
-                        </p>
-                    </CardContent>
-                </Card>
+                <EnhancedMetricCard
+                    title="Pengajuan Pending"
+                    value={data?.pendingSubmissions || 0}
+                    subtitle="Menunggu approval"
+                    icon={FileText}
+                    variant={(data?.pendingSubmissions ?? 0) > 0 ? "warning" : "default"}
+                />
 
-                {/* Quick Actions Card */}
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Aksi Cepat</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                        <Link href="/payslips" className="block">
-                            <Button variant="outline" size="sm" className="w-full justify-start">
-                                <DollarSign className="mr-2 h-4 w-4" />
-                                Lihat Slip Gaji
-                            </Button>
-                        </Link>
-                        <Link href="/leave" className="block">
-                            <Button variant="outline" size="sm" className="w-full justify-start">
-                                <Calendar className="mr-2 h-4 w-4" />
-                                Riwayat Cuti
-                            </Button>
-                        </Link>
-                    </CardContent>
-                </Card>
+                <div className="grid grid-cols-1 gap-4">
+                    <Link href="/payslips">
+                        <Button variant="outline" size="sm" className="w-full justify-between h-12 rounded-2xl border-slate-200">
+                            <span className="flex items-center"><DollarSign className="mr-2 h-4 w-4 text-blue-500" /> Slip Gaji</span>
+                            <ChevronRight className="h-4 w-4 opacity-50" />
+                        </Button>
+                    </Link>
+                    <Link href="/leave">
+                        <Button variant="outline" size="sm" className="w-full justify-between h-12 rounded-2xl border-slate-200">
+                            <span className="flex items-center"><Calendar className="mr-2 h-4 w-4 text-purple-500" /> Riwayat Cuti</span>
+                            <ChevronRight className="h-4 w-4 opacity-50" />
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
             {/* Secondary Widgets Row */}
-            <div className="grid gap-4 md:grid-cols-2">
-                {/* Leave Balance Widget - detailed view */}
+            <div className="grid gap-6 md:grid-cols-3">
                 <LeaveBalanceWidget
                     balances={leaveBalances}
-                    className="h-full"
+                    className="h-full md:col-span-1"
                 />
 
-                {/* Shift Schedule Widget - 7 day view */}
                 <ShiftScheduleWidget
                     shifts={shiftData}
-                    className="h-full"
+                    className="h-full md:col-span-1"
+                />
+
+                <RecentActivityWidget
+                    activities={recentActivities}
+                    className="h-full md:col-span-1"
                 />
             </div>
         </div>
@@ -232,8 +242,8 @@ function HrdDashboard({ data }: { data: DashboardData['hrd'] }) {
     ], []);
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Dashboard HRD</h1>
+        <div className="space-y-8">
+            <DashboardHero userName="HR Manager" role="HRD" />
 
             {/* Primary Stats Row - Enhanced with trends */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -301,22 +311,43 @@ function HrdDashboard({ data }: { data: DashboardData['hrd'] }) {
             </div>
 
             {/* Visualizations Row */}
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-6 lg:grid-cols-3">
                 {/* Attendance Heatmap - 30 days */}
-                <AttendanceHeatmap className="lg:col-span-2" />
+                <AttendanceHeatmap className="lg:col-span-3" />
 
                 {/* Department Breakdown */}
-                <DepartmentBreakdown />
+                <DepartmentBreakdown className="h-full" />
 
-                {/* Approval Queue - handlers to be implemented when API is ready */}
+                {/* Recent Activity Widget */}
+                <RecentActivityWidget 
+                    activities={useMemo(() => {
+                        const now = new Date();
+                        return [
+                            {
+                                id: 'h1',
+                                type: 'attendance',
+                                title: 'Laporan Kehadiran Harian',
+                                description: '95% karyawan telah hadir hari ini',
+                                timestamp: new Date(now.getTime() - 1000 * 60 * 30), // 30 mins ago
+                            },
+                            {
+                                id: 'h2',
+                                type: 'leave',
+                                title: 'Pengajuan Cuti Baru',
+                                description: 'Ahmad Subagyo mengajukan cuti 3 hari',
+                                timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 4), // 4 hours ago
+                                status: 'pending'
+                            }
+                        ];
+                    }, [])}
+                    className="h-full"
+                />
+
+                {/* Approval Queue */}
                 <ApprovalQueue
                     items={pendingApprovals}
-                    onApprove={() => {
-                        // TODO: Implement approval API call when backend is ready
-                    }}
-                    onReject={() => {
-                        // TODO: Implement rejection API call when backend is ready
-                    }}
+                    onApprove={() => {}}
+                    onReject={() => {}}
                     className="h-full"
                 />
             </div>
@@ -327,8 +358,8 @@ function HrdDashboard({ data }: { data: DashboardData['hrd'] }) {
 // Manager Dashboard Component
 function ManagerDashboard({ data, employee }: { data: DashboardData['manager']; employee: DashboardData['employee'] }) {
     return (
-        <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Dashboard Manager</h1>
+        <div className="space-y-8">
+            <DashboardHero userName="Manager" role="MANAGER" />
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {/* Team Attendance */}
@@ -413,8 +444,8 @@ function ManagerDashboard({ data, employee }: { data: DashboardData['manager']; 
 // Finance Dashboard Component
 function FinanceDashboard({ data }: { data: DashboardData['finance'] }) {
     return (
-        <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Dashboard Finance</h1>
+        <div className="space-y-8">
+            <DashboardHero userName="Specialist" role="FINANCE" />
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {/* Pending Payroll */}
@@ -477,8 +508,8 @@ function FinanceDashboard({ data }: { data: DashboardData['finance'] }) {
 // IT Dashboard Component
 function ItDashboard({ data }: { data: DashboardData['it'] }) {
     return (
-        <div className="space-y-6">
-            <h1 className="text-2xl font-bold">Dashboard IT Operations</h1>
+        <div className="space-y-8">
+            <DashboardHero userName="Support" role="IT_OPS" />
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {/* Active Users */}
