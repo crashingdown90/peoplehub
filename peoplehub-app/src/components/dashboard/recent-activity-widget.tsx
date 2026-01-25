@@ -12,7 +12,7 @@ export interface ActivityItem {
     type: "attendance" | "leave" | "overtime" | "reimbursement" | "payslip";
     title: string;
     description?: string;
-    timestamp: Date;
+    timestamp: Date | string;
     status?: "success" | "pending" | "rejected";
 }
 
@@ -37,9 +37,10 @@ const statusColors = {
 
 export function RecentActivityWidget({ activities, className }: RecentActivityWidgetProps) {
     // Format relative time
-    const formatRelativeTime = (date: Date): string => {
+    const formatRelativeTime = (date: Date | string): string => {
+        const d = new Date(date);
         const now = new Date();
-        const diffMs = now.getTime() - date.getTime();
+        const diffMs = now.getTime() - d.getTime();
         const diffMins = Math.floor(diffMs / 60000);
         const diffHours = Math.floor(diffMs / 3600000);
         const diffDays = Math.floor(diffMs / 86400000);
@@ -49,7 +50,7 @@ export function RecentActivityWidget({ activities, className }: RecentActivityWi
         if (diffHours < 24) return `${diffHours} jam yang lalu`;
         if (diffDays === 1) return "Kemarin";
         if (diffDays < 7) return `${diffDays} hari yang lalu`;
-        return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
     };
 
     return (
@@ -57,13 +58,13 @@ export function RecentActivityWidget({ activities, className }: RecentActivityWi
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Activity className="h-5 w-5 text-[var(--color-accent)]" />
-                    <h3 className="font-semibold text-[var(--color-text)]">
+                    <Activity className="h-5 w-5 text-(--color-accent)" />
+                    <h3 className="font-semibold text-(--color-text)">
                         Aktivitas Terakhir
                     </h3>
                 </div>
                 <Link href="/activity">
-                    <Button variant="ghost" size="sm" className="text-[var(--color-accent)]">
+                    <Button variant="ghost" size="sm" className="text-(--color-accent)">
                         Lihat Semua
                     </Button>
                 </Link>
@@ -72,42 +73,42 @@ export function RecentActivityWidget({ activities, className }: RecentActivityWi
             {/* Activity List */}
             <div className="mt-4 space-y-4">
                 {activities.length === 0 ? (
-                    <div className="py-8 text-center text-sm text-[var(--color-text-subtle)]">
+                    <div className="py-8 text-center text-sm text-(--color-text-subtle)">
                         Belum ada aktivitas
                     </div>
                 ) : (
                     activities.map((activity) => {
-                        const Icon = typeIcons[activity.type];
+                        const Icon = typeIcons[activity.type] || Activity; // Fallback icon
                         const statusColor = activity.status
                             ? statusColors[activity.status]
-                            : "text-[var(--color-text-subtle)]";
+                            : "text-(--color-text-subtle)";
 
                         return (
                             <div key={activity.id} className="flex gap-3">
                                 {/* Icon */}
-                                <div className="flex-shrink-0">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-bg)]">
-                                        <Icon className="h-5 w-5 text-[var(--color-accent)]" />
+                                <div className="shrink-0">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-(--color-bg)">
+                                        <Icon className="h-5 w-5 text-(--color-accent)" />
                                     </div>
                                 </div>
 
                                 {/* Content */}
                                 <div className="flex-1 space-y-1">
-                                    <p className="text-sm font-medium text-[var(--color-text)]">
+                                    <p className="text-sm font-medium text-(--color-text)">
                                         {activity.title}
                                     </p>
                                     {activity.description && (
-                                        <p className="text-xs text-[var(--color-text-subtle)]">
+                                        <p className="text-xs text-(--color-text-subtle)">
                                             {activity.description}
                                         </p>
                                     )}
                                     <div className="flex items-center gap-2 text-xs">
-                                        <span className="text-[var(--color-text-subtle)]">
+                                        <span className="text-(--color-text-subtle)">
                                             {formatRelativeTime(activity.timestamp)}
                                         </span>
                                         {activity.status && (
                                             <>
-                                                <span className="text-[var(--color-text-subtle)]">•</span>
+                                                <span className="text-(--color-text-subtle)">•</span>
                                                 <span className={cn("font-medium capitalize", statusColor)}>
                                                     {activity.status === "success" && "Disetujui"}
                                                     {activity.status === "pending" && "Menunggu"}

@@ -20,6 +20,23 @@ import {
     DashboardHero
 } from "@/components/dashboard";
 
+
+interface ApprovalItem {
+    id: string;
+    type: 'leave' | 'overtime' | 'reimburse';
+    employeeName: string;
+    employeePhoto?: string;
+    description: string;
+    submittedAt: string;
+    status: 'pending';
+}
+
+interface DepartmentStat {
+    name: string;
+    count: number;
+    color: string;
+}
+
 interface DashboardData {
     role: string;
     userName: string;
@@ -27,10 +44,13 @@ interface DashboardData {
         today: { hasClockedIn: boolean; hasClockedOut: boolean; status: string };
         leaveBalance: number;
         pendingSubmissions: number;
+        leaveBalances: Array<{ type: string; balance: number; used: number; total: number; color: string }>;
+        recentActivity: ActivityItem[];
     };
     manager?: {
         teamAttendance: { present: number; late: number; absent: number };
         pendingApprovals: number;
+        approvalQueue: ApprovalItem[];
     };
     admin?: {
         overview: { 
@@ -40,6 +60,9 @@ interface DashboardData {
             pendingRegistrations: number;
             pendingLeaveApprovals: number;
         };
+        byDepartment: DepartmentStat[];
+        approvalQueue: ApprovalItem[];
+        recentActivity: ActivityItem[];
     };
     finance?: {
         pendingPayroll: number;
@@ -99,44 +122,8 @@ export default function DashboardPage() {
 // Employee Dashboard Component
 function EmployeeDashboard({ data, userName, role }: { data: DashboardData['employee'], userName: string, role: string }) {
     // Generate mock shift data - uses current day index
+    // TODO: Replace with real shift data once shift API is ready
     const shiftData = generateWeekShifts();
-
-    // Leave balance data - in production from API
-    const leaveBalances = [
-        { type: 'Cuti Tahunan', balance: 7, used: 5, total: 12, color: 'bg-blue-500' },
-        { type: 'Cuti Sakit', balance: 13, used: 1, total: 14, color: 'bg-red-500' },
-        { type: 'Cuti Pribadi', balance: 3, used: 0, total: 3, color: 'bg-purple-500' },
-    ];
-
-    // Mock recent activities
-    const recentActivities: ActivityItem[] = useMemo(() => {
-        const now = new Date();
-        return [
-            {
-                id: '1',
-                type: 'attendance',
-                title: 'Kehadiran Tercatat',
-                description: 'Anda telah melakukan Clock In pada pukul 08:00',
-                timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 2), // 2 hours ago
-                status: 'success'
-            },
-            {
-                id: '2',
-                type: 'leave',
-                title: 'Pengajuan Cuti Disetujui',
-                description: 'Cuti Tahunan (3 hari) telah disetujui oleh Manager',
-                timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 24), // 1 day ago
-                status: 'success'
-            },
-            {
-                id: '3',
-                type: 'payslip',
-                title: 'Slip Gaji Tersedia',
-                description: 'Slip gaji periode Januari 2026 sudah dapat diunduh',
-                timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
-            }
-        ];
-    }, []);
 
     return (
         <div className="space-y-8">
@@ -216,7 +203,7 @@ function EmployeeDashboard({ data, userName, role }: { data: DashboardData['empl
             {/* Secondary Widgets Row */}
             <div className="grid gap-6 md:grid-cols-3">
                 <LeaveBalanceWidget
-                    balances={leaveBalances}
+                    balances={data?.leaveBalances || []}
                     className="h-full md:col-span-1"
                 />
 
@@ -226,7 +213,7 @@ function EmployeeDashboard({ data, userName, role }: { data: DashboardData['empl
                 />
 
                 <RecentActivityWidget
-                    activities={recentActivities}
+                    activities={data?.recentActivity || []}
                     className="h-full md:col-span-1"
                 />
             </div>
@@ -237,38 +224,7 @@ function EmployeeDashboard({ data, userName, role }: { data: DashboardData['empl
 
 // HRD Dashboard Component
 function HrdDashboard({ data, userName, role }: { data: DashboardData['admin'], userName: string, role: string }) {
-    // Mock approval data - in production this would come from API
-    // Using static dates for mock data to avoid React strict mode warnings
-    const pendingApprovals = useMemo(() => [
-        {
-            id: '1',
-            type: 'leave' as const,
-            employeeName: 'Ahmad Subagyo',
-            employeePhoto: '/avatars/placeholder.jpg',
-            submittedAt: '2026-01-24T08:00:00.000Z', // Static mock date
-            description: 'Cuti Tahunan - 3 hari',
-            status: 'pending' as const,
-        },
-        {
-            id: '2',
-            type: 'overtime' as const,
-            employeeName: 'Siti Nurhaliza',
-            employeePhoto: '/avatars/placeholder.jpg',
-            submittedAt: '2026-01-24T05:00:00.000Z', // Static mock date
-            description: 'Lembur 4 jam',
-            status: 'pending' as const,
-        },
-        {
-            id: '3',
-            type: 'reimburse' as const,
-            employeeName: 'Bambang Hartono',
-            employeePhoto: '/avatars/placeholder.jpg',
-            submittedAt: '2026-01-23T10:00:00.000Z', // Static mock date
-            description: 'Reimburse Transport Rp 150.000',
-            status: 'pending' as const,
-        },
-    ], []);
-
+    
     return (
         <div className="space-y-8">
             <DashboardHero userName={userName} role={role} />
@@ -344,36 +300,20 @@ function HrdDashboard({ data, userName, role }: { data: DashboardData['admin'], 
                 <AttendanceHeatmap className="lg:col-span-3" />
 
                 {/* Department Breakdown */}
-                <DepartmentBreakdown className="h-full" />
+                <DepartmentBreakdown 
+                    data={data?.byDepartment || []}
+                    className="h-full" 
+                />
 
                 {/* Recent Activity Widget */}
                 <RecentActivityWidget 
-                    activities={useMemo(() => {
-                        const now = new Date();
-                        return [
-                            {
-                                id: 'h1',
-                                type: 'attendance',
-                                title: 'Laporan Kehadiran Harian',
-                                description: '95% karyawan telah hadir hari ini',
-                                timestamp: new Date(now.getTime() - 1000 * 60 * 30), // 30 mins ago
-                            },
-                            {
-                                id: 'h2',
-                                type: 'leave',
-                                title: 'Pengajuan Cuti Baru',
-                                description: 'Ahmad Subagyo mengajukan cuti 3 hari',
-                                timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 4), // 4 hours ago
-                                status: 'pending'
-                            }
-                        ];
-                    }, [])}
+                    activities={data?.recentActivity || []}
                     className="h-full"
                 />
 
                 {/* Approval Queue */}
                 <ApprovalQueue
-                    items={pendingApprovals}
+                    items={data?.approvalQueue || []}
                     onApprove={() => {}}
                     onReject={() => {}}
                     className="h-full"
@@ -464,6 +404,16 @@ function ManagerDashboard({ data, employee, userName, role }: { data: DashboardD
                         </Link>
                     </CardContent>
                 </Card>
+            </div>
+
+            {/* Manager Widgets */}
+            <div className="grid gap-6 md:grid-cols-2">
+                 <ApprovalQueue
+                    items={data?.approvalQueue || []}
+                    onApprove={() => {}}
+                    onReject={() => {}}
+                    className="h-full"
+                />
             </div>
         </div>
     );

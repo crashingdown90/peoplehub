@@ -105,8 +105,10 @@ async function getEmployeeStatsRaw(tenantId: string, employeeId: string, today: 
         todayAttendance,
         monthAttendance,
         pendingLeaves,
-        annualLeave,
+        leaveBalances,
         latestPayslip,
+        recentLogs,
+        recentLeaves
     ] = await Promise.all([
         // Today's attendance
         prisma.attendance.findUnique({
@@ -125,14 +127,14 @@ async function getEmployeeStatsRaw(tenantId: string, employeeId: string, today: 
         prisma.leaveRequest.count({
             where: { tenantId, employeeId, status: "PENDING" },
         }),
-        // Leave balance (annual)
-        prisma.leaveBalance.findFirst({
+        // Leave balances (all types)
+        prisma.leaveBalance.findMany({
             where: {
                 tenantId,
                 employeeId,
                 year: currentYear,
-                leaveType: { code: "ANNUAL" },
             },
+            include: { leaveType: true }
         }),
         // Latest payslip
         prisma.payslip.findFirst({
@@ -140,7 +142,57 @@ async function getEmployeeStatsRaw(tenantId: string, employeeId: string, today: 
             orderBy: { period: "desc" },
             select: { period: true, netSalary: true },
         }),
+        // recent activity (attendance logs)
+        prisma.auditLog.findMany({
+            where: { tenantId, actorId: employeeId },
+            orderBy: { createdAt: "desc" },
+            take: 5
+        }),
+        // recent leave requests
+        prisma.leaveRequest.findMany({
+            where: { tenantId, employeeId },
+            orderBy: { createdAt: "desc" },
+            take: 3,
+            include: { leaveType: true }
+        })
     ]);
+
+    // Transform leave balances
+    const leaveBalancesFormatted = leaveBalances.map(lb => {
+        // Simple color mapping based on leave type code
+        let color = "bg-blue-500";
+        if (lb.leaveType.code.includes("SICK")) color = "bg-red-500";
+        if (lb.leaveType.code.includes("ANNUAL")) color = "bg-green-500";
+        if (lb.leaveType.code.includes("UNPAID")) color = "bg-gray-500";
+
+        return {
+            type: lb.leaveType.name,
+            balance: lb.remainingBalance,
+            used: lb.usedBalance,
+            total: lb.initialBalance,
+            color
+        };
+    });
+
+    // Transform activity
+    const activities = [
+        ...recentLeaves.map(l => ({
+            id: l.id,
+            type: "leave",
+            title: "Pengajuan Cuti",
+            description: `${l.leaveType.name} - ${l.status}`,
+            timestamp: l.createdAt,
+            status: l.status === "APPROVED" ? "success" : l.status === "REJECTED" ? "error" : "warning"
+        })),
+        ...recentLogs.map(l => ({
+            id: l.id,
+            type: "activity",
+            title: l.action,
+            description: l.objectType,
+            timestamp: l.createdAt,
+            status: "default"
+        }))
+    ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
 
     return {
         today: {
@@ -156,8 +208,10 @@ async function getEmployeeStatsRaw(tenantId: string, employeeId: string, today: 
         },
         leave: {
             pending: pendingLeaves,
-            balance: annualLeave?.remainingBalance || 0,
+            balance: leaveBalances.find(l => l.leaveType.code === "ANNUAL")?.remainingBalance || 0,
         },
+        leaveBalances: leaveBalancesFormatted,
+        recentActivity: activities,
         payslip: latestPayslip ? {
             period: latestPayslip.period,
             netSalary: Number(latestPayslip.netSalary),
@@ -178,6 +232,8 @@ async function getAdminStatsRaw(tenantId: string, today: Date) {
         todayLate,
         pendingLeaves,
         byDepartment,
+        leaveRequests,
+        recentLogs
     ] = await Promise.all([
         // Total employees
         prisma.employee.count({
@@ -209,6 +265,24 @@ async function getAdminStatsRaw(tenantId: string, today: Date) {
             where: { tenantId, status: "ACTIVE" },
             _count: true,
         }),
+        // Approval Queue (Pending Leaves)
+        prisma.leaveRequest.findMany({
+            where: { tenantId, status: "PENDING" },
+            include: { 
+                employee: { 
+                    include: { user: { select: { photoUrl: true } } } 
+                }, 
+                leaveType: true 
+            },
+            orderBy: { createdAt: "desc" },
+            take: 5
+        }),
+        // Recent System Activity
+        prisma.auditLog.findMany({
+            where: { tenantId },
+            orderBy: { createdAt: "desc" },
+            take: 5
+        })
     ]);
 
     // Get department names (separate query to avoid N+1)
@@ -216,6 +290,38 @@ async function getAdminStatsRaw(tenantId: string, today: Date) {
         where: { tenantId, id: { in: byDepartment.map(d => d.departmentId || "") } },
         select: { id: true, name: true },
     });
+
+    // Get user details for audit logs
+    const userIds = recentLogs.map(log => log.actorId).filter(Boolean) as string[];
+    const users = await prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, fullName: true }
+    });
+
+    const approvalQueue = leaveRequests.map(req => ({
+        id: req.id,
+        type: "leave",
+        employeeName: req.employee.fullName,
+        employeePhoto: req.employee.user.photoUrl || undefined,
+        description: `${req.leaveType.name} (${req.totalDays} hari)`,
+        submittedAt: req.createdAt.toISOString(),
+        status: "pending"
+    }));
+
+    const recentActivity = recentLogs.map(log => {
+        const user = users.find(u => u.id === log.actorId);
+        return {
+            id: log.id,
+            type: "system",
+            title: log.action,
+            description: `${user?.fullName || "System"} - ${log.objectType}`,
+            timestamp: log.createdAt.toISOString(),
+            status: "default"
+        };
+    });
+
+    // Define department colors
+    const colors = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4"];
 
     return {
         overview: {
@@ -226,10 +332,16 @@ async function getAdminStatsRaw(tenantId: string, today: Date) {
             pendingLeaveApprovals: pendingLeaves,
             attendanceRate: totalEmployees > 0 ? Math.round((todayPresent / totalEmployees) * 100) : 0,
         },
-        byDepartment: byDepartment.map(d => ({
-            department: departments.find(dept => dept.id === d.departmentId)?.name || "Unknown",
-            count: d._count,
-        })),
+        byDepartment: byDepartment.map((d, index) => {
+            const dept = departments.find(dept => dept.id === d.departmentId);
+            return {
+                name: dept?.name || "Unknown",
+                count: d._count,
+                color: colors[index % colors.length]
+            };
+        }),
+        approvalQueue,
+        recentActivity
     };
 }
 
@@ -253,19 +365,22 @@ async function getManagerStatsRaw(tenantId: string, managerId: string, today: Da
             presentToday: 0,
             absentToday: 0,
             pendingLeaveApprovals: 0,
+            approvalQueue: [],
+            teamAttendance: { present: 0, late: 0, absent: 0 }
         };
     }
 
     // Execute remaining queries in parallel
-    const [presentToday, pendingLeaves] = await Promise.all([
-        // Today's present subordinates
-        prisma.attendance.count({
+    const [todayAttendance, pendingLeaves, leaveRequests] = await Promise.all([
+        // Today's attendance details for team stats
+        prisma.attendance.groupBy({
+            by: ['status'],
             where: {
                 tenantId,
                 employeeId: { in: subordinateIds },
                 attendanceDate: today,
-                status: { in: ["PRESENT", "LATE"] },
             },
+            _count: true
         }),
         // Pending leave approvals from subordinates
         prisma.leaveRequest.count({
@@ -275,12 +390,48 @@ async function getManagerStatsRaw(tenantId: string, managerId: string, today: Da
                 status: "PENDING",
             },
         }),
+        // Approval Queue for Manager
+        prisma.leaveRequest.findMany({
+            where: {
+                tenantId,
+                employeeId: { in: subordinateIds },
+                status: "PENDING",
+            },
+            include: { 
+                employee: { 
+                    include: { user: { select: { photoUrl: true } } } 
+                }, 
+                leaveType: true 
+            },
+            orderBy: { createdAt: "desc" },
+            take: 5
+        })
     ]);
+
+    const presentCount = todayAttendance.find(a => a.status === "PRESENT")?._count || 0;
+    const lateCount = todayAttendance.find(a => a.status === "LATE")?._count || 0;
+    const totalPresent = presentCount + lateCount;
+
+    const approvalQueue = leaveRequests.map(req => ({
+        id: req.id,
+        type: "leave",
+        employeeName: req.employee.fullName,
+        employeePhoto: req.employee.user.photoUrl || undefined,
+        description: `${req.leaveType.name} (${req.totalDays} hari)`,
+        submittedAt: req.createdAt.toISOString(),
+        status: "pending"
+    }));
 
     return {
         totalSubordinates: subordinates.length,
-        presentToday,
-        absentToday: subordinates.length - presentToday,
+        presentToday: totalPresent,
+        absentToday: subordinates.length - totalPresent,
         pendingLeaveApprovals: pendingLeaves,
+        teamAttendance: {
+            present: presentCount,
+            late: lateCount,
+            absent: subordinates.length - totalPresent
+        },
+        approvalQueue
     };
 }
