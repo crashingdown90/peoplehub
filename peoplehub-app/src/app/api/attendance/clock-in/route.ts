@@ -13,7 +13,7 @@ const clockInSchema = z.object({
   workMode: z.enum(["WFO", "WFH"]),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
-  deviceInfo: z.string().optional(),
+  deviceInfo: z.string().optional().nullable(),
 });
 
 // POST /api/attendance/clock-in
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       workMode: result.data.workMode,
       latitude: result.data.latitude,
       longitude: result.data.longitude,
-      deviceInfo: result.data.deviceInfo,
+      deviceInfo: result.data.deviceInfo ?? undefined,
       photoUrl,
     });
 

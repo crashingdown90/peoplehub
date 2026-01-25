@@ -1,6 +1,6 @@
-// @ai:cl - Tenant context utilities
 import { headers } from "next/headers";
 import type { UserRole } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 
 /**
  * Request context extracted from middleware headers
@@ -22,10 +22,22 @@ export async function getRequestContext(): Promise<RequestContext | null> {
   const userId = headersList.get("x-user-id");
   const tenantId = headersList.get("x-tenant-id");
   const role = headersList.get("x-user-role") as UserRole | null;
-  const employeeId = headersList.get("x-employee-id");
+  let employeeId = headersList.get("x-employee-id");
 
   if (!userId || !tenantId || !role) {
     return null;
+  }
+
+  // Fallback: If employeeId is missing in headers (e.g., token was issued before employee record was created),
+  // try to fetch it from the database once.
+  if (!employeeId) {
+    const employee = await prisma.employee.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    if (employee) {
+      employeeId = employee.id;
+    }
   }
 
   return {

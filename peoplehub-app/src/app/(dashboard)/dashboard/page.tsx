@@ -176,18 +176,39 @@ function EmployeeDashboard({ data, userName, role }: { data: DashboardData['empl
                     variant={(data?.pendingSubmissions ?? 0) > 0 ? "warning" : "default"}
                 />
 
-                <div className="grid grid-cols-1 gap-4">
-                    <Link href="/payslips">
-                        <Button variant="outline" size="sm" className="w-full justify-between h-12 rounded-2xl border-slate-200">
-                            <span className="flex items-center"><DollarSign className="mr-2 h-4 w-4 text-blue-500" /> Slip Gaji</span>
-                            <ChevronRight className="h-4 w-4 opacity-50" />
-                        </Button>
+                <div className="grid grid-cols-1 gap-3">
+                    <Link href="/payslips" className="group">
+                        <div className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl transition-all duration-300 hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/10 active:scale-[0.98]">
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                                    <DollarSign className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-slate-800">Slip Gaji</p>
+                                    <p className="text-[10px] text-slate-500 font-medium uppercase tracking-tight">Lihat & Download</p>
+                                </div>
+                            </div>
+                            <div className="h-8 w-8 flex items-center justify-center rounded-full bg-slate-50 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                                <ChevronRight className="h-4 w-4" />
+                            </div>
+                        </div>
                     </Link>
-                    <Link href="/leave">
-                        <Button variant="outline" size="sm" className="w-full justify-between h-12 rounded-2xl border-slate-200">
-                            <span className="flex items-center"><Calendar className="mr-2 h-4 w-4 text-purple-500" /> Riwayat Cuti</span>
-                            <ChevronRight className="h-4 w-4 opacity-50" />
-                        </Button>
+
+                    <Link href="/leave" className="group">
+                        <div className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl transition-all duration-300 hover:border-purple-400 hover:shadow-md hover:shadow-purple-500/10 active:scale-[0.98]">
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+                                    <Calendar className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-slate-800">Riwayat Cuti</p>
+                                    <p className="text-[10px] text-slate-500 font-medium uppercase tracking-tight">Status Pengajuan</p>
+                                </div>
+                            </div>
+                            <div className="h-8 w-8 flex items-center justify-center rounded-full bg-slate-50 group-hover:bg-purple-50 group-hover:text-purple-600 transition-colors">
+                                <ChevronRight className="h-4 w-4" />
+                            </div>
+                        </div>
                     </Link>
                 </div>
             </div>

@@ -72,18 +72,37 @@ export default function AttendancePage() {
         fetchStatus();
     }, [fetchStatus]);
 
+    const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+
+    useEffect(() => {
+        if (isCameraOpen && videoRef.current && cameraStream) {
+            videoRef.current.muted = true;
+            videoRef.current.srcObject = cameraStream;
+            videoRef.current.onloadedmetadata = () => {
+                videoRef.current?.play().catch(e => console.error("Video play failed:", e));
+            };
+        }
+    }, [isCameraOpen, cameraStream]);
+
+    // Cleanup tracks on unmount
+    useEffect(() => {
+        return () => {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+            }
+        };
+    }, [cameraStream]);
+
     // Open camera
     const openCamera = async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: "user", width: 640, height: 480 }
             });
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-                videoRef.current.play();
-            }
+            setCameraStream(stream);
             setIsCameraOpen(true);
             setCapturedPhoto(null);
+            setError(null);
         } catch (err) {
             setError("Tidak dapat mengakses kamera. Pastikan izin kamera diberikan.");
             console.error("Camera error:", err);
@@ -105,11 +124,25 @@ export default function AttendancePage() {
                 setCapturedPhoto(dataUrl);
 
                 // Stop camera
-                const stream = video.srcObject as MediaStream;
-                stream.getTracks().forEach(track => track.stop());
+                if (cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                }
+                setCameraStream(null);
                 setIsCameraOpen(false);
             }
         }
+    };
+
+    // Helper to convert base64 data URI to Blob
+    const dataURItoBlob = (dataURI: string) => {
+        const byteString = atob(dataURI.split(",")[1]);
+        const mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
+        const ab = new ArrayBuffer(byteString.length);
+        const ia = new Uint8Array(ab);
+        for (let i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+        return new Blob([ab], { type: mimeString });
     };
 
     // Submit attendance
@@ -123,13 +156,13 @@ export default function AttendancePage() {
         setError(null);
 
         try {
-            // Convert data URL to blob
-            const response = await fetch(capturedPhoto);
-            const blob = await response.blob();
+            // Convert data URL to blob without fetch() to avoid CSP issues
+            const blob = dataURItoBlob(capturedPhoto);
 
             const formData = new FormData();
             formData.append("photo", blob, "selfie.jpg");
             formData.append("workMode", workMode);
+            formData.append("deviceInfo", navigator.userAgent);
 
             // Get location if available
             if ("geolocation" in navigator) {
