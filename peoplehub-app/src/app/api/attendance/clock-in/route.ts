@@ -7,6 +7,7 @@ import { getCache, CacheKeys, CacheTags } from "@/lib/cache";
 import { z } from "zod";
 import path from "path";
 import { writeFile, mkdir } from "fs/promises";
+import { validateCsrf, getCsrfErrorResponse } from "@/lib/security/csrf";
 
 const clockInSchema = z.object({
   workMode: z.enum(["WFO", "WFH"]),
@@ -18,6 +19,12 @@ const clockInSchema = z.object({
 // POST /api/attendance/clock-in
 export async function POST(request: NextRequest) {
   try {
+    // Validate CSRF token
+    const csrfResult = await validateCsrf(request.headers);
+    if (!csrfResult.valid) {
+      return NextResponse.json(getCsrfErrorResponse(), { status: 403 });
+    }
+
     const context = await getRequestContext();
 
     if (!context || !context.employeeId) {

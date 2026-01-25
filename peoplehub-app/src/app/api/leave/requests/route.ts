@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 import { LeaveService } from "@/services";
 import { z } from "zod";
+import { validateCsrf, getCsrfErrorResponse } from "@/lib/security/csrf";
 
 const leaveRequestSchema = z.object({
   leaveTypeId: z.string().cuid("Jenis cuti wajib dipilih"),
@@ -67,6 +68,12 @@ export async function GET(request: NextRequest) {
 // POST /api/leave/requests - Create leave request
 export async function POST(request: NextRequest) {
   try {
+    // Validate CSRF token
+    const csrfResult = await validateCsrf(request.headers);
+    if (!csrfResult.valid) {
+      return NextResponse.json(getCsrfErrorResponse(), { status: 403 });
+    }
+
     const context = await getRequestContext();
 
     if (!context || !context.employeeId) {

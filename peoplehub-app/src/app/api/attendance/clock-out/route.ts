@@ -6,10 +6,17 @@ import { AttendanceService } from "@/services";
 import { getCache, CacheKeys, CacheTags } from "@/lib/cache";
 import path from "path";
 import { writeFile, mkdir } from "fs/promises";
+import { validateCsrf, getCsrfErrorResponse } from "@/lib/security/csrf";
 
 // POST /api/attendance/clock-out
 export async function POST(request: NextRequest) {
   try {
+    // Validate CSRF token
+    const csrfResult = await validateCsrf(request.headers);
+    if (!csrfResult.valid) {
+      return NextResponse.json(getCsrfErrorResponse(), { status: 403 });
+    }
+
     const context = await getRequestContext();
 
     if (!context || !context.employeeId) {
