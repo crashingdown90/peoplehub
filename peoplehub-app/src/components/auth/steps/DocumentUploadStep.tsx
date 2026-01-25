@@ -127,7 +127,7 @@ export function DocumentUploadStep({ initialData, onNext, onBack }: DocumentUplo
                             </div>
                         </div>
                     ) : (
-                        <div className="relative group rounded-3xl overflow-hidden border-2 border-blue-100 shadow-lg shadow-blue-500/5 aspect-[3/4] max-w-[240px] mx-auto">
+                        <div className="relative group rounded-3xl overflow-hidden border-2 border-blue-100 shadow-lg shadow-blue-500/5 aspect-3/4 max-w-[240px] mx-auto">
                             <Image src={photoUrl} alt="Photo" fill className="object-cover" />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                                 <button
