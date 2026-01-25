@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "description": "File locking untuk koordinasi multi-AI development",
+  "locks": [
+    {
+      "file": "src/lib/auth/*",
+      "lockedBy": "CL",
+      "lockedAt": "2024-01-19T12:00:00Z",
+      "reason": "Setting up auth structure",
+      "estimatedDuration": "2h"
+    },
+    {
+      "file": "src/lib/tenant/*",
+      "lockedBy": "CL",
+      "lockedAt": "2024-01-19T12:00:00Z",
+      "reason": "Setting up tenant structure",
+      "estimatedDuration": "2h"
+    },
+    {
+      "file": "src/services/*",
+      "lockedBy": "CL",
+      "lockedAt": "2024-01-19T12:00:00Z",
+      "reason": "Creating services layer",
+      "estimatedDuration": "4h"
+    },
+    }
+  ],
+  "history": []
+}

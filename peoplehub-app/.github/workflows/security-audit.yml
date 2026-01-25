@@ -1,0 +1,84 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run weekly on Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  npm-audit:
+    name: NPM Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: peoplehub-app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: peoplehub-app
+        run: npm ci
+
+      - name: Run npm audit
+        working-directory: peoplehub-app
+        run: |
+          npm audit --audit-level=moderate
+        continue-on-error: false
+
+      - name: Run npm audit (report only)
+        if: failure()
+        working-directory: peoplehub-app
+        run: |
+          echo "::warning::Security vulnerabilities detected. See full report below:"
+          npm audit --json > audit-report.json
+          cat audit-report.json
+
+      - name: Upload audit report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: peoplehub-app/audit-report.json
+          retention-days: 30
+
+  security-tests:
+    name: Run Security Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: peoplehub-app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: peoplehub-app
+        run: npm ci
+
+      - name: Run security test suite
+        working-directory: peoplehub-app
+        run: npm test -- tests/security/ --passWithNoTests
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-test-results
+          path: peoplehub-app/coverage/
+          retention-days: 7

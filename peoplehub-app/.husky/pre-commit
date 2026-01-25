@@ -1,0 +1,10 @@
+#!/bin/sh
+
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export PATH="$PROJECT_ROOT/node_modules/.bin:$PATH"
+
+cd "$PROJECT_ROOT" || exit 1
+
+node scripts/check-locks.js || exit 1
+npm run lint || exit 1
+npm run type-check || exit 1

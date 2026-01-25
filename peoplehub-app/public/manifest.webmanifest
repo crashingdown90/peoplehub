@@ -1,0 +1,16 @@
+{
+  "name": "PeopleHub HRIS",
+  "short_name": "PeopleHub",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "description": "PeopleHub HR Management System",
+  "icons": [
+    {
+      "src": "/next.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

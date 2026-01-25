@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+:root {
+  /* Colors - Light Mode (from documentation design tokens) */
+  --color-text: #0f172a;
+  --color-text-subtle: #475569;
+  --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-success: #16a34a;
+  --color-success-bg: #dcfce7;
+  --color-warning: #f59e0b;
+  --color-warning-bg: #fef3c7;
+  --color-error: #dc2626;
+  --color-error-bg: #fee2e2;
+  --color-info: #0ea5e9;
+  --color-info-bg: #e0f2fe;
+  
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  
+  /* Typography - Manrope as primary per design-system.md */
+  --font-family: var(--font-manrope), "Manrope", "Inter", system-ui, -apple-system, sans-serif;
+  --font-size-body: 14px;
+  --font-size-heading: 18px;
+  --font-size-meta: 12px;
+  --line-height: 1.5;
+  
+  /* Components */
+  --radius: 8px;
+  --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  --transition: 180ms ease;
+  
+  /* Z-index */
+  --z-nav: 100;
+  --z-dropdown: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+}
+
+/* Dark Mode */
+[data-theme="dark"] {
+  --color-text: #f1f5f9;
+  --color-text-subtle: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-border: #334155;
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-accent: #3b82f6;
+  --color-accent-hover: #2563eb;
+  --color-success: #22c55e;
+  --color-success-bg: #14532d;
+  --color-warning: #fbbf24;
+  --color-warning-bg: #713f12;
+  --color-error: #ef4444;
+  --color-error-bg: #7f1d1d;
+  --color-info: #38bdf8;
+  --color-info-bg: #0c4a6e;
+  
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: var(--line-height);
+  transition: background-color var(--transition), color var(--transition);
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-subtle);
+}

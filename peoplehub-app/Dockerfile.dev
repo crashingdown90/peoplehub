@@ -1,0 +1,36 @@
+# =============================================================================
+# PeopleHub Development Dockerfile
+# =============================================================================
+# 
+# For development with hot-reload support
+# Used by docker-compose.override.yml
+#
+# Build: docker build -f Dockerfile.dev -t peoplehub:dev .
+# =============================================================================
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies for development
+RUN apk add --no-cache libc6-compat git
+
+# Install dependencies
+COPY package.json package-lock.json ./
+
+# Copy scripts needed for npm prepare hook
+COPY scripts ./scripts/
+
+RUN npm install
+
+# Copy Prisma schema
+COPY prisma ./prisma/
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Expose ports (app + debugger)
+EXPOSE 3000 9229
+
+# Development command with debugging support
+CMD ["npm", "run", "dev"]

@@ -1,0 +1,42 @@
+{
+  "version": "1.0.0",
+  "currentSprint": "Sprint-1",
+  "assignments": {
+    "CL": {
+      "name": "Claude AI",
+      "branch": "feat/cl-auth-system",
+      "currentTask": "Stabilize multi-tenant auth and core API routes",
+      "files": [
+        "src/app/api/**/*",
+        "src/lib/auth/*",
+        "src/lib/tenant/*",
+        "src/services/**/*",
+        "prisma/*"
+      ]
+    },
+    "AG": {
+      "name": "Antigravity",
+      "branch": "refactor/ag-types-utils",
+      "currentTask": "Harmonize shared types, hooks, and utilities",
+      "files": [
+        "src/types/*",
+        "src/utils/*",
+        "src/hooks/*",
+        "src/constants/*"
+      ]
+    },
+    "CX": {
+      "name": "Codex GPT",
+      "branch": "feat/cx-ui-shell",
+      "currentTask": "Build dashboard shell, base UI components, and pages",
+      "files": [
+        "src/components/**/*",
+        "src/app/(auth)/**/*",
+        "src/app/(dashboard)/**/*",
+        "src/app/(features)/**/*",
+        "src/app/admin/**/*",
+        "src/styles/*"
+      ]
+    }
+  }
+}
