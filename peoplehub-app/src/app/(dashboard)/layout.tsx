@@ -14,17 +14,17 @@ export default async function DashboardLayout({
     }
 
     return (
-        <div className="min-h-screen bg-[var(--color-bg)]">
+        <div className="min-h-screen bg-(--color-bg)">
             {/* Skip to content link for accessibility */}
             <a
                 href="#main-content"
-                className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-[var(--color-accent)] focus:text-white focus:rounded-lg focus:outline-none"
+                className="sr-only focus:not-sr-only focus:absolute focus:z-9999 focus:top-4 focus:left-4 focus:px-4 focus:py-2 focus:bg-(--color-accent) focus:text-white focus:rounded-lg focus:outline-none"
             >
                 Langsung ke konten utama
             </a>
 
             <RoleSidebar role={session.role} />
-            <main id="main-content" className="md:ml-64" tabIndex={-1}>
+            <main id="main-content" className="md:ml-64 p-6 md:p-8" tabIndex={-1}>
                 {children}
             </main>
         </div>
