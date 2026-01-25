@@ -58,11 +58,13 @@ export function DashboardHero({ userName, role, className }: DashboardHeroProps)
                 </div>
 
                 <div className="flex flex-col items-start md:items-end">
-                    <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20">
-                        <Calendar className="h-5 w-5 text-blue-200" />
-                        <div className="text-left md:text-right">
-                            <p className="text-xs font-semibold text-blue-200 uppercase tracking-tighter">Hari Ini</p>
-                            <p className="text-sm font-bold">
+                    <div className="flex items-center gap-4 px-5 py-3 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-sm transition-all hover:bg-white/15">
+                        <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-blue-400/20 border border-white/10">
+                            <Calendar className="h-5 w-5 text-blue-200" />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-bold text-blue-200/80 uppercase tracking-widest leading-none mb-1.5">Hari Ini</p>
+                            <p className="text-sm font-bold whitespace-nowrap tracking-tight">
                                 {format(today, "EEEE, d MMMM yyyy", { locale: id })}
                             </p>
                         </div>
