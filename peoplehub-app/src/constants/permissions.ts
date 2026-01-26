@@ -77,6 +77,9 @@ export const PERMISSIONS = {
     ADMIN_USERS: 'admin:users',
     ADMIN_AUDIT_LOG: 'admin:audit-log',
 
+    // Super Admin (exclusive to SUPER_ADMIN role)
+    SUPER_ADMIN_ACCESS: 'superadmin:access',
+
     // Announcements
     ANNOUNCEMENTS_VIEW: 'announcements:view',
     ANNOUNCEMENTS_CREATE: 'announcements:create',

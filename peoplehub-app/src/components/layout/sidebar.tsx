@@ -73,7 +73,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
         {
             label: "Super Admin",
             icon: Shield,
-            permission: PERMISSIONS.ADMIN_USERS,
+            permission: PERMISSIONS.SUPER_ADMIN_ACCESS,
             children: [
                 { label: "Dashboard", href: "/dashboard/superadmin", icon: Home },
                 { label: "Tenants", href: "/admin/superadmin/tenants", icon: Building2 },
