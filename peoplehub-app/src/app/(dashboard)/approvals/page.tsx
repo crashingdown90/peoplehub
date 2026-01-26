@@ -496,7 +496,7 @@ export default function ApprovalsPage() {
 
             {/* Detail Modal */}
             <Dialog open={!!selectedItem && !showRejectDialog} onOpenChange={() => setSelectedItem(null)}>
-                <DialogContent className="max-w-md overflow-hidden p-0">
+                <DialogContent className="max-w-md overflow-hidden p-0" aria-describedby={undefined}>
                     {selectedItem && (() => {
                         const config = typeConfig[selectedItem.type];
                         const TypeIcon = config.icon;
@@ -508,6 +508,11 @@ export default function ApprovalsPage() {
                         };
                         return (
                             <>
+                                {/* Screen reader only title for accessibility */}
+                                <DialogTitle className="sr-only">
+                                    Detail Pengajuan {config.label} dari {selectedItem.employeeName}
+                                </DialogTitle>
+
                                 {/* Colored Header Banner */}
                                 <div className={`bg-gradient-to-r ${colorMap[selectedItem.type]} px-6 py-5 text-white`}>
                                     <div className="flex items-center gap-3">
@@ -581,7 +586,12 @@ export default function ApprovalsPage() {
 
             {/* Reject Dialog */}
             <Dialog open={showRejectDialog} onOpenChange={() => setShowRejectDialog(false)}>
-                <DialogContent className="max-w-md overflow-hidden p-0">
+                <DialogContent className="max-w-md overflow-hidden p-0" aria-describedby={undefined}>
+                    {/* Screen reader only title for accessibility */}
+                    <DialogTitle className="sr-only">
+                        Tolak Pengajuan {selectedItem ? typeConfig[selectedItem.type].label : ""} dari {selectedItem?.employeeName}
+                    </DialogTitle>
+
                     {/* Red Header */}
                     <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-5 text-white">
                         <div className="flex items-center gap-3">
