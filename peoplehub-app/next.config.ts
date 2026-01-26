@@ -49,7 +49,13 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "*.blob.vercel-storage.com",
       },
+      {
+        protocol: "https",
+        hostname: "hrm-kreatifindo.cloud",
+      },
     ],
+    // Allow local uploads
+    unoptimized: false,
   },
   async headers() {
     return [

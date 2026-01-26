@@ -81,7 +81,8 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # Create directories for uploads and logs
-RUN mkdir -p /app/uploads /app/logs && \
+# Note: /app/public/uploads is for user uploads (profile photos, receipts, etc.)
+RUN mkdir -p /app/public/uploads/profiles /app/public/uploads/receipts /app/logs && \
     chown -R nextjs:nodejs /app
 
 # Switch to non-root user

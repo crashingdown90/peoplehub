@@ -36,8 +36,9 @@ services:
       - REDIS_URL=redis://redis:6379
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
       - SECURE_COOKIES=${SECURE_COOKIES:-true}
+      - UPLOAD_DIR=/app/public/uploads
     volumes:
-      - uploads:/app/uploads
+      - uploads:/app/public/uploads
       - logs:/app/logs
     depends_on:
       db:

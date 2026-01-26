@@ -1,7 +1,8 @@
+// @ai:cl - Profile API with local file storage
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
-import { put } from "@vercel/blob";
+import { saveProfilePhoto, deleteFile } from "@/lib/upload";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png"];
@@ -69,9 +70,17 @@ export async function PATCH(request: NextRequest) {
         const contentType = request.headers.get("content-type") || "";
 
         let updateData: Record<string, string | null> = {};
+        let oldPhotoUrl: string | null = null;
+
+        // Get current photo URL to delete later if updated
+        const currentUser = await prisma.user.findUnique({
+            where: { id: context.userId },
+            select: { photoUrl: true },
+        });
+        oldPhotoUrl = currentUser?.photoUrl || null;
 
         if (contentType.includes("multipart/form-data")) {
-            // Handle file upload
+            // Handle file upload via FormData
             const formData = await request.formData();
             const photo = formData.get("photo") as File | null;
 
@@ -92,17 +101,26 @@ export async function PATCH(request: NextRequest) {
                     );
                 }
 
-                // Upload to Vercel Blob
+                // Convert to buffer and save locally
+                const arrayBuffer = await photo.arrayBuffer();
+                const buffer = Buffer.from(arrayBuffer);
                 const extension = photo.type.split("/")[1];
-                const timestamp = Date.now();
-                const path = `profiles/${context.tenantId}/${context.userId}/photo_${timestamp}.${extension}`;
 
-                const blob = await put(path, photo, {
-                    access: "public",
-                    addRandomSuffix: false,
-                });
+                const uploadResult = await saveProfilePhoto(
+                    buffer,
+                    context.tenantId,
+                    context.userId,
+                    extension
+                );
 
-                updateData.photoUrl = blob.url;
+                if (!uploadResult.success) {
+                    return NextResponse.json(
+                        { success: false, error: { code: "UPLOAD_FAILED", message: uploadResult.error || "Gagal upload foto" } },
+                        { status: 500 }
+                    );
+                }
+
+                updateData.photoUrl = uploadResult.url!;
             }
 
             // Get other form fields
@@ -151,17 +169,22 @@ export async function PATCH(request: NextRequest) {
                     );
                 }
 
-                // Upload to Vercel Blob
-                const timestamp = Date.now();
-                const path = `profiles/${context.tenantId}/${context.userId}/photo_${timestamp}.${extension}`;
+                // Save locally
+                const uploadResult = await saveProfilePhoto(
+                    buffer,
+                    context.tenantId,
+                    context.userId,
+                    extension
+                );
 
-                const blob = await put(path, buffer, {
-                    access: "public",
-                    addRandomSuffix: false,
-                    contentType: `image/${extension}`,
-                });
+                if (!uploadResult.success) {
+                    return NextResponse.json(
+                        { success: false, error: { code: "UPLOAD_FAILED", message: uploadResult.error || "Gagal upload foto" } },
+                        { status: 500 }
+                    );
+                }
 
-                updateData.photoUrl = blob.url;
+                updateData.photoUrl = uploadResult.url!;
             }
         }
 
@@ -187,6 +210,11 @@ export async function PATCH(request: NextRequest) {
                 emergencyContactPhone: true,
             },
         });
+
+        // Delete old photo if new one was uploaded
+        if (updateData.photoUrl && oldPhotoUrl && oldPhotoUrl.startsWith("/uploads/")) {
+            await deleteFile(oldPhotoUrl);
+        }
 
         // Log audit
         await prisma.auditLog.create({
