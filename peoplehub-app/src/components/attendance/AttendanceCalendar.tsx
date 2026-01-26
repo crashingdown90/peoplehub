@@ -77,7 +77,7 @@ export function AttendanceCalendar({ attendanceData, onDateClick }: AttendanceCa
     };
 
     // Generate calendar days
-    const calendarDays = [];
+    const calendarDays: { day: number; isCurrentMonth: boolean; date: Date }[] = [];
 
     // Previous month days
     for (let i = firstDayOfMonth - 1; i >= 0; i--) {

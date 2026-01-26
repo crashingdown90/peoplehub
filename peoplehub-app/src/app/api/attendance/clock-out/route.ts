@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
           overtimeMinutes: attendance.overtimeMinutes,
         })),
       },
-    }).catch(err => {
+    }).catch((err: unknown) => {
       console.error("Audit log error (non-critical):", err);
     });
 

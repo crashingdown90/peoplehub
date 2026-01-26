@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/tenant";
-import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 // Notification settings structure
@@ -158,7 +157,7 @@ export async function PUT(request: NextRequest) {
     await prisma.tenant.update({
       where: { id: context.tenantId },
       data: {
-        branding: updatedBranding as unknown as Prisma.InputJsonValue,
+        branding: updatedBranding as unknown as object,
         updatedAt: new Date(),
       },
     });
@@ -171,8 +170,8 @@ export async function PUT(request: NextRequest) {
         action: "UPDATE_NOTIFICATION_SETTINGS",
         objectType: "TenantSettings",
         objectId: context.tenantId,
-        beforeData: currentSettings as unknown as Prisma.InputJsonValue,
-        afterData: newSettings as unknown as Prisma.InputJsonValue,
+        beforeData: currentSettings as unknown as object,
+        afterData: newSettings as unknown as object,
       },
     });
 

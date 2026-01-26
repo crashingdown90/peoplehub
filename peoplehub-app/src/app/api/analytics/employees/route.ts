@@ -99,37 +99,43 @@ export async function GET(request: NextRequest) {
 
         // Group by month
         const hiringTrend: Record<string, number> = {};
-        monthlyHires.forEach(h => {
+        monthlyHires.forEach((h: typeof monthlyHires[number]) => {
             const monthKey = h.startDate.toISOString().slice(0, 7);
             hiringTrend[monthKey] = (hiringTrend[monthKey] || 0) + h._count;
         });
 
-        const activeCount = employeesByStatus.find(e => e.status === "ACTIVE")?._count || 0;
+        type StatusItem = typeof employeesByStatus[number];
+        type DeptItem = typeof byDepartment[number];
+        type BranchItem = typeof byBranch[number];
+        type EmpTypeItem = typeof byEmploymentType[number];
+        type WorkModeItem = typeof byWorkMode[number];
+
+        const activeCount = employeesByStatus.find((e: StatusItem) => e.status === "ACTIVE")?._count || 0;
         const turnoverRate = activeCount > 0 ? Math.round((terminations / activeCount) * 100) : 0;
 
         return successResponse({
                 overview: {
-                    total: employeesByStatus.reduce((sum, e) => sum + e._count, 0),
+                    total: employeesByStatus.reduce((sum: number, e: StatusItem) => sum + e._count, 0),
                     active: activeCount,
-                    inactive: employeesByStatus.find(e => e.status === "INACTIVE")?._count || 0,
-                    terminated: employeesByStatus.find(e => e.status === "TERMINATED")?._count || 0,
+                    inactive: employeesByStatus.find((e: StatusItem) => e.status === "INACTIVE")?._count || 0,
+                    terminated: employeesByStatus.find((e: StatusItem) => e.status === "TERMINATED")?._count || 0,
                     newHiresThisYear: newHires,
                     terminationsThisYear: terminations,
                     turnoverRate,
                 },
-                byDepartment: byDepartment.map(d => ({
-                    department: departments.find(dept => dept.id === d.departmentId)?.name || "Unknown",
+                byDepartment: byDepartment.map((d: DeptItem) => ({
+                    department: departments.find((dept: typeof departments[number]) => dept.id === d.departmentId)?.name || "Unknown",
                     count: d._count,
                 })),
-                byBranch: byBranch.map(b => ({
-                    branch: branches.find(br => br.id === b.branchId)?.name || "Unknown",
+                byBranch: byBranch.map((b: BranchItem) => ({
+                    branch: branches.find((br: typeof branches[number]) => br.id === b.branchId)?.name || "Unknown",
                     count: b._count,
                 })),
-                byEmploymentType: byEmploymentType.map(e => ({
+                byEmploymentType: byEmploymentType.map((e: EmpTypeItem) => ({
                     type: e.employmentType,
                     count: e._count,
                 })),
-                byWorkMode: byWorkMode.map(w => ({
+                byWorkMode: byWorkMode.map((w: WorkModeItem) => ({
                     mode: w.workMode,
                     count: w._count,
                 })),

@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     ).size;
 
     // Daily breakdown
-    const dailyStats = [];
+    const dailyStats: { date: string; dayName: string; logins: number; failed: number; uniqueUsers: number }[] = [];
     for (let i = 0; i < days; i++) {
       const date = new Date(startDate);
       date.setDate(date.getDate() + i);

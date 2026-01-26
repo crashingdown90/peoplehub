@@ -7,9 +7,9 @@ const indicatorSchema = z.object({
     code: z.string().min(2, "Kode minimal 2 karakter"),
     name: z.string().min(3, "Nama minimal 3 karakter"),
     description: z.string().optional(),
-    unit: z.enum(["%", "Rp", "Count", "Score"]),
+    unit: z.string().min(1, "Unit wajib diisi"),
     targetType: z.enum(["HIGHER_BETTER", "LOWER_BETTER", "EXACT"]).default("HIGHER_BETTER"),
-    weight: z.number().min(0).max(10).default(1),
+    weight: z.number().min(0).max(100).default(1),
 });
 
 // GET /api/kpi/indicators - Get KPI indicators

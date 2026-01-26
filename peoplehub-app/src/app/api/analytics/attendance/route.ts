@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         // Daily stats grouped by date
         const dailyStats: Record<string, { present: number; late: number; wfo: number; wfh: number }> = {};
 
-        attendances.forEach(a => {
+        attendances.forEach((a: typeof attendances[number]) => {
             const dateKey = a.attendanceDate.toISOString().split("T")[0];
             if (!dailyStats[dateKey]) {
                 dailyStats[dateKey] = { present: 0, late: 0, wfo: 0, wfh: 0 };
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
         // Monthly summary
         const monthlyStats: Record<string, { present: number; late: number; totalLateMinutes: number; totalOvertime: number }> = {};
 
-        attendances.forEach(a => {
+        attendances.forEach((a: typeof attendances[number]) => {
             const monthKey = a.attendanceDate.toISOString().slice(0, 7);
             if (!monthlyStats[monthKey]) {
                 monthlyStats[monthKey] = { present: 0, late: 0, totalLateMinutes: 0, totalOvertime: 0 };
@@ -93,12 +93,13 @@ export async function GET(request: NextRequest) {
         });
 
         // Calculate overall stats
-        const totalPresent = attendances.filter(a => a.status === "PRESENT" || a.status === "LATE").length;
-        const totalLate = attendances.filter(a => a.status === "LATE").length;
-        const totalLateMinutes = attendances.reduce((sum, a) => sum + a.lateMinutes, 0);
-        const totalOvertime = attendances.reduce((sum, a) => sum + a.overtimeMinutes, 0);
-        const wfoCount = attendances.filter(a => a.workMode === "WFO").length;
-        const wfhCount = attendances.filter(a => a.workMode === "WFH").length;
+        type AttendanceItem = typeof attendances[number];
+        const totalPresent = attendances.filter((a: AttendanceItem) => a.status === "PRESENT" || a.status === "LATE").length;
+        const totalLate = attendances.filter((a: AttendanceItem) => a.status === "LATE").length;
+        const totalLateMinutes = attendances.reduce((sum: number, a: AttendanceItem) => sum + a.lateMinutes, 0);
+        const totalOvertime = attendances.reduce((sum: number, a: AttendanceItem) => sum + a.overtimeMinutes, 0);
+        const wfoCount = attendances.filter((a: AttendanceItem) => a.workMode === "WFO").length;
+        const wfhCount = attendances.filter((a: AttendanceItem) => a.workMode === "WFH").length;
 
         return NextResponse.json({
             success: true,

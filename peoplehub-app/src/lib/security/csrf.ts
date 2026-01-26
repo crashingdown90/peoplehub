@@ -20,9 +20,12 @@ export async function setCsrfToken(): Promise<string> {
     const token = generateCsrfToken();
     const cookieStore = await cookies();
 
+    // Allow disabling secure cookies for HTTP deployments
+    const useSecureCookies = process.env.SECURE_COOKIES !== "false" && process.env.NODE_ENV === "production";
+
     cookieStore.set(CSRF_TOKEN_NAME, token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: useSecureCookies,
         sameSite: "strict",
         path: "/",
         maxAge: 60 * 60, // 1 hour

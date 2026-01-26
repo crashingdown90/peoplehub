@@ -35,6 +35,7 @@ services:
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - REDIS_URL=redis://redis:6379
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+      - SECURE_COOKIES=${SECURE_COOKIES:-true}
     volumes:
       - uploads:/app/uploads
       - logs:/app/logs
@@ -46,7 +47,7 @@ services:
     networks:
       - peoplehub-network
     healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health" ]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -111,7 +112,8 @@ services:
       - "443:443"
     volumes:
       - ./config/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./config/ssl:/etc/nginx/ssl:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
       - logs:/var/log/nginx
     depends_on:
       app:

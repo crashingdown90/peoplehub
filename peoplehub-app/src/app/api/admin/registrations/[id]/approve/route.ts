@@ -1,4 +1,4 @@
-// @ai:cl - Registration approval API - Simplified for Phase 1A
+// @ai:cl - Registration approval API - Auto-creates Employee record
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
@@ -8,7 +8,43 @@ interface RouteParams {
     params: Promise<{ id: string }>;
 }
 
-// POST /api/admin/registrations/[id]/approve - Approve registration (Phase 1A simple)
+/**
+ * Generate unique employee number for tenant
+ * Format: TENANT_CODE + YEAR + 5-digit sequential number
+ * Example: KRT202500001
+ */
+async function generateEmployeeNumber(tenantId: string, tenantCode: string): Promise<string> {
+    const year = new Date().getFullYear();
+    const prefix = `${tenantCode}${year}`;
+
+    // Get the latest employee number for this tenant and year
+    const latestEmployee = await prisma.employee.findFirst({
+        where: {
+            tenantId,
+            employeeNumber: {
+                startsWith: prefix,
+            },
+        },
+        orderBy: {
+            employeeNumber: "desc",
+        },
+        select: {
+            employeeNumber: true,
+        },
+    });
+
+    let nextNumber = 1;
+    if (latestEmployee?.employeeNumber) {
+        const currentNumber = parseInt(latestEmployee.employeeNumber.slice(prefix.length), 10);
+        if (!isNaN(currentNumber)) {
+            nextNumber = currentNumber + 1;
+        }
+    }
+
+    return `${prefix}${nextNumber.toString().padStart(5, "0")}`;
+}
+
+// POST /api/admin/registrations/[id]/approve - Approve registration and create Employee
 export async function POST(request: NextRequest, { params }: RouteParams) {
     try {
         const context = await getRequestContext();
@@ -28,7 +64,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             );
         }
 
-        // Get user
+        // Get user with tenant info
         const user = await prisma.user.findFirst({
             where: {
                 id,
@@ -47,13 +83,65 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             );
         }
 
-        // Phase 1A Simple Approval: Just update status to APPROVED
-        // Employee record and assignment will be done later by HRD
-        const updatedUser = await prisma.$transaction(async (tx) => {
-            // Update user status
-            const updated = await tx.user.update({
+        // Get default branch for this tenant (first one)
+        const defaultBranch = await prisma.branch.findFirst({
+            where: { tenantId: context.tenantId },
+            select: { id: true },
+        });
+
+        // Get default department (first one for tenant)
+        const defaultDepartment = await prisma.department.findFirst({
+            where: { tenantId: context.tenantId },
+            select: { id: true },
+        });
+
+        // Get default position (first one for tenant)
+        const defaultPosition = await prisma.position.findFirst({
+            where: { tenantId: context.tenantId },
+            select: { id: true },
+        });
+
+        // Get tenant code for employee number
+        const tenantCode = user.tenant?.code || "EMP";
+
+        // Generate employee number
+        const employeeNumber = await generateEmployeeNumber(context.tenantId, tenantCode);
+
+        // Transaction: Update user and create employee
+        const result = await prisma.$transaction(async (tx) => {
+            // Update user status to ACTIVE
+            const updatedUser = await tx.user.update({
                 where: { id: user.id },
-                data: { status: "APPROVED" },
+                data: { status: "ACTIVE" },
+            });
+
+            // Create employee record
+            const employee = await tx.employee.create({
+                data: {
+                    tenantId: context.tenantId,
+                    userId: user.id,
+                    employeeNumber,
+                    fullName: user.fullName || user.email.split("@")[0],
+                    phone: user.phone,
+                    // Copy data from user registration
+                    nik: user.nik,
+                    npwp: user.npwp,
+                    address: user.address,
+                    emergencyContactName: user.emergencyContactName,
+                    emergencyContactPhone: user.emergencyContactPhone,
+                    bankName: user.bankName,
+                    bankAccountNumber: user.bankAccountNumber,
+                    bankAccountHolder: user.bankAccountHolder,
+                    // Assign defaults (HRD can change later)
+                    branchId: defaultBranch?.id || null,
+                    departmentId: defaultDepartment?.id || null,
+                    positionId: defaultPosition?.id || null,
+                    // Default employment settings
+                    employmentType: "PERMANENT",
+                    workMode: "WFO",
+                    startDate: new Date(),
+                    status: "ACTIVE",
+                },
             });
 
             // Create notification for the approved user
@@ -62,7 +150,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
                     tenantId: context.tenantId,
                     userId: user.id,
                     title: "Pendaftaran Disetujui",
-                    message: `Selamat! Pendaftaran Anda di ${user.tenant?.name || "perusahaan"} telah disetujui. Anda dapat login ke sistem.`,
+                    message: `Selamat! Pendaftaran Anda di ${user.tenant?.name || "perusahaan"} telah disetujui. NIK Anda: ${employeeNumber}. Anda dapat login ke sistem.`,
                     type: "SYSTEM",
                     link: "/dashboard",
                 },
@@ -80,13 +168,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
                         userId: user.id,
                         email: user.email,
                         fullName: user.fullName,
+                        employeeId: employee.id,
+                        employeeNumber: employee.employeeNumber,
                         approvedBy: context.userId,
                         approvedAt: new Date().toISOString(),
                     })),
                 },
             });
 
-            return updated;
+            return { user: updatedUser, employee };
         });
 
         // Send approval email notification
@@ -98,6 +188,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
                     fullName: user.fullName || user.email.split("@")[0],
                     email: user.email,
                     companyName: user.tenant?.name || "Perusahaan",
+                    employeeNumber: result.employee.employeeNumber,
                     loginUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/login`,
                 }
             );
@@ -123,12 +214,16 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         return NextResponse.json({
             success: true,
             data: {
-                id: updatedUser.id,
-                email: updatedUser.email,
-                fullName: updatedUser.fullName,
-                status: updatedUser.status,
+                id: result.user.id,
+                email: result.user.email,
+                fullName: result.user.fullName,
+                status: result.user.status,
+                employee: {
+                    id: result.employee.id,
+                    employeeNumber: result.employee.employeeNumber,
+                },
             },
-            message: "Registrasi berhasil disetujui",
+            message: `Registrasi berhasil disetujui. NIK: ${result.employee.employeeNumber}`,
         });
     } catch (error) {
         console.error("Approve registration error:", error);

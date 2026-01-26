@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Get recent payroll history (last 6 periods)
-    const recentPeriods = [];
+    const recentPeriods: { period: string; periodName: string; count: number; totalNetSalary: number; totalGrossSalary: number }[] = [];
     for (let i = 0; i < 6; i++) {
       const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
       const period = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;

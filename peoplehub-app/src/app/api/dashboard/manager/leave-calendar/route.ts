@@ -52,8 +52,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const subordinateIds = subordinates.map((s) => s.id);
-    const subordinateMap = new Map(subordinates.map((s) => [s.id, s]));
+    type SubItem = typeof subordinates[number];
+    const subordinateIds = subordinates.map((s: SubItem) => s.id);
+    const subordinateMap = new Map<string, SubItem>(subordinates.map((s: SubItem) => [s.id, s]));
 
     // Get leave requests that overlap with the month
     const leaveRequests = await prisma.leaveRequest.findMany({
@@ -128,7 +129,7 @@ export async function GET(request: NextRequest) {
 
     // Build day-by-day view for the calendar
     const daysInMonth = endDate.getDate();
-    const calendarDays = [];
+    const calendarDays: { date: string; dayOfWeek: number; leaves: { employeeId: string; employeeName: string; leaveType: string; status: string }[]; holiday: { name: string; isNational: boolean } | null; isWeekend: boolean }[] = [];
 
     for (let day = 1; day <= daysInMonth; day++) {
       const currentDate = new Date(year, month - 1, day);

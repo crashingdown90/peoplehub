@@ -1,5 +1,5 @@
 // @ai:cl - Prisma middleware for automatic audit logging using extensions
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 // Tables that should be audited
 const AUDITABLE_TABLES = [

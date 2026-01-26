@@ -76,8 +76,9 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const attendanceMap = new Map(attendances.map((a) => [a.employeeId, a]));
-    const leaveSet = new Set(leaves.map((l) => l.employeeId));
+    type AttItem = typeof attendances[number];
+    const attendanceMap = new Map<string, AttItem>(attendances.map((a: AttItem) => [a.employeeId, a]));
+    const leaveSet = new Set(leaves.map((l: typeof leaves[number]) => l.employeeId));
 
     // Build member status
     const members = subordinates.map((sub) => {

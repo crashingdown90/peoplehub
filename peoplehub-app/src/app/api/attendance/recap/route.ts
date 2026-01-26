@@ -62,6 +62,10 @@ export async function GET(request: NextRequest) {
         });
 
         // Calculate statistics
+        type AttItem = typeof attendances[number];
+        type HolidayItem = typeof holidays[number];
+        type LeaveItem = typeof leaves[number];
+
         let totalWorkDays = 0;
         let totalPresent = 0;
         let totalLate = 0;
@@ -91,22 +95,22 @@ export async function GET(request: NextRequest) {
             const dayName = current.toLocaleDateString("id-ID", { weekday: "long" });
 
             const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-            const isHoliday = holidays.some(h =>
+            const isHoliday = holidays.some((h: HolidayItem) =>
                 h.holidayDate.toISOString().split("T")[0] === dateStr
             );
-            const holidayName = holidays.find(h =>
+            const holidayName = holidays.find((h: HolidayItem) =>
                 h.holidayDate.toISOString().split("T")[0] === dateStr
             )?.name;
 
             // Check if on leave
-            const leaveRecord = leaves.find(l => {
+            const leaveRecord = leaves.find((l: LeaveItem) => {
                 const start = new Date(l.startDate);
                 const end = new Date(l.endDate);
                 return current >= start && current <= end;
             });
 
             // Get attendance for this day
-            const attendance = attendances.find(a =>
+            const attendance = attendances.find((a: AttItem) =>
                 a.attendanceDate.toISOString().split("T")[0] === dateStr
             );
 

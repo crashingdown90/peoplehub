@@ -195,9 +195,12 @@ export async function POST(request: NextRequest) {
         });
 
         // Set auth cookie on response
+        // Allow disabling secure cookies for HTTP deployments
+        const useSecureCookies = process.env.SECURE_COOKIES !== "false" && process.env.NODE_ENV === "production";
+
         response.cookies.set(AUTH_CONFIG.cookieName, token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: useSecureCookies,
             sameSite: "lax",
             maxAge: AUTH_CONFIG.cookieMaxAge,
             path: "/",

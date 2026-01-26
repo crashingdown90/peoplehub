@@ -175,7 +175,7 @@ export class EmployeeService {
         take: limit,
         include: {
           user: {
-            select: { email: true, role: true },
+            select: { email: true, role: true, photoUrl: true },
           },
           branch: {
             select: { id: true, name: true },
@@ -220,7 +220,7 @@ export class EmployeeService {
       where: withTenant(context, { id: employeeId }),
       include: {
         user: {
-          select: { email: true, role: true, status: true, lastLoginAt: true },
+          select: { email: true, role: true, status: true, lastLoginAt: true, photoUrl: true, ktpPhotoUrl: true },
         },
         branch: {
           select: { id: true, name: true, code: true },

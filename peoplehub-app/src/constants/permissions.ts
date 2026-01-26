@@ -76,6 +76,11 @@ export const PERMISSIONS = {
     ADMIN_REGISTRATIONS: 'admin:registrations',
     ADMIN_USERS: 'admin:users',
     ADMIN_AUDIT_LOG: 'admin:audit-log',
+
+    // Announcements
+    ANNOUNCEMENTS_VIEW: 'announcements:view',
+    ANNOUNCEMENTS_CREATE: 'announcements:create',
+    ANNOUNCEMENTS_MANAGE: 'announcements:manage',
 } as const;
 
 export type Permission = typeof PERMISSIONS[keyof typeof PERMISSIONS];
@@ -159,6 +164,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
         PERMISSIONS.REPORTS_VIEW,
         PERMISSIONS.REPORTS_EXPORT,
         PERMISSIONS.ADMIN_REGISTRATIONS,
+        PERMISSIONS.ANNOUNCEMENTS_VIEW,
+        PERMISSIONS.ANNOUNCEMENTS_CREATE,
+        PERMISSIONS.ANNOUNCEMENTS_MANAGE,
     ],
 
     [UserRole.FINANCE]: [

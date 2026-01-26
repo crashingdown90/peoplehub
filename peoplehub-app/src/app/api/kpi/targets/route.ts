@@ -14,20 +14,72 @@ const updateSchema = z.object({
     notes: z.string().optional(),
 });
 
-// GET /api/kpi/targets - Get my KPI targets
+// GET /api/kpi/targets - Get KPI targets (own or admin mode)
 export async function GET(request: NextRequest) {
     try {
         const context = await getRequestContext();
 
-        if (!context || !context.employeeId) {
+        if (!context) {
             return NextResponse.json(
-                { success: false, error: { code: "UNAUTHORIZED", message: "Employee not found" } },
+                { success: false, error: { code: "UNAUTHORIZED", message: "Authentication required" } },
                 { status: 401 }
             );
         }
 
         const { searchParams } = new URL(request.url);
         const periodId = searchParams.get("periodId");
+        const mode = searchParams.get("mode");
+        const employeeId = searchParams.get("employeeId");
+
+        // Admin mode - list all targets
+        if (mode === "admin") {
+            if (!hasRole(context, ["HRD", "SUPER_ADMIN", "MANAGER"])) {
+                return NextResponse.json(
+                    { success: false, error: { code: "FORBIDDEN", message: "Access denied" } },
+                    { status: 403 }
+                );
+            }
+
+            const targets = await prisma.kpiTarget.findMany({
+                where: {
+                    tenantId: context.tenantId,
+                    ...(periodId ? { periodId } : {}),
+                    ...(employeeId ? { employeeId } : {}),
+                },
+                include: {
+                    period: true,
+                    indicator: true,
+                    employee: {
+                        select: {
+                            id: true,
+                            fullName: true,
+                            employeeNumber: true,
+                            department: { select: { name: true } },
+                        },
+                    },
+                },
+                orderBy: [{ employee: { fullName: "asc" } }, { createdAt: "desc" }],
+            });
+
+            return NextResponse.json({
+                success: true,
+                data: targets.map(t => ({
+                    ...t,
+                    targetValue: Number(t.targetValue),
+                    actualValue: t.actualValue ? Number(t.actualValue) : null,
+                    score: t.score ? Number(t.score) : null,
+                    indicator: { ...t.indicator, weight: Number(t.indicator.weight) },
+                })),
+            });
+        }
+
+        // Employee mode - get own targets
+        if (!context.employeeId) {
+            return NextResponse.json(
+                { success: false, error: { code: "UNAUTHORIZED", message: "Employee not found" } },
+                { status: 401 }
+            );
+        }
 
         const targets = await prisma.kpiTarget.findMany({
             where: {

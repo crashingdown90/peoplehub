@@ -26,7 +26,8 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      data: result.data?.map((b) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: result.data?.map((b: any) => ({
         id: b.id,
         leaveType: b.leaveType,
         year: b.year,

@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
           lateMinutes: attendance.lateMinutes,
         })),
       },
-    }).catch(err => {
+    }).catch((err: unknown) => {
       console.error("Audit log error (non-critical):", err);
     });
 

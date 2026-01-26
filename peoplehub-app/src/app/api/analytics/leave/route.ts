@@ -65,8 +65,12 @@ export async function GET(request: NextRequest) {
             select: { startDate: true, totalDays: true },
         });
 
+        type LeaveItem = typeof monthlyLeaves[number];
+        type StatusItem = typeof byStatus[number];
+        type TypeItem = typeof byType[number];
+
         const monthlyTrend: Record<string, { count: number; days: number }> = {};
-        monthlyLeaves.forEach(l => {
+        monthlyLeaves.forEach((l: LeaveItem) => {
             const monthKey = l.startDate.toISOString().slice(0, 7);
             if (!monthlyTrend[monthKey]) {
                 monthlyTrend[monthKey] = { count: 0, days: 0 };
@@ -88,26 +92,31 @@ export async function GET(request: NextRequest) {
             take: 10,
         });
 
+        type TakerItem = typeof topLeaveTakers[number];
+
         const employees = await prisma.employee.findMany({
-            where: { id: { in: topLeaveTakers.map(t => t.employeeId) } },
+            where: { id: { in: topLeaveTakers.map((t: TakerItem) => t.employeeId) } },
             select: { id: true, fullName: true, employeeNumber: true },
         });
 
-        const totalApproved = byStatus.find(s => s.status === "APPROVED");
+        type EmployeeItem = typeof employees[number];
+        type LeaveTypeItem = typeof leaveTypes[number];
+
+        const totalApproved = byStatus.find((s: StatusItem) => s.status === "APPROVED");
         const totalDays = totalApproved?._sum?.totalDays || 0;
 
         return NextResponse.json({
             success: true,
             data: {
                 overview: {
-                    totalRequests: byStatus.reduce((sum, s) => sum + s._count, 0),
-                    approved: byStatus.find(s => s.status === "APPROVED")?._count || 0,
-                    pending: byStatus.find(s => s.status === "PENDING")?._count || 0,
-                    rejected: byStatus.find(s => s.status === "REJECTED")?._count || 0,
+                    totalRequests: byStatus.reduce((sum: number, s: StatusItem) => sum + s._count, 0),
+                    approved: byStatus.find((s: StatusItem) => s.status === "APPROVED")?._count || 0,
+                    pending: byStatus.find((s: StatusItem) => s.status === "PENDING")?._count || 0,
+                    rejected: byStatus.find((s: StatusItem) => s.status === "REJECTED")?._count || 0,
                     totalDaysUsed: totalDays,
                 },
-                byType: byType.map(t => ({
-                    type: leaveTypes.find(lt => lt.id === t.leaveTypeId)?.name || "Unknown",
+                byType: byType.map((t: TypeItem) => ({
+                    type: leaveTypes.find((lt: LeaveTypeItem) => lt.id === t.leaveTypeId)?.name || "Unknown",
                     count: t._count,
                     totalDays: t._sum?.totalDays || 0,
                 })),
@@ -116,8 +125,8 @@ export async function GET(request: NextRequest) {
                     monthName: new Date(month + "-01").toLocaleDateString("id-ID", { month: "short" }),
                     ...data,
                 })).sort((a, b) => a.month.localeCompare(b.month)),
-                topLeaveTakers: topLeaveTakers.map(t => ({
-                    employee: employees.find(e => e.id === t.employeeId),
+                topLeaveTakers: topLeaveTakers.map((t: TakerItem) => ({
+                    employee: employees.find((e: EmployeeItem) => e.id === t.employeeId),
                     totalDays: t._sum?.totalDays || 0,
                 })),
             },

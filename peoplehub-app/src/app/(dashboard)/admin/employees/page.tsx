@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +25,7 @@ interface Employee {
     branch?: { id: string; name: string };
     department?: { id: string; name: string };
     position?: { name: string };
-    user?: { email: string; role: string };
+    user?: { email: string; role: string; photoUrl?: string | null };
 }
 
 interface FilterOption {
@@ -264,9 +265,21 @@ export default function EmployeesPage() {
                                 >
                                     <CardContent className="py-4">
                                         <div className="flex items-start gap-3">
-                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-lg font-bold text-white">
-                                                {emp.fullName.slice(0, 2).toUpperCase()}
-                                            </div>
+                                            {emp.user?.photoUrl ? (
+                                                <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full">
+                                                    <Image
+                                                        src={emp.user.photoUrl}
+                                                        alt={emp.fullName}
+                                                        fill
+                                                        className="object-cover"
+                                                        sizes="48px"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-lg font-bold text-white">
+                                                    {emp.fullName.slice(0, 2).toUpperCase()}
+                                                </div>
+                                            )}
                                             <div className="min-w-0 flex-1">
                                                 <div className="flex items-start justify-between gap-2">
                                                     <h3 className="font-semibold text-slate-900 truncate">{emp.fullName}</h3>

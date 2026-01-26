@@ -1,6 +1,6 @@
 "use client";
 
-// @ai:cx
+// @ai:cx - Employee detail page with document viewing
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
@@ -8,8 +8,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
     Building, Briefcase, Mail, Calendar,
-    Clock, CreditCard, ArrowLeft, Loader2
+    Clock, CreditCard, ArrowLeft, Loader2,
+    FileImage, X, Pencil
 } from "lucide-react";
+import Image from "next/image";
 
 interface EmployeeDetail {
     id: string;
@@ -27,7 +29,13 @@ interface EmployeeDetail {
     department?: { name: string };
     position?: { name: string };
     manager?: { fullName: string; employeeNumber: string };
-    user?: { email: string; role: string; status: string };
+    user?: {
+        email: string;
+        role: string;
+        status: string;
+        photoUrl?: string | null;
+        ktpPhotoUrl?: string | null;
+    };
     attendances: Array<{ attendanceDate: string; status: string; clockIn: string; clockOut: string }>;
     leaveBalances: Array<{ leaveType: { name: string }; remainingBalance: number }>;
     payslips: Array<{ period: string; netSalary: number }>;
@@ -38,6 +46,7 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
     const router = useRouter();
     const [employee, setEmployee] = useState<EmployeeDetail | null>(null);
     const [loading, setLoading] = useState(true);
+    const [photoModal, setPhotoModal] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchEmployee = async () => {
@@ -91,20 +100,44 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
         );
     }
 
+    const photoUrl = employee.user?.photoUrl;
+    const ktpPhotoUrl = employee.user?.ktpPhotoUrl;
+
     return (
         <div className="min-h-screen bg-slate-50 p-4 md:p-8">
             <div className="mx-auto max-w-5xl">
-                <Button variant="ghost" onClick={() => router.back()} className="mb-4">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Kembali
-                </Button>
+                <div className="mb-4 flex items-center justify-between">
+                    <Button variant="ghost" onClick={() => router.back()}>
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Kembali
+                    </Button>
+                    <Button onClick={() => router.push(`/admin/employees/${id}/edit`)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit Karyawan
+                    </Button>
+                </div>
 
                 {/* Header */}
                 <Card className="mb-6">
                     <CardContent className="py-6">
                         <div className="flex items-start gap-6">
-                            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-3xl font-bold text-white">
-                                {employee.fullName.slice(0, 2).toUpperCase()}
+                            {/* Profile Photo */}
+                            <div
+                                className={`relative h-24 w-24 shrink-0 overflow-hidden rounded-full border-4 border-white shadow-lg ${photoUrl ? "cursor-pointer" : ""}`}
+                                onClick={() => photoUrl && setPhotoModal(photoUrl)}
+                            >
+                                {photoUrl ? (
+                                    <Image
+                                        src={photoUrl}
+                                        alt={employee.fullName}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-500 to-blue-600 text-3xl font-bold text-white">
+                                        {employee.fullName.slice(0, 2).toUpperCase()}
+                                    </div>
+                                )}
                             </div>
                             <div className="flex-1">
                                 <div className="flex items-center gap-3">
@@ -168,6 +201,62 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
                         </CardContent>
                     </Card>
 
+                    {/* Documents */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <FileImage className="h-4 w-4" /> Dokumen
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-2 gap-4">
+                                {/* Profile Photo */}
+                                <div>
+                                    <p className="mb-2 text-xs font-medium text-slate-500">Foto Profil</p>
+                                    {photoUrl ? (
+                                        <div
+                                            className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-lg border border-slate-200"
+                                            onClick={() => setPhotoModal(photoUrl)}
+                                        >
+                                            <Image
+                                                src={photoUrl}
+                                                alt="Foto Profil"
+                                                fill
+                                                className="object-cover hover:scale-105 transition-transform"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="flex aspect-square w-full items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50">
+                                            <span className="text-xs text-slate-400">Tidak ada</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* KTP Photo */}
+                                <div>
+                                    <p className="mb-2 text-xs font-medium text-slate-500">Foto KTP</p>
+                                    {ktpPhotoUrl ? (
+                                        <div
+                                            className="relative aspect-[1.6/1] w-full cursor-pointer overflow-hidden rounded-lg border border-slate-200"
+                                            onClick={() => setPhotoModal(ktpPhotoUrl)}
+                                        >
+                                            <Image
+                                                src={ktpPhotoUrl}
+                                                alt="Foto KTP"
+                                                fill
+                                                className="object-cover hover:scale-105 transition-transform"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="flex aspect-[1.6/1] w-full items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50">
+                                            <span className="text-xs text-slate-400">Tidak ada</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
                     {/* Leave Balances */}
                     <Card>
                         <CardHeader>
@@ -192,7 +281,7 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
                     </Card>
 
                     {/* Recent Payslips */}
-                    <Card>
+                    <Card className="lg:col-span-2">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-base">
                                 <CreditCard className="h-4 w-4" /> Slip Gaji Terakhir
@@ -254,6 +343,31 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
                     </Card>
                 </div>
             </div>
+
+            {/* Photo Modal */}
+            {photoModal && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+                    onClick={() => setPhotoModal(null)}
+                >
+                    <button
+                        className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+                        onClick={() => setPhotoModal(null)}
+                    >
+                        <X className="h-6 w-6" />
+                    </button>
+                    <div className="relative max-h-[90vh] max-w-3xl overflow-hidden rounded-lg">
+                        <Image
+                            src={photoModal}
+                            alt="Document"
+                            width={800}
+                            height={600}
+                            className="object-contain"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

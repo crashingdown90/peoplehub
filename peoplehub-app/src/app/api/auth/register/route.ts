@@ -6,7 +6,6 @@ import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
 import { registerSchema } from "@/validations/auth.schema";
 import { EmailService } from "@/services/email";
-import { Gender } from "@prisma/client";
 import { formatDate } from "@/constants/locale";
 
 import { validateCsrf, getCsrfErrorResponse } from "@/lib/security/csrf";
@@ -152,7 +151,7 @@ export async function POST(request: NextRequest) {
                 role: "EMPLOYEE",
 
                 // Phase 1A: Additional registration data
-                gender: gender as Gender,
+                gender,
                 birthPlace,
                 // Parse date string properly to avoid timezone issues
                 // Input format: "YYYY-MM-DD" from HTML date input
@@ -203,7 +202,8 @@ export async function POST(request: NextRequest) {
         });
 
         // If no HRD in this tenant, notify HRD from all tenants (shared HRD)
-        let notifyUserIds = hrdUsers.map((u) => u.id);
+        type HrdItem = typeof hrdUsers[number];
+        let notifyUserIds = hrdUsers.map((u: HrdItem) => u.id);
         if (notifyUserIds.length === 0) {
             const allHrds = await prisma.user.findMany({
                 where: {
@@ -212,7 +212,8 @@ export async function POST(request: NextRequest) {
                 },
                 select: { id: true, tenantId: true },
             });
-            notifyUserIds = allHrds.map((u) => u.id);
+            type AllHrdItem = typeof allHrds[number];
+            notifyUserIds = allHrds.map((u: AllHrdItem) => u.id);
         }
 
         // Create in-app notifications for HRD

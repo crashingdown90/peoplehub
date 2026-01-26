@@ -48,7 +48,8 @@ export async function GET(request: NextRequest) {
       select: { id: true, fullName: true, employeeNumber: true },
     });
 
-    const subordinateIds = subordinates.map((s) => s.id);
+    type SubItem = typeof subordinates[number];
+    const subordinateIds = subordinates.map((s: SubItem) => s.id);
 
     if (subordinateIds.length === 0) {
       return NextResponse.json({
@@ -78,9 +79,10 @@ export async function GET(request: NextRequest) {
     });
 
     // Build member list with attendance status
-    const attendanceMap = new Map(attendances.map((a) => [a.employeeId, a]));
+    type AttItem = typeof attendances[number];
+    const attendanceMap = new Map<string, AttItem>(attendances.map((a: AttItem) => [a.employeeId, a]));
 
-    const members = subordinates.map((emp) => {
+    const members = subordinates.map((emp: SubItem) => {
       const attendance = attendanceMap.get(emp.id);
       return {
         employeeId: emp.id,
@@ -95,11 +97,12 @@ export async function GET(request: NextRequest) {
     });
 
     // Calculate summary
+    type MemberItem = typeof members[number];
     const summary = {
-      present: members.filter((m) => m.status === "PRESENT").length,
-      late: members.filter((m) => m.status === "LATE").length,
-      absent: members.filter((m) => m.status === "ABSENT").length,
-      leave: members.filter((m) => m.status === "LEAVE").length,
+      present: members.filter((m: MemberItem) => m.status === "PRESENT").length,
+      late: members.filter((m: MemberItem) => m.status === "LATE").length,
+      absent: members.filter((m: MemberItem) => m.status === "ABSENT").length,
+      leave: members.filter((m: MemberItem) => m.status === "LEAVE").length,
     };
 
     // Paginate

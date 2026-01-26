@@ -5,7 +5,7 @@ import { verifyTokenEdge, type JWTPayload } from "@/lib/auth/edge-jwt";
 
 // Routes that don't require authentication
 const publicRoutes = ["/login", "/register", "/forgot-password", "/reset-password"];
-const publicApiRoutes = ["/api/auth/login", "/api/auth/register", "/api/auth/csrf", "/api/health", "/api/tenants", "/api/metrics"];
+const publicApiRoutes = ["/api/auth/login", "/api/auth/register", "/api/auth/logout", "/api/auth/csrf", "/api/health", "/api/tenants", "/api/metrics"];
 
 // Routes that require specific roles
 const roleRoutes: Record<string, string[]> = {
@@ -69,6 +69,35 @@ function getClientIP(request: NextRequest): string {
     const realIP = request.headers.get("x-real-ip");
     if (realIP) return realIP;
     return "127.0.0.1";
+}
+
+/**
+ * Get the base URL for redirects, using forwarded headers
+ * This fixes the 0.0.0.0 redirect issue when running behind nginx
+ */
+function getRedirectUrl(request: NextRequest, path: string): URL {
+    // First try X-Forwarded headers (set by nginx)
+    const forwardedHost = request.headers.get("x-forwarded-host");
+    const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
+
+    if (forwardedHost) {
+        return new URL(path, `${forwardedProto}://${forwardedHost}`);
+    }
+
+    // Check Host header - if it's not internal, use it
+    const host = request.headers.get("host");
+    if (host && !host.includes("0.0.0.0") && !host.includes("127.0.0.1") && !host.includes("localhost")) {
+        return new URL(path, `https://${host}`);
+    }
+
+    // Fall back to request.url but only if it doesn't contain internal addresses
+    const url = new URL(request.url);
+    if (!url.hostname.includes("0.0.0.0") && !url.hostname.includes("127.0.0.1")) {
+        return new URL(path, request.url);
+    }
+
+    // Last resort: hardcoded domain
+    return new URL(path, "https://hrm-kreatifindo.cloud");
 }
 
 function checkRateLimit(
@@ -183,7 +212,7 @@ export async function middleware(request: NextRequest) {
     if (!token) {
         // Redirect to login for page requests
         if (!pathname.startsWith("/api")) {
-            return NextResponse.redirect(new URL("/login", request.url));
+            return NextResponse.redirect(getRedirectUrl(request, "/login"));
         }
         // Return 401 for API requests
         return NextResponse.json(
@@ -198,7 +227,7 @@ export async function middleware(request: NextRequest) {
     if (!payload) {
         // Clear invalid token
         const response = !pathname.startsWith("/api")
-            ? NextResponse.redirect(new URL("/login", request.url))
+            ? NextResponse.redirect(getRedirectUrl(request, "/login"))
             : NextResponse.json(
                 { success: false, error: { code: "UNAUTHORIZED", message: "Invalid token" } },
                 { status: 401 }
@@ -212,7 +241,7 @@ export async function middleware(request: NextRequest) {
         if (pathname.startsWith(route)) {
             if (!allowedRoles.includes(payload.role)) {
                 if (!pathname.startsWith("/api")) {
-                    return NextResponse.redirect(new URL("/dashboard", request.url));
+                    return NextResponse.redirect(getRedirectUrl(request, "/dashboard"));
                 }
                 return NextResponse.json(
                     { success: false, error: { code: "FORBIDDEN", message: "Access denied" } },

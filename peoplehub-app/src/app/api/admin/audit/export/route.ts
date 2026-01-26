@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
 
         if (format === "csv") {
             const headers = ["ID", "Actor ID", "Action", "Object Type", "Object ID", "Created At"];
-            const rows = logs.map(log => [
+            const rows = logs.map((log: typeof logs[number]) => [
                 log.id,
                 log.actorId || "",
                 log.action,
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 
             const csv = [
                 headers.join(","),
-                ...rows.map(row => row.map(cell => `"${cell}"`).join(",")),
+                ...rows.map((row: (string | Date)[]) => row.map((cell: string | Date) => `"${cell}"`).join(",")),
             ].join("\n");
 
             return new Response(csv, {

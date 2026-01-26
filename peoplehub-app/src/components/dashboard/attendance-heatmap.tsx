@@ -22,7 +22,7 @@ interface AttendanceHeatmapProps {
 
 // Generate sample data for demonstration
 function generateSampleData(): AttendanceDay[] {
-    const days = [];
+    const days: AttendanceDay[] = [];
     const today = new Date();
 
     for (let i = 29; i >= 0; i--) {

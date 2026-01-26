@@ -36,6 +36,7 @@ export default function AttendancePage() {
 
     const [status, setStatus] = useState<AttendanceStatus | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [noEmployeeRecord, setNoEmployeeRecord] = useState(false);
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
     const [workMode, setWorkMode] = useState<"WFO" | "WFH">("WFO");
@@ -55,6 +56,13 @@ export default function AttendancePage() {
         try {
             const response = await fetch("/api/attendance/today");
             const data = await response.json();
+
+            if (response.status === 401 && data.error?.code === "UNAUTHORIZED") {
+                // User doesn't have employee record (e.g., Super Admin)
+                setNoEmployeeRecord(true);
+                return;
+            }
+
             if (data.success) {
                 setStatus(data.data);
                 if (data.data.hasClockedIn && !data.data.hasClockedOut) {
@@ -218,6 +226,33 @@ export default function AttendancePage() {
                 <div className="text-center">
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent mx-auto mb-4" />
                     <p className="text-slate-600">Memuat...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show message for users without employee record (e.g., Super Admin)
+    if (noEmployeeRecord) {
+        return (
+            <div className="min-h-screen bg-slate-50 px-4 py-8">
+                <div className="mx-auto max-w-md">
+                    <Card>
+                        <CardContent className="py-8 text-center">
+                            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+                                <Clock className="h-8 w-8 text-blue-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-slate-900">Fitur Absensi</h3>
+                            <p className="mt-2 text-slate-600">
+                                Fitur absensi hanya tersedia untuk karyawan yang terdaftar.
+                            </p>
+                            <p className="mt-1 text-sm text-slate-500">
+                                Sebagai admin, Anda dapat melihat data kehadiran karyawan melalui menu Analytics atau laporan.
+                            </p>
+                            <Button variant="outline" onClick={() => router.push("/dashboard")} className="mt-6">
+                                Kembali ke Dashboard
+                            </Button>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
         );

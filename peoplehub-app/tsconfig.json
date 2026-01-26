@@ -9,6 +9,7 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
+    "noImplicitAny": false,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -41,6 +42,8 @@
     "e2e",
     "playwright.config.ts",
     "src/_wip",
-    "src/app/_wip"
+    "src/app/_wip",
+    "prisma/*.ts",
+    "scripts/**/*.ts"
   ]
 }

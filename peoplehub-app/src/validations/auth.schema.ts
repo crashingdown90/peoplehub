@@ -74,7 +74,7 @@ export const registerSchema = z
     bankName: z.string().min(1, "Pilih nama bank"),
     bankAccountNumber: z
       .string()
-      .min(10, "Nomor rekening minimal 10 digit")
+      .min(6, "Nomor rekening minimal 6 digit")
       .max(16, "Nomor rekening maksimal 16 digit")
       .regex(/^\d+$/, "Nomor rekening hanya boleh angka"),
     bankAccountHolder: z

@@ -38,8 +38,9 @@ export async function GET() {
             _sum: { netSalary: true, grossSalary: true },
         });
 
-        const draftPayslips = payslipStats.find((p) => p.status === "DRAFT");
-        const publishedPayslips = payslipStats.find((p) => p.status === "PUBLISHED");
+        type PayslipStatItem = typeof payslipStats[number];
+        const draftPayslips = payslipStats.find((p: PayslipStatItem) => p.status === "DRAFT");
+        const publishedPayslips = payslipStats.find((p: PayslipStatItem) => p.status === "PUBLISHED");
 
         // Total payroll amount this period
         const totalPayroll = await prisma.payslip.aggregate({
@@ -65,8 +66,9 @@ export async function GET() {
             orderBy: { createdAt: "desc" },
         });
 
+        type ReimbItem = typeof pendingReimbursements[number];
         const pendingReimburseTotal = pendingReimbursements.reduce(
-            (acc, r) => acc + Number(r.totalAmount),
+            (acc: number, r: ReimbItem) => acc + Number(r.totalAmount),
             0
         );
 
@@ -102,8 +104,9 @@ export async function GET() {
             take: 10,
         });
 
+        type TravelItem = typeof pendingTravel[number];
         const pendingTravelBudget = pendingTravel.reduce(
-            (acc, t) => acc + Number(t.estimatedBudget),
+            (acc: number, t: TravelItem) => acc + Number(t.estimatedBudget),
             0
         );
 
@@ -160,7 +163,7 @@ export async function GET() {
                 pendingReimbursements: {
                     count: pendingReimbursements.length,
                     totalAmount: pendingReimburseTotal,
-                    list: pendingReimbursements.map((r) => ({
+                    list: pendingReimbursements.map((r: ReimbItem) => ({
                         id: r.id,
                         employee: r.employee.fullName,
                         employeeNumber: r.employee.employeeNumber,
@@ -175,7 +178,7 @@ export async function GET() {
                 pendingTravel: {
                     count: pendingTravel.length,
                     totalBudget: pendingTravelBudget,
-                    list: pendingTravel.map((t) => ({
+                    list: pendingTravel.map((t: TravelItem) => ({
                         id: t.id,
                         employee: t.employee.fullName,
                         employeeNumber: t.employee.employeeNumber,
@@ -194,7 +197,7 @@ export async function GET() {
                         count: paidReimbursements._count || 0,
                         total: Number(paidReimbursements._sum.totalAmount || 0),
                     },
-                    byCategory: reimbursementsByCategory.map((c) => ({
+                    byCategory: reimbursementsByCategory.map((c: typeof reimbursementsByCategory[number]) => ({
                         category: c.category,
                         count: c._count,
                         total: Number(c._sum.totalAmount || 0),
@@ -212,7 +215,7 @@ export async function GET() {
                               )
                             : 0,
                 },
-                recentPaidReimbursements: recentPaidReimbursements.map((r) => ({
+                recentPaidReimbursements: recentPaidReimbursements.map((r: typeof recentPaidReimbursements[number]) => ({
                     id: r.id,
                     employee: r.employee.fullName,
                     category: r.category,

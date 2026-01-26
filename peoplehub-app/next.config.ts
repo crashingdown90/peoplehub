@@ -36,6 +36,21 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Enable standalone output for Docker deployment
+  output: "standalone",
+  // Configure allowed image domains
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.blob.vercel-storage.com",
+      },
+    ],
+  },
   async headers() {
     return [
       {

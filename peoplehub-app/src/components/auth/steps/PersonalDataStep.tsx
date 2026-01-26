@@ -19,6 +19,8 @@ const personalDataSchema = z.object({
     gender: z.enum(["MALE", "FEMALE"], { message: "Pilih jenis kelamin" }),
     birthPlace: z.string().min(2, "Tempat lahir minimal 2 karakter"),
     birthDate: z.string().min(1, "Tanggal lahir wajib diisi"),
+    nik: z.string().regex(/^[0-9]{16}$/, "NIK harus 16 digit angka").optional().or(z.literal("")),
+    npwp: z.string().regex(/^[0-9]{15,16}$/, "NPWP harus 15-16 digit angka").optional().or(z.literal("")),
     password: z
         .string()
         .min(8, "Password minimal 8 karakter")
@@ -171,6 +173,32 @@ export function PersonalDataStep({ initialData, onNext, onBack }: PersonalDataSt
                             {...register("birthDate")}
                         />
                         {errors.birthDate && <p className="text-xs text-red-500 font-medium">{errors.birthDate.message}</p>}
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="nik" className="text-slate-700 font-semibold">
+                            NIK <span className="text-slate-400 font-normal text-xs">(Opsional)</span>
+                        </Label>
+                        <Input
+                            id="nik"
+                            placeholder="16 digit NIK"
+                            maxLength={16}
+                            className="rounded-xl border-slate-300 h-11"
+                            {...register("nik")}
+                        />
+                        {errors.nik && <p className="text-xs text-red-500 font-medium">{errors.nik.message}</p>}
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="npwp" className="text-slate-700 font-semibold">
+                            NPWP <span className="text-slate-400 font-normal text-xs">(Opsional)</span>
+                        </Label>
+                        <Input
+                            id="npwp"
+                            placeholder="15-16 digit NPWP"
+                            maxLength={16}
+                            className="rounded-xl border-slate-300 h-11"
+                            {...register("npwp")}
+                        />
+                        {errors.npwp && <p className="text-xs text-red-500 font-medium">{errors.npwp.message}</p>}
                     </div>
                 </div>
             </div>

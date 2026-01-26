@@ -17,12 +17,13 @@ WORKDIR /app
 # Install dependencies needed for node-gyp
 RUN apk add --no-cache libc6-compat
 
-# Copy package files
+# Copy package files and scripts (needed for prepare hook)
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
+COPY scripts ./scripts/
 
-# Install dependencies
-RUN npm ci --production=false
+# Install dependencies (ignore prepare script in CI)
+RUN npm ci --production=false --ignore-scripts && npm run prepare || true
 
 # Generate Prisma client
 RUN npx prisma generate
@@ -44,6 +45,12 @@ COPY . .
 # Set build-time environment variables
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+
+# Build-time placeholder env vars (required for Next.js build)
+ENV JWT_SECRET=build-time-placeholder
+ENV SESSION_SECRET=build-time-placeholder
+ENV ENCRYPTION_KEY=build-time-placeholder-32chars
+ENV DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder
 
 # Build the application
 RUN npm run build

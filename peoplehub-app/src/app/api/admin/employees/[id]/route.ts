@@ -4,7 +4,6 @@ import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { EmployeeService } from "@/services";
 import { z } from "zod";
-import type { EmploymentType, WorkMode, EmployeeStatus } from "@prisma/client";
 
 const updateEmployeeSchema = z.object({
     fullName: z.string().min(2).optional(),
@@ -16,7 +15,7 @@ const updateEmployeeSchema = z.object({
     departmentId: z.string().optional(),
     positionId: z.string().optional(),
     managerId: z.string().nullable().optional(),
-    employmentType: z.enum(["PERMANENT", "CONTRACT", "INTERNSHIP", "PROBATION"]).optional(),
+    employmentType: z.enum(["PERMANENT", "CONTRACT", "FREELANCE", "INTERN"]).optional(),
     workMode: z.enum(["WFO", "WFH", "HYBRID"]).optional(),
     status: z.enum(["ACTIVE", "INACTIVE", "TERMINATED"]).optional(),
     bankName: z.string().optional(),
@@ -151,9 +150,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             departmentId: data.departmentId,
             positionId: data.positionId,
             managerId: data.managerId ?? undefined,
-            employmentType: data.employmentType as EmploymentType,
-            workMode: data.workMode as WorkMode,
-            status: data.status as EmployeeStatus,
+            employmentType: data.employmentType,
+            workMode: data.workMode,
+            status: data.status,
             bankName: data.bankName,
             bankAccountNumber: data.bankAccountNumber,
             bankAccountHolder: data.bankAccountHolder,

@@ -2,17 +2,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { PayrollService } from "@/services";
-import type { PayslipStatus, Payslip } from "@prisma/client";
-
-// Type for payslip with employee relation
-interface PayslipWithEmployee extends Payslip {
-  employee?: {
-    id: string;
-    fullName: string;
-    employeeNumber: string;
-    department?: { name: string } | null;
-  };
-}
 
 // GET /api/payroll/payslips - Get payslips (own or all for admin)
 export async function GET(request: NextRequest) {
@@ -38,14 +27,14 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const period = searchParams.get("period") || undefined;
-    const status = searchParams.get("status") as PayslipStatus | null;
+    const status = searchParams.get("status");
     const employeeId = searchParams.get("employeeId") || undefined;
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
 
     const result = await PayrollService.getPayslips(context, {
       period,
-      status: status || undefined,
+      status: status as "DRAFT" | "PUBLISHED" | undefined,
       employeeId: isAdmin ? employeeId : context.employeeId,
       page,
       limit,
@@ -59,9 +48,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Format response based on role
-    // Cast to include employee relation which is included by the service
-    const payslips = result.data as unknown as PayslipWithEmployee[];
-    const data = payslips?.map((p) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const payslips = result.data as any[];
+    const data = payslips?.map((p: any) => ({
       id: p.id,
       period: p.period,
       periodFormatted: formatPeriod(p.period),

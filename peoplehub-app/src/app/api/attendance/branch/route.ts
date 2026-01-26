@@ -80,7 +80,8 @@ export async function GET(request: NextRequest) {
       prisma.employee.count({ where: employeeWhere }),
     ]);
 
-    const employeeIds = employees.map((e) => e.id);
+    type EmployeeItem = typeof employees[number];
+    const employeeIds = employees.map((e: EmployeeItem) => e.id);
 
     // Get attendance for employees on the date
     const attendances = await prisma.attendance.findMany({
@@ -92,10 +93,11 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const attendanceMap = new Map(attendances.map((a) => [a.employeeId, a]));
+    type AttendanceItem = typeof attendances[number];
+    const attendanceMap = new Map<string, AttendanceItem>(attendances.map((a: AttendanceItem) => [a.employeeId, a]));
 
     // Build result with attendance status
-    const results = employees.map((emp) => {
+    const results = employees.map((emp: EmployeeItem) => {
       const attendance = attendanceMap.get(emp.id);
       return {
         employeeId: emp.id,
@@ -114,9 +116,10 @@ export async function GET(request: NextRequest) {
     });
 
     // Filter by status if provided (for absent we need to check results)
+    type ResultItem = typeof results[number];
     let filteredResults = results;
     if (status) {
-      filteredResults = results.filter((r) => r.status === status);
+      filteredResults = results.filter((r: ResultItem) => r.status === status);
     }
 
     // Get summary for the entire branch (not paginated)
@@ -125,21 +128,25 @@ export async function GET(request: NextRequest) {
       select: { id: true },
     });
 
+    type AllEmpItem = typeof allEmployeeIds[number];
+
     const allAttendances = await prisma.attendance.findMany({
       where: {
         tenantId: context.tenantId,
-        employeeId: { in: allEmployeeIds.map((e) => e.id) },
+        employeeId: { in: allEmployeeIds.map((e: AllEmpItem) => e.id) },
         attendanceDate: targetDate,
       },
       select: { status: true },
     });
 
+    type AllAttItem = typeof allAttendances[number];
+
     const summary = {
       totalEmployees: allEmployeeIds.length,
-      present: allAttendances.filter((a) => a.status === "PRESENT").length,
-      late: allAttendances.filter((a) => a.status === "LATE").length,
+      present: allAttendances.filter((a: AllAttItem) => a.status === "PRESENT").length,
+      late: allAttendances.filter((a: AllAttItem) => a.status === "LATE").length,
       absent: allEmployeeIds.length - allAttendances.length,
-      leave: allAttendances.filter((a) => a.status === "LEAVE").length,
+      leave: allAttendances.filter((a: AllAttItem) => a.status === "LEAVE").length,
       attendanceRate: allEmployeeIds.length > 0
         ? Math.round((allAttendances.length / allEmployeeIds.length) * 100)
         : 0,

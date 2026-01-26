@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
         });
 
         const headers = ["Tanggal", "NIK", "Nama", "Departemen", "Status", "Clock In", "Clock Out", "Terlambat (menit)", "Lembur (menit)"];
-        const rows = attendances.map(att => [
+        const rows = attendances.map((att: typeof attendances[number]) => [
             att.attendanceDate.toISOString().split("T")[0],
             att.employee.employeeNumber,
             att.employee.fullName,
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
 
         const csv = [
             headers.join(","),
-            ...rows.map(row => row.map(cell => `"${cell}"`).join(",")),
+            ...rows.map((row: string[]) => row.map((cell: string) => `"${cell}"`).join(",")),
         ].join("\n");
 
         return new Response(csv, {

@@ -47,14 +47,15 @@ export async function GET(request: NextRequest) {
             },
         });
 
-        const totalOvertimeMinutes = attendances.reduce((sum, a) => sum + a.overtimeMinutes, 0);
+        type AttItem = typeof attendances[number];
+        const totalOvertimeMinutes = attendances.reduce((sum: number, a: AttItem) => sum + a.overtimeMinutes, 0);
         const totalOvertimeHours = Math.floor(totalOvertimeMinutes / 60);
         const remainingMinutes = totalOvertimeMinutes % 60;
 
         // Group by month
         const byMonth: Record<string, { month: string; minutes: number; count: number }> = {};
 
-        attendances.forEach(a => {
+        attendances.forEach((a: AttItem) => {
             const monthKey = a.attendanceDate.toISOString().slice(0, 7);
             if (!byMonth[monthKey]) {
                 byMonth[monthKey] = {
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
                     totalDays: attendances.length,
                 },
                 byMonth: Object.values(byMonth),
-                records: attendances.map(a => ({
+                records: attendances.map((a: AttItem) => ({
                     id: a.id,
                     date: a.attendanceDate,
                     clockIn: a.clockIn,

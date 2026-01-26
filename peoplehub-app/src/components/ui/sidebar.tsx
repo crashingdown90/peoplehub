@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
     Home, Clock, Calendar, Plane, Receipt, Target, CreditCard,
-    User, Bell, LogOut, Menu, X, CheckCircle, Users, BarChart3, Megaphone
+    User, Bell, LogOut, Menu, X, CheckCircle, Users, BarChart3, Megaphone, Settings
 } from "lucide-react";
 import { useState } from "react";
 
@@ -30,6 +30,8 @@ const adminMenus = [
     { href: "/admin/employees", label: "Karyawan", icon: Users },
     { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/admin/registrations", label: "Registrasi", icon: Users },
+    { href: "/admin/kpi", label: "Kelola KPI", icon: Target },
+    { href: "/admin/announcements", label: "Kelola Pengumuman", icon: Settings },
 ];
 
 export function RoleSidebar({ role = "EMPLOYEE" }: SidebarProps) {

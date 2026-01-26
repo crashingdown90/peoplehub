@@ -145,14 +145,14 @@ export async function GET() {
                     monthName: today.toLocaleDateString("id-ID", { month: "long", year: "numeric" }),
                 },
                 leave: {
-                    balances: leaveBalances.map((lb) => ({
+                    balances: leaveBalances.map((lb: typeof leaveBalances[number]) => ({
                         type: lb.leaveType.name,
                         code: lb.leaveType.code,
                         initial: lb.initialBalance,
                         used: lb.usedBalance,
                         remaining: lb.remainingBalance,
                     })),
-                    totalRemaining: leaveBalances.reduce((acc, lb) => acc + lb.remainingBalance, 0),
+                    totalRemaining: leaveBalances.reduce((acc: number, lb: typeof leaveBalances[number]) => acc + lb.remainingBalance, 0),
                 },
                 pendingSubmissions: {
                     leave: pendingLeaves,
@@ -167,7 +167,7 @@ export async function GET() {
                           grossSalary: Number(latestPayslip.grossSalary),
                       }
                     : null,
-                upcomingSchedules: upcomingSchedules.map((s) => ({
+                upcomingSchedules: upcomingSchedules.map((s: typeof upcomingSchedules[number]) => ({
                     date: s.scheduleDate,
                     shift: s.shift,
                     workMode: s.workMode,

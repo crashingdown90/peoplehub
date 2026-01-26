@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { usePermission } from "@/hooks/usePermission";
 import { PERMISSIONS, type Permission } from "@/constants/permissions";
@@ -20,6 +20,8 @@ import {
     Menu,
     ChevronDown,
     Bell,
+    Megaphone,
+    Clock,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -33,12 +35,34 @@ interface MenuItem {
     icon: React.ComponentType<{ className?: string }>;
     permission?: Permission | Permission[];
     children?: MenuItem[];
+    badge?: number;
 }
 
 export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     const pathname = usePathname();
     const { can, canAny } = usePermission();
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    // Fetch unread announcement count
+    useEffect(() => {
+        const fetchUnreadCount = async () => {
+            try {
+                const res = await fetch("/api/announcements/unread-count");
+                const data = await res.json();
+                if (data.success) {
+                    setUnreadCount(data.data.count);
+                }
+            } catch (err) {
+                // Silent fail
+            }
+        };
+
+        fetchUnreadCount();
+        // Refresh every 60 seconds
+        const interval = setInterval(fetchUnreadCount, 60000);
+        return () => clearInterval(interval);
+    }, []);
 
     const menus = useMemo<MenuItem[]>(() => [
         { label: "Dashboard", href: "/dashboard", icon: Home },
@@ -52,11 +76,13 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 { label: "Registrasi", href: "/admin/registrations", icon: ShieldCheck },
             ],
         },
-        { label: "Kehadiran", href: "/attendance", icon: Bell },
+        { label: "Kehadiran", href: "/attendance", icon: Clock },
+        { label: "Pengumuman", href: "/announcements", icon: Megaphone, badge: unreadCount },
+        { label: "Kelola Pengumuman", href: "/admin/announcements", icon: Bell, permission: PERMISSIONS.ANNOUNCEMENTS_CREATE },
         { label: "Payroll", href: "/payslips", icon: Landmark, permission: [PERMISSIONS.PAYROLL_VIEW_OWN, PERMISSIONS.PAYROLL_VIEW_ALL] },
         { label: "Laporan", href: "/reports", icon: BarChart3, permission: PERMISSIONS.REPORTS_VIEW },
         { label: "Pengaturan", href: "/settings", icon: Settings, permission: PERMISSIONS.SETTINGS_VIEW },
-    ], []);
+    ], [unreadCount]);
 
     const visibleMenus = menus.filter((item) => {
         if (!item.permission) return true;
@@ -142,7 +168,21 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                             )}
                         >
                             <Icon className="h-5 w-5" />
-                            {!collapsed && item.label}
+                            {!collapsed && (
+                                <span className="flex flex-1 items-center justify-between">
+                                    {item.label}
+                                    {item.badge && item.badge > 0 && (
+                                        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-medium text-white">
+                                            {item.badge > 99 ? "99+" : item.badge}
+                                        </span>
+                                    )}
+                                </span>
+                            )}
+                            {collapsed && item.badge && item.badge > 0 && (
+                                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-medium text-white">
+                                    {item.badge > 9 ? "9+" : item.badge}
+                                </span>
+                            )}
                         </Link>
                     );
                 })}

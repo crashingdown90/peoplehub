@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Get monthly breakdown
-    const monthlyStats = [];
+    const monthlyStats: { month: number; monthName: string; hires: number; exits: number; netChange: number }[] = [];
     for (let month = 0; month < 12; month++) {
       const monthStart = new Date(year, month, 1);
       const monthEnd = new Date(year, month + 1, 0);

@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
 
     // Get monthly trend (last 6 months)
     const today = new Date();
-    const monthlyTrend = [];
+    const monthlyTrend: { month: string; requested: number; requestedAmount: number; paidAmount: number }[] = [];
 
     for (let i = 0; i < 6; i++) {
       const monthStart = new Date(today.getFullYear(), today.getMonth() - i, 1);
@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
         summary,
         totalPending: summary.pending.count + summary.approved.count,
         totalPendingAmount: summary.pending.amount + summary.approved.amount,
-        requests: requests.map((r) => ({
+        requests: requests.map((r: typeof requests[number]) => ({
           id: r.id,
           employee: r.employee,
           category: r.category,
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
           financeApprovedAt: r.financeApprovedAt,
           paidAt: r.paidAt,
         })),
-        byCategory: byCategory.map((c) => ({
+        byCategory: byCategory.map((c: typeof byCategory[number]) => ({
           category: c.category,
           count: c._count,
           amount: Number(c._sum.totalAmount || 0),

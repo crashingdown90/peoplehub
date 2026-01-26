@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getRequestContext } from "@/lib/request-context";
+import { getRequestContext, hasRole } from "@/lib/request-context";
 import { z } from "zod";
 
 const updateSchema = z.object({
@@ -12,15 +12,15 @@ interface RouteParams {
     params: Promise<{ id: string }>;
 }
 
-// PUT /api/kpi/targets/[id] - Update actual value
+// PUT /api/kpi/targets/[id] - Update actual value (employee or admin)
 export async function PUT(request: NextRequest, { params }: RouteParams) {
     try {
         const context = await getRequestContext();
         const { id } = await params;
 
-        if (!context || !context.employeeId) {
+        if (!context) {
             return NextResponse.json(
-                { success: false, error: { code: "UNAUTHORIZED", message: "Employee not found" } },
+                { success: false, error: { code: "UNAUTHORIZED", message: "Authentication required" } },
                 { status: 401 }
             );
         }
@@ -35,8 +35,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             );
         }
 
+        const isAdmin = hasRole(context, ["HRD", "SUPER_ADMIN", "MANAGER"]);
+
+        // Find target - admin can access any, employee only their own
         const target = await prisma.kpiTarget.findFirst({
-            where: { id, tenantId: context.tenantId, employeeId: context.employeeId },
+            where: {
+                id,
+                tenantId: context.tenantId,
+                ...(isAdmin ? {} : { employeeId: context.employeeId }),
+            },
             include: { indicator: true },
         });
 
@@ -88,6 +95,52 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         });
     } catch (error) {
         console.error("Update KPI target error:", error);
+        return NextResponse.json(
+            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
+            { status: 500 }
+        );
+    }
+}
+
+// DELETE /api/kpi/targets/[id] - Delete KPI target (Admin only)
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
+    try {
+        const context = await getRequestContext();
+        const { id } = await params;
+
+        if (!context) {
+            return NextResponse.json(
+                { success: false, error: { code: "UNAUTHORIZED", message: "Authentication required" } },
+                { status: 401 }
+            );
+        }
+
+        if (!hasRole(context, ["HRD", "SUPER_ADMIN"])) {
+            return NextResponse.json(
+                { success: false, error: { code: "FORBIDDEN", message: "Access denied" } },
+                { status: 403 }
+            );
+        }
+
+        const target = await prisma.kpiTarget.findFirst({
+            where: { id, tenantId: context.tenantId },
+        });
+
+        if (!target) {
+            return NextResponse.json(
+                { success: false, error: { code: "NOT_FOUND", message: "KPI target not found" } },
+                { status: 404 }
+            );
+        }
+
+        await prisma.kpiTarget.delete({ where: { id } });
+
+        return NextResponse.json({
+            success: true,
+            message: "Target KPI berhasil dihapus",
+        });
+    } catch (error) {
+        console.error("Delete KPI target error:", error);
         return NextResponse.json(
             { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
             { status: 500 }

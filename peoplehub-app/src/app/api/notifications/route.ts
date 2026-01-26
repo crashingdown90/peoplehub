@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { NotificationService } from "@/services/notification";
-import type { NotificationType } from "@prisma/client";
 
 // GET /api/notifications - Get my notifications
 export async function GET(request: NextRequest) {
@@ -20,7 +19,7 @@ export async function GET(request: NextRequest) {
         const unreadOnly = searchParams.get("unread") === "true";
         const page = parseInt(searchParams.get("page") || "1");
         const limit = parseInt(searchParams.get("limit") || "20");
-        const type = searchParams.get("type") as NotificationType | null;
+        const type = searchParams.get("type");
 
         // If requesting unread only with limit, use getUnread for efficiency
         if (unreadOnly && !type) {
@@ -43,7 +42,7 @@ export async function GET(request: NextRequest) {
             page,
             limit,
             isRead: unreadOnly ? false : undefined,
-            type: type || undefined,
+            type: type as "ATTENDANCE" | "LEAVE" | "APPROVAL" | "ANNOUNCEMENT" | "SYSTEM" | undefined,
         });
 
         if (!result.success) {

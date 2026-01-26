@@ -19,9 +19,12 @@ export async function getSession(): Promise<JWTPayload | null> {
  */
 export async function setAuthCookie(token: string): Promise<void> {
   const cookieStore = await cookies();
+  // Allow disabling secure cookies for HTTP deployments
+  const useSecureCookies = process.env.SECURE_COOKIES !== "false" && process.env.NODE_ENV === "production";
+
   cookieStore.set(AUTH_CONFIG.cookieName, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: useSecureCookies,
     sameSite: "lax",
     maxAge: AUTH_CONFIG.cookieMaxAge,
     path: "/",

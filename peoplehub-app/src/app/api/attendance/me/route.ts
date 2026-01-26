@@ -110,10 +110,11 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    type AttendanceItem = typeof attendances[number];
     return NextResponse.json({
       success: true,
       data: {
-        attendances: attendances.map((a) => ({
+        attendances: attendances.map((a: AttendanceItem) => ({
           id: a.id,
           date: a.attendanceDate,
           clockIn: a.clockIn,

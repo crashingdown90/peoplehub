@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
         ]);
 
         // Transform data for frontend
-        const data = users.map((user) => ({
+        const data = users.map((user: typeof users[number]) => ({
             id: user.id,
             email: user.email,
             phone: user.phone,

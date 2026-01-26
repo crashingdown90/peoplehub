@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { EmployeeService } from "@/services";
-import type { EmployeeStatus, EmploymentType, WorkMode } from "@prisma/client";
 import { z } from "zod";
 
 const createEmployeeSchema = z.object({
@@ -17,7 +16,7 @@ const createEmployeeSchema = z.object({
     departmentId: z.string().optional(),
     positionId: z.string().optional(),
     managerId: z.string().optional(),
-    employmentType: z.enum(["PERMANENT", "CONTRACT", "INTERNSHIP", "PROBATION"]).default("PERMANENT"),
+    employmentType: z.enum(["PERMANENT", "CONTRACT", "FREELANCE", "INTERN"]).default("PERMANENT"),
     workMode: z.enum(["WFO", "WFH", "HYBRID"]).default("WFO"),
     startDate: z.string().optional(),
     bankName: z.string().optional(),
@@ -39,7 +38,7 @@ export async function GET(request: NextRequest) {
 
         const { searchParams } = new URL(request.url);
         const search = searchParams.get("search") || undefined;
-        const status = searchParams.get("status") as EmployeeStatus | null;
+        const status = searchParams.get("status");
         const departmentId = searchParams.get("departmentId") || undefined;
         const branchId = searchParams.get("branchId") || undefined;
         const page = parseInt(searchParams.get("page") || "1");
@@ -47,7 +46,7 @@ export async function GET(request: NextRequest) {
 
         const result = await EmployeeService.getEmployees(context, {
             search,
-            status: status || undefined,
+            status: status as "ACTIVE" | "INACTIVE" | "TERMINATED" | undefined,
             departmentId,
             branchId,
             page,
@@ -125,8 +124,8 @@ export async function POST(request: NextRequest) {
             departmentId: data.departmentId,
             positionId: data.positionId,
             managerId: data.managerId,
-            employmentType: data.employmentType as EmploymentType,
-            workMode: data.workMode as WorkMode,
+            employmentType: data.employmentType,
+            workMode: data.workMode,
             startDate: data.startDate ? new Date(data.startDate) : new Date(),
             bankName: data.bankName,
             bankAccountNumber: data.bankAccountNumber,

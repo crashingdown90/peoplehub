@@ -8,12 +8,26 @@ import { z } from "zod";
 const UpdateAnnouncementSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   content: z.string().min(1).max(5000).optional(),
+  priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).optional(),
+  isPinned: z.boolean().optional(),
   targetAudience: z
     .object({
       branches: z.array(z.string()).optional(),
       departments: z.array(z.string()).optional(),
       roles: z.array(z.string()).optional(),
     })
+    .nullable()
+    .optional(),
+  attachments: z
+    .array(
+      z.object({
+        name: z.string(),
+        url: z.string(),
+        type: z.string(),
+        size: z.number(),
+      })
+    )
+    .nullable()
     .optional(),
   expiresAt: z
     .string()
@@ -35,6 +49,29 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
+    const { searchParams } = new URL(request.url);
+    const action = searchParams.get("action");
+
+    // Get read stats
+    if (action === "stats") {
+      const result = await AnnouncementService.getReadStats(context, id);
+
+      if (!result.success) {
+        const statusCode =
+          result.error?.code === "FORBIDDEN"
+            ? 403
+            : result.error?.code === "NOT_FOUND"
+              ? 404
+              : 500;
+        return NextResponse.json(
+          { success: false, error: result.error },
+          { status: statusCode }
+        );
+      }
+
+      return NextResponse.json({ success: true, data: result.data });
+    }
+
     const result = await AnnouncementService.getAnnouncementById(context, id);
 
     if (!result.success) {
@@ -45,7 +82,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             ? 404
             : 500;
       return NextResponse.json(
-        { error: result.error?.message },
+        { success: false, error: result.error },
         { status: statusCode }
       );
     }
@@ -57,7 +94,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   } catch (error) {
     console.error("GET /api/announcements/[id] error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
       { status: 500 }
     );
   }
@@ -88,7 +125,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
                 ? 409
                 : 500;
         return NextResponse.json(
-          { error: result.error?.message },
+          { success: false, error: result.error },
           { status: statusCode }
         );
       }
@@ -96,6 +133,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({
         success: true,
         data: result.data,
+        message: "Pengumuman berhasil dipublish",
       });
     }
 
@@ -110,7 +148,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
               ? 404
               : 500;
         return NextResponse.json(
-          { error: result.error?.message },
+          { success: false, error: result.error },
           { status: statusCode }
         );
       }
@@ -118,6 +156,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({
         success: true,
         data: result.data,
+        message: "Pengumuman berhasil diarsipkan",
       });
     }
 
@@ -126,7 +165,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     if (!validation.success) {
       return NextResponse.json(
-        { error: "Validation failed", details: validation.error.flatten() },
+        { success: false, error: { code: "VALIDATION_ERROR", details: validation.error.flatten() } },
         { status: 400 }
       );
     }
@@ -145,7 +184,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             ? 404
             : 500;
       return NextResponse.json(
-        { error: result.error?.message },
+        { success: false, error: result.error },
         { status: statusCode }
       );
     }
@@ -153,11 +192,55 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({
       success: true,
       data: result.data,
+      message: "Pengumuman berhasil diperbarui",
     });
   } catch (error) {
     console.error("PUT /api/announcements/[id] error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/announcements/[id] - Mark as read
+export async function POST(request: NextRequest, { params }: RouteParams) {
+  try {
+    const context = await getRequestContext();
+    if (!context) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const body = await request.json();
+
+    if (body.action === "read") {
+      const result = await AnnouncementService.markAsRead(context, id);
+
+      if (!result.success) {
+        const statusCode =
+          result.error?.code === "FORBIDDEN"
+            ? 403
+            : result.error?.code === "NOT_FOUND"
+              ? 404
+              : 500;
+        return NextResponse.json(
+          { success: false, error: result.error },
+          { status: statusCode }
+        );
+      }
+
+      return NextResponse.json({ success: true });
+    }
+
+    return NextResponse.json(
+      { success: false, error: { code: "BAD_REQUEST", message: "Invalid action" } },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error("POST /api/announcements/[id] error:", error);
+    return NextResponse.json(
+      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
       { status: 500 }
     );
   }
@@ -182,7 +265,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
             ? 404
             : 500;
       return NextResponse.json(
-        { error: result.error?.message },
+        { success: false, error: result.error },
         { status: statusCode }
       );
     }
@@ -194,7 +277,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   } catch (error) {
     console.error("DELETE /api/announcements/[id] error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
       { status: 500 }
     );
   }
