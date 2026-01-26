@@ -25,6 +25,8 @@ import {
     Shield,
     Building2,
     FileText,
+    Calendar,
+    Timer,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -90,6 +92,9 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 { label: "Dashboard HRD", href: "/dashboard/hrd", icon: Home },
                 { label: "Karyawan", href: "/admin/employees", icon: Users },
                 { label: "Jenis Cuti", href: "/admin/settings/leave-types", icon: CalendarRange },
+                { label: "Hari Libur", href: "/admin/settings/holidays", icon: Calendar },
+                { label: "Shift Kerja", href: "/admin/shifts", icon: Clock },
+                { label: "Aturan Terlambat", href: "/admin/settings/late-rules", icon: Timer },
             ],
         },
         {
