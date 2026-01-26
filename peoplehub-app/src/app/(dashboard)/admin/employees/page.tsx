@@ -1,6 +1,6 @@
 "use client";
 
-// @ai:cx - Enhanced Employee List with filters
+// @ai:cx - Enhanced Employee List with filters and Super Admin cross-tenant support
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
     Users, Search, Building, Briefcase, Mail, Loader2,
-    Plus, Filter, X, ChevronDown
+    Plus, Filter, X, ChevronDown, Building2
 } from "lucide-react";
 
 interface Employee {
@@ -26,11 +26,17 @@ interface Employee {
     department?: { id: string; name: string };
     position?: { name: string };
     user?: { email: string; role: string; photoUrl?: string | null };
+    tenant?: { id: string; name: string };
 }
 
 interface FilterOption {
     id: string;
     name: string;
+}
+
+interface UserSession {
+    role: string;
+    tenantId: string;
 }
 
 export default function EmployeesPage() {
@@ -42,34 +48,71 @@ export default function EmployeesPage() {
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
 
+    // User session
+    const [userSession, setUserSession] = useState<UserSession | null>(null);
+    const isSuperAdmin = userSession?.role === "SUPER_ADMIN";
+
     // Filters
     const [showFilters, setShowFilters] = useState(false);
     const [departments, setDepartments] = useState<FilterOption[]>([]);
     const [branches, setBranches] = useState<FilterOption[]>([]);
+    const [tenants, setTenants] = useState<FilterOption[]>([]);
     const [selectedDepartment, setSelectedDepartment] = useState("");
     const [selectedBranch, setSelectedBranch] = useState("");
     const [selectedStatus, setSelectedStatus] = useState("");
+    const [selectedTenant, setSelectedTenant] = useState("");
 
-    // Fetch filter options
+    // Fetch user session
+    useEffect(() => {
+        async function fetchSession() {
+            try {
+                const res = await fetch("/api/auth/me");
+                const data = await res.json();
+                if (data.success && data.data) {
+                    setUserSession({ role: data.data.role, tenantId: data.data.tenantId });
+                }
+            } catch (err) {
+                console.error("Error fetching session:", err);
+            }
+        }
+        fetchSession();
+    }, []);
+
+    // Fetch filter options (including tenants for Super Admin)
     useEffect(() => {
         async function fetchFilterOptions() {
             try {
-                const [deptRes, branchRes] = await Promise.all([
+                const promises: Promise<Response>[] = [
                     fetch("/api/admin/departments"),
                     fetch("/api/admin/branches"),
-                ]);
-                const [deptData, branchData] = await Promise.all([
-                    deptRes.json(),
-                    branchRes.json(),
-                ]);
+                ];
+
+                // Fetch tenants only for Super Admin
+                if (isSuperAdmin) {
+                    promises.push(fetch("/api/admin/superadmin/tenants?limit=100"));
+                }
+
+                const responses = await Promise.all(promises);
+                const [deptData, branchData, tenantData] = await Promise.all(
+                    responses.map(r => r.json())
+                );
+
                 if (deptData.success) setDepartments(deptData.data);
                 if (branchData.success) setBranches(branchData.data);
+                if (tenantData?.success && tenantData.data?.tenants) {
+                    setTenants(tenantData.data.tenants.map((t: { id: string; name: string }) => ({
+                        id: t.id,
+                        name: t.name,
+                    })));
+                }
             } catch (err) {
                 console.error("Error fetching filter options:", err);
             }
         }
-        fetchFilterOptions();
-    }, []);
+        if (userSession) {
+            fetchFilterOptions();
+        }
+    }, [userSession, isSuperAdmin]);
 
     const fetchEmployees = useCallback(async () => {
         setLoading(true);
@@ -81,6 +124,7 @@ export default function EmployeesPage() {
                 ...(selectedDepartment ? { departmentId: selectedDepartment } : {}),
                 ...(selectedBranch ? { branchId: selectedBranch } : {}),
                 ...(selectedStatus ? { status: selectedStatus } : {}),
+                ...(selectedTenant && isSuperAdmin ? { tenantId: selectedTenant } : {}),
             });
             const res = await fetch(`/api/admin/employees?${params}`);
             const data = await res.json();
@@ -93,11 +137,13 @@ export default function EmployeesPage() {
         } finally {
             setLoading(false);
         }
-    }, [page, activeSearch, selectedDepartment, selectedBranch, selectedStatus]);
+    }, [page, activeSearch, selectedDepartment, selectedBranch, selectedStatus, selectedTenant, isSuperAdmin]);
 
     useEffect(() => {
-        fetchEmployees();
-    }, [fetchEmployees]);
+        if (userSession) {
+            fetchEmployees();
+        }
+    }, [fetchEmployees, userSession]);
 
     function handleSearch(e: React.FormEvent) {
         e.preventDefault();
@@ -109,10 +155,11 @@ export default function EmployeesPage() {
         setSelectedDepartment("");
         setSelectedBranch("");
         setSelectedStatus("");
+        setSelectedTenant("");
         setPage(1);
     }
 
-    const hasActiveFilters = selectedDepartment || selectedBranch || selectedStatus;
+    const hasActiveFilters = selectedDepartment || selectedBranch || selectedStatus || selectedTenant;
 
     const getStatusColor = (status: string) => {
         const colors: Record<string, string> = {
@@ -175,6 +222,26 @@ export default function EmployeesPage() {
                     <Card className="mb-6">
                         <CardContent className="py-4">
                             <div className="flex flex-wrap items-end gap-4">
+                                {/* Tenant Filter - Only for Super Admin */}
+                                {isSuperAdmin && (
+                                    <div className="min-w-[200px]">
+                                        <label className="mb-1.5 block text-sm font-medium text-slate-700">Tenant</label>
+                                        <div className="relative">
+                                            <select
+                                                value={selectedTenant}
+                                                onChange={(e) => { setSelectedTenant(e.target.value); setPage(1); }}
+                                                className="w-full appearance-none rounded-lg border border-purple-300 bg-purple-50 px-3 py-2 pr-8 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                                            >
+                                                <option value="">Semua Tenant</option>
+                                                {tenants.map((t) => (
+                                                    <option key={t.id} value={t.id}>{t.name}</option>
+                                                ))}
+                                            </select>
+                                            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-purple-400" />
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="min-w-[180px]">
                                     <label className="mb-1.5 block text-sm font-medium text-slate-700">Department</label>
                                     <div className="relative">
@@ -290,6 +357,13 @@ export default function EmployeesPage() {
                                                 <p className="text-sm text-slate-500">#{emp.employeeNumber}</p>
 
                                                 <div className="mt-3 space-y-1 text-sm text-slate-600">
+                                                    {/* Show tenant name for Super Admin */}
+                                                    {isSuperAdmin && emp.tenant && (
+                                                        <div className="flex items-center gap-2">
+                                                            <Building2 className="h-3 w-3 text-purple-500" />
+                                                            <span className="truncate font-medium text-purple-600">{emp.tenant.name}</span>
+                                                        </div>
+                                                    )}
                                                     {emp.position && (
                                                         <div className="flex items-center gap-2">
                                                             <Briefcase className="h-3 w-3 text-slate-400" />

@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
         const status = searchParams.get("status");
         const departmentId = searchParams.get("departmentId") || undefined;
         const branchId = searchParams.get("branchId") || undefined;
+        const tenantId = searchParams.get("tenantId") || undefined;
         const page = parseInt(searchParams.get("page") || "1");
         const limit = parseInt(searchParams.get("limit") || "20");
 
@@ -49,6 +50,7 @@ export async function GET(request: NextRequest) {
             status: status as "ACTIVE" | "INACTIVE" | "TERMINATED" | undefined,
             departmentId,
             branchId,
+            tenantId, // For Super Admin cross-tenant access
             page,
             limit,
         });

@@ -25,6 +25,7 @@ export interface EmployeeFilter extends PaginationParams {
   workMode?: WorkMode;
   managerId?: string;
   search?: string;
+  tenantId?: string; // For Super Admin cross-tenant access
 }
 
 export interface CreateEmployeeData {
@@ -98,6 +99,10 @@ export interface EmployeeWithRelations extends Employee {
     id: string;
     fullName: string;
   };
+  tenant?: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface EmployeeStats {
@@ -135,6 +140,7 @@ export class EmployeeService {
       workMode,
       managerId,
       search,
+      tenantId: filterTenantId,
     } = filter;
 
     // Only HRD, IT_OPS, or Super Admin can list employees
@@ -142,9 +148,18 @@ export class EmployeeService {
       return error(ErrorCodes.FORBIDDEN, "Anda tidak memiliki akses ke data karyawan");
     }
 
-    const where: Record<string, unknown> = {
-      tenantId: context.tenantId,
-    };
+    const where: Record<string, unknown> = {};
+
+    // Super Admin can access all tenants or filter by specific tenant
+    if (context.role === "SUPER_ADMIN") {
+      if (filterTenantId) {
+        where.tenantId = filterTenantId;
+      }
+      // If no tenantId filter, show all tenants
+    } else {
+      // Non-super admin users can only see their own tenant
+      where.tenantId = context.tenantId;
+    }
 
     // Manager can only see their subordinates
     if (context.role === "MANAGER") {
@@ -189,6 +204,12 @@ export class EmployeeService {
           manager: {
             select: { id: true, fullName: true },
           },
+          // Include tenant info for Super Admin cross-tenant view
+          ...(context.role === "SUPER_ADMIN" && {
+            tenant: {
+              select: { id: true, name: true },
+            },
+          }),
         },
       }),
       prisma.employee.count({ where }),
