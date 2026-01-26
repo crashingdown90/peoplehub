@@ -10,10 +10,13 @@ const publicApiRoutes = ["/api/auth/login", "/api/auth/register", "/api/auth/log
 // Routes that require specific roles
 const roleRoutes: Record<string, string[]> = {
     // Dashboard page routes
+    "/dashboard/superadmin": ["SUPER_ADMIN"],
     "/dashboard/hrd": ["HRD", "SUPER_ADMIN"],
     "/dashboard/finance": ["FINANCE", "SUPER_ADMIN"],
     "/dashboard/admin": ["IT_OPS", "SUPER_ADMIN"],
     "/dashboard/manager": ["MANAGER", "HRD", "SUPER_ADMIN"],
+    // Super Admin routes
+    "/admin/superadmin": ["SUPER_ADMIN"],
     // Admin routes
     "/admin/registrations": ["HRD", "SUPER_ADMIN"],
     "/admin/employees": ["HRD", "SUPER_ADMIN"],
@@ -26,6 +29,7 @@ const roleRoutes: Record<string, string[]> = {
     "/api/payroll/generate": ["FINANCE", "SUPER_ADMIN"],
     "/api/payroll/approve": ["FINANCE", "SUPER_ADMIN"],
     // Dashboard API routes
+    "/api/dashboard/superadmin": ["SUPER_ADMIN"],
     "/api/dashboard/hrd": ["HRD", "SUPER_ADMIN"],
     "/api/dashboard/finance": ["FINANCE", "SUPER_ADMIN"],
     "/api/dashboard/it": ["IT_OPS", "SUPER_ADMIN"],

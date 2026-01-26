@@ -22,6 +22,9 @@ import {
     Bell,
     Megaphone,
     Clock,
+    Shield,
+    Building2,
+    FileText,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -66,6 +69,18 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
     const menus = useMemo<MenuItem[]>(() => [
         { label: "Dashboard", href: "/dashboard", icon: Home },
+        // Super Admin Menu - only visible to SUPER_ADMIN
+        {
+            label: "Super Admin",
+            icon: Shield,
+            permission: PERMISSIONS.ADMIN_USERS,
+            children: [
+                { label: "Dashboard", href: "/dashboard/superadmin", icon: Home },
+                { label: "Tenants", href: "/admin/superadmin/tenants", icon: Building2 },
+                { label: "Users", href: "/admin/superadmin/users", icon: Users },
+                { label: "Audit Logs", href: "/admin/superadmin/audit-logs", icon: FileText },
+            ],
+        },
         { label: "Karyawan", href: "/admin/employees", icon: Users, permission: PERMISSIONS.EMPLOYEES_VIEW },
         {
             label: "Approval",
