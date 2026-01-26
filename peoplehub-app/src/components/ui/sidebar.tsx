@@ -31,7 +31,9 @@ const adminMenus = [
     { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/admin/registrations", label: "Registrasi", icon: Users },
     { href: "/admin/kpi", label: "Kelola KPI", icon: Target },
-    { href: "/admin/announcements", label: "Kelola Pengumuman", icon: Settings },
+    { href: "/admin/announcements", label: "Kelola Pengumuman", icon: Megaphone },
+    { href: "/admin/settings/leave-types", label: "Jenis Cuti", icon: Calendar },
+    { href: "/admin/settings/holidays", label: "Hari Libur", icon: Calendar },
 ];
 
 export function RoleSidebar({ role = "EMPLOYEE" }: SidebarProps) {
