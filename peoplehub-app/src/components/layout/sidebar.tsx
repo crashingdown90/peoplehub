@@ -81,7 +81,17 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 { label: "Audit Logs", href: "/admin/superadmin/audit-logs", icon: FileText },
             ],
         },
-        { label: "Karyawan", href: "/admin/employees", icon: Users, permission: PERMISSIONS.EMPLOYEES_VIEW },
+        // HRD Menu
+        {
+            label: "HRD",
+            icon: Users,
+            permission: PERMISSIONS.EMPLOYEES_VIEW,
+            children: [
+                { label: "Dashboard HRD", href: "/dashboard/hrd", icon: Home },
+                { label: "Karyawan", href: "/admin/employees", icon: Users },
+                { label: "Jenis Cuti", href: "/admin/settings/leave-types", icon: CalendarRange },
+            ],
+        },
         {
             label: "Approval",
             icon: ClipboardList,
