@@ -466,6 +466,11 @@ export class ApprovalService {
     const updateData: Record<string, unknown> = { updatedAt: new Date() };
 
     if (context.role === "MANAGER" && request.status === "PENDING") {
+      // Validate manager-subordinate relationship
+      const isManager = await this.isManagerOf(context, request.employeeId);
+      if (!isManager) {
+        return error(ErrorCodes.FORBIDDEN, "Anda bukan atasan langsung dari karyawan ini");
+      }
       newStatus = "APPROVED_MANAGER";
       updateData.approvedByManagerId = context.userId;
       updateData.managerApprovedAt = new Date();
@@ -506,6 +511,14 @@ export class ApprovalService {
 
     if (request.status !== "PENDING") {
       return error(ErrorCodes.CANNOT_MODIFY, "Status pengajuan tidak dapat diubah");
+    }
+
+    // Validate manager-subordinate relationship for MANAGER role
+    if (context.role === "MANAGER") {
+      const isManager = await this.isManagerOf(context, request.employeeId);
+      if (!isManager) {
+        return error(ErrorCodes.FORBIDDEN, "Anda bukan atasan langsung dari karyawan ini");
+      }
     }
 
     // Update attendance record
@@ -553,6 +566,11 @@ export class ApprovalService {
     const updateData: Record<string, unknown> = { updatedAt: new Date() };
 
     if (context.role === "MANAGER" && request.status === "PENDING") {
+      // Validate manager-subordinate relationship
+      const isManager = await this.isManagerOf(context, request.employeeId);
+      if (!isManager) {
+        return error(ErrorCodes.FORBIDDEN, "Anda bukan atasan langsung dari karyawan ini");
+      }
       newStatus = "APPROVED_MANAGER";
       updateData.approvedByManagerId = context.userId;
       updateData.managerApprovedAt = new Date();
@@ -592,6 +610,11 @@ export class ApprovalService {
     const updateData: Record<string, unknown> = { updatedAt: new Date() };
 
     if (context.role === "MANAGER" && request.status === "PENDING") {
+      // Validate manager-subordinate relationship
+      const isManager = await this.isManagerOf(context, request.employeeId);
+      if (!isManager) {
+        return error(ErrorCodes.FORBIDDEN, "Anda bukan atasan langsung dari karyawan ini");
+      }
       newStatus = "APPROVED_MANAGER";
       updateData.approvedByManagerId = context.userId;
       updateData.managerApprovedAt = new Date();
@@ -635,6 +658,14 @@ export class ApprovalService {
       return error(ErrorCodes.CANNOT_MODIFY, "Status pengajuan tidak dapat diubah");
     }
 
+    // Validate manager-subordinate relationship for MANAGER role
+    if (context.role === "MANAGER") {
+      const isManager = await this.isManagerOf(context, request.employeeId);
+      if (!isManager) {
+        return error(ErrorCodes.FORBIDDEN, "Anda bukan atasan langsung dari karyawan ini");
+      }
+    }
+
     await prisma.leaveRequest.update({
       where: { id: requestId },
       data: {
@@ -662,6 +693,14 @@ export class ApprovalService {
 
     if (request.status !== "PENDING") {
       return error(ErrorCodes.CANNOT_MODIFY, "Status pengajuan tidak dapat diubah");
+    }
+
+    // Validate manager-subordinate relationship for MANAGER role
+    if (context.role === "MANAGER") {
+      const isManager = await this.isManagerOf(context, request.employeeId);
+      if (!isManager) {
+        return error(ErrorCodes.FORBIDDEN, "Anda bukan atasan langsung dari karyawan ini");
+      }
     }
 
     await prisma.attendanceCorrection.update({
@@ -693,6 +732,14 @@ export class ApprovalService {
       return error(ErrorCodes.CANNOT_MODIFY, "Status pengajuan tidak dapat diubah");
     }
 
+    // Validate manager-subordinate relationship for MANAGER role
+    if (context.role === "MANAGER") {
+      const isManager = await this.isManagerOf(context, request.employeeId);
+      if (!isManager) {
+        return error(ErrorCodes.FORBIDDEN, "Anda bukan atasan langsung dari karyawan ini");
+      }
+    }
+
     await prisma.travelRequest.update({
       where: { id: requestId },
       data: {
@@ -722,6 +769,14 @@ export class ApprovalService {
       return error(ErrorCodes.CANNOT_MODIFY, "Status pengajuan tidak dapat diubah");
     }
 
+    // Validate manager-subordinate relationship for MANAGER role
+    if (context.role === "MANAGER") {
+      const isManager = await this.isManagerOf(context, request.employeeId);
+      if (!isManager) {
+        return error(ErrorCodes.FORBIDDEN, "Anda bukan atasan langsung dari karyawan ini");
+      }
+    }
+
     await prisma.reimburseRequest.update({
       where: { id: requestId },
       data: {
@@ -737,6 +792,25 @@ export class ApprovalService {
   // ==========================================
   // HELPER METHODS
   // ==========================================
+
+  /**
+   * Check if current user (manager) is the direct supervisor of the employee
+   */
+  private static async isManagerOf(
+    context: RequestContext,
+    employeeId: string
+  ): Promise<boolean> {
+    if (context.role !== "MANAGER" || !context.employeeId) {
+      return false;
+    }
+
+    const employee = await prisma.employee.findFirst({
+      where: withTenant(context, { id: employeeId }),
+      select: { managerId: true },
+    });
+
+    return employee?.managerId === context.employeeId;
+  }
 
   private static async updateLeaveBalance(
     context: RequestContext,
