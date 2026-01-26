@@ -27,6 +27,7 @@ import {
     FileText,
     Calendar,
     Timer,
+    CreditCard,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -103,6 +104,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             permission: [PERMISSIONS.LEAVE_APPROVE, PERMISSIONS.ADMIN_REGISTRATIONS],
             children: [
                 { label: "Cuti", href: "/approvals", icon: CalendarRange },
+                { label: "Perubahan Bank", href: "/admin/approvals/bank-changes", icon: CreditCard },
                 { label: "Registrasi", href: "/admin/registrations", icon: ShieldCheck },
             ],
         },

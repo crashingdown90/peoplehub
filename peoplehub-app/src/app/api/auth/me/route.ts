@@ -14,6 +14,8 @@ export async function GET() {
             );
         }
 
+        const currentYear = new Date().getFullYear();
+
         const user = await prisma.user.findUnique({
             where: { id: context.userId },
             select: {
@@ -36,10 +38,36 @@ export async function GET() {
                         workMode: true,
                         startDate: true,
                         status: true,
+                        // Additional fields for complete profile
+                        bpjsKesehatan: true,
+                        bpjsKetenagakerjaan: true,
+                        emergencyContactName: true,
+                        emergencyContactPhone: true,
+                        bankName: true,
+                        bankAccountNumber: true,
+                        bankAccountHolder: true,
+                        bankBranch: true,
                         branch: { select: { id: true, name: true } },
                         department: { select: { id: true, name: true } },
                         position: { select: { id: true, name: true } },
                         manager: { select: { id: true, fullName: true } },
+                        // Leave balances for current year
+                        leaveBalances: {
+                            where: { year: currentYear },
+                            select: {
+                                id: true,
+                                initialBalance: true,
+                                usedBalance: true,
+                                remainingBalance: true,
+                                leaveType: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        code: true,
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
             },

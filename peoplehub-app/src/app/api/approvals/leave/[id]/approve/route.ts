@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { ApprovalService } from "@/services";
+import { notifyLeaveApproved } from "@/lib/notifications";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -38,10 +39,23 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Get updated status for response
+    // Get updated leave request with employee and leave type info
     const leaveRequest = await prisma.leaveRequest.findUnique({
       where: { id },
-      select: { status: true },
+      select: {
+        status: true,
+        totalDays: true,
+        employee: {
+          select: {
+            userId: true,
+          },
+        },
+        leaveType: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
 
     // Audit log
@@ -60,6 +74,16 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
         })),
       },
     });
+
+    // Send notification to employee if fully approved
+    if (leaveRequest?.status === "APPROVED" && leaveRequest.employee?.userId) {
+      await notifyLeaveApproved(
+        context.tenantId,
+        leaveRequest.employee.userId,
+        leaveRequest.leaveType?.name || "Cuti",
+        leaveRequest.totalDays,
+      );
+    }
 
     return NextResponse.json({
       success: true,

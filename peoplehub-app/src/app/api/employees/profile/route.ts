@@ -195,24 +195,56 @@ export async function PATCH(request: NextRequest) {
             );
         }
 
-        // Update user
-        const updatedUser = await prisma.user.update({
-            where: { id: context.userId },
-            data: updateData,
-            select: {
-                id: true,
-                email: true,
-                phone: true,
-                fullName: true,
-                photoUrl: true,
-                address: true,
-                emergencyContactName: true,
-                emergencyContactPhone: true,
-            },
-        });
+        // Separate user fields from employee fields
+        const userFields = ["photoUrl"];
+        const employeeFields = ["phone", "address", "emergencyContactName", "emergencyContactPhone"];
+
+        const userUpdateData: Record<string, string | null> = {};
+        const employeeUpdateData: Record<string, string | null> = {};
+
+        for (const [key, value] of Object.entries(updateData)) {
+            if (userFields.includes(key)) {
+                userUpdateData[key] = value;
+            } else if (employeeFields.includes(key)) {
+                employeeUpdateData[key] = value;
+            }
+        }
+
+        // Update user if there are user fields
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let updatedUser: Record<string, any> | null = null;
+        if (Object.keys(userUpdateData).length > 0) {
+            updatedUser = await prisma.user.update({
+                where: { id: context.userId },
+                data: userUpdateData,
+                select: {
+                    id: true,
+                    email: true,
+                    fullName: true,
+                    photoUrl: true,
+                },
+            });
+        }
+
+        // Update employee if there are employee fields
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let updatedEmployee: Record<string, any> | null = null;
+        if (Object.keys(employeeUpdateData).length > 0 && context.employeeId) {
+            updatedEmployee = await prisma.employee.update({
+                where: { id: context.employeeId },
+                data: employeeUpdateData,
+                select: {
+                    id: true,
+                    phone: true,
+                    address: true,
+                    emergencyContactName: true,
+                    emergencyContactPhone: true,
+                },
+            });
+        }
 
         // Delete old photo if new one was uploaded
-        if (updateData.photoUrl && oldPhotoUrl && oldPhotoUrl.startsWith("/uploads/")) {
+        if (userUpdateData.photoUrl && oldPhotoUrl && oldPhotoUrl.startsWith("/uploads/")) {
             await deleteFile(oldPhotoUrl);
         }
 
@@ -230,7 +262,10 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json({
             success: true,
             message: "Profil berhasil diupdate",
-            data: updatedUser,
+            data: {
+                ...updatedUser,
+                ...updatedEmployee,
+            },
         });
     } catch (error) {
         console.error("Update profile error:", error);

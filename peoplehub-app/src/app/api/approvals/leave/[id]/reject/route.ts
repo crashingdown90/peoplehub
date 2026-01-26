@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { z } from "zod";
+import { notifyLeaveRejected } from "@/lib/notifications";
 
 const rejectSchema = z.object({
     reason: z.string().min(10, "Alasan penolakan minimal 10 karakter"),
@@ -47,6 +48,18 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
                 tenantId: context.tenantId,
                 status: { in: ["PENDING", "APPROVED_MANAGER"] },
             },
+            include: {
+                employee: {
+                    select: {
+                        userId: true,
+                    },
+                },
+                leaveType: {
+                    select: {
+                        name: true,
+                    },
+                },
+            },
         });
 
         if (!leaveRequest) {
@@ -76,6 +89,16 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
                 })),
             },
         });
+
+        // Send notification to employee
+        if (leaveRequest.employee?.userId) {
+            await notifyLeaveRejected(
+                context.tenantId,
+                leaveRequest.employee.userId,
+                leaveRequest.leaveType?.name || "Cuti",
+                result.data.reason,
+            );
+        }
 
         return NextResponse.json({
             success: true,
