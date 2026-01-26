@@ -496,113 +496,167 @@ export default function ApprovalsPage() {
 
             {/* Detail Modal */}
             <Dialog open={!!selectedItem && !showRejectDialog} onOpenChange={() => setSelectedItem(null)}>
-                <DialogContent className="max-w-lg">
-                    {selectedItem && (
-                        <>
-                            <DialogHeader>
-                                <DialogTitle className="flex items-center gap-2">
-                                    <FileText className="h-5 w-5" />
-                                    Detail Pengajuan
-                                </DialogTitle>
-                                <DialogDescription>
-                                    <Badge className={typeConfig[selectedItem.type].color}>
-                                        {typeConfig[selectedItem.type].label}
-                                    </Badge>
-                                </DialogDescription>
-                            </DialogHeader>
-
-                            <div className="space-y-4">
-                                {/* Employee Info */}
-                                <div className="flex items-center gap-3 rounded-lg bg-slate-50 p-3">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-                                        <User className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold">{selectedItem.employeeName}</p>
-                                        <p className="text-sm text-slate-500">{selectedItem.employeeNumber}</p>
+                <DialogContent className="max-w-md overflow-hidden p-0">
+                    {selectedItem && (() => {
+                        const config = typeConfig[selectedItem.type];
+                        const TypeIcon = config.icon;
+                        const colorMap = {
+                            LEAVE: "from-blue-500 to-blue-600",
+                            ATTENDANCE_CORRECTION: "from-orange-500 to-orange-600",
+                            TRAVEL: "from-purple-500 to-purple-600",
+                            REIMBURSE: "from-green-500 to-green-600",
+                        };
+                        return (
+                            <>
+                                {/* Colored Header Banner */}
+                                <div className={`bg-gradient-to-r ${colorMap[selectedItem.type]} px-6 py-5 text-white`}>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20">
+                                            <TypeIcon className="h-6 w-6" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-white/80">Detail Pengajuan</p>
+                                            <h2 className="text-xl font-bold">{config.label}</h2>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Details */}
-                                {renderDetails(selectedItem)}
+                                <div className="p-6">
+                                    {/* Employee Info Card */}
+                                    <div className="mb-5 flex items-center gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm">
+                                            <User className="h-6 w-6" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-semibold text-slate-900">{selectedItem.employeeName}</p>
+                                            <p className="text-sm text-slate-500">NIK: {selectedItem.employeeNumber}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-xs text-slate-400">Diajukan</p>
+                                            <p className="text-sm font-medium text-slate-600">{formatDate(selectedItem.createdAt)}</p>
+                                        </div>
+                                    </div>
 
-                                {/* Timestamp */}
-                                <div className="text-right text-xs text-slate-500">
-                                    Diajukan: {formatDate(selectedItem.createdAt)}
+                                    {/* Details Section */}
+                                    <div className="mb-6">
+                                        <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
+                                            <FileText className="h-4 w-4" />
+                                            Informasi Detail
+                                        </h3>
+                                        <div className="rounded-xl border border-slate-200 bg-white p-4">
+                                            {renderDetails(selectedItem)}
+                                        </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex gap-3">
+                                        <Button
+                                            variant="outline"
+                                            className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+                                            onClick={() => setShowRejectDialog(true)}
+                                            disabled={processing === selectedItem.id}
+                                        >
+                                            <XCircle className="mr-2 h-4 w-4" />
+                                            Tolak
+                                        </Button>
+                                        <Button
+                                            className="flex-1 bg-green-600 hover:bg-green-700"
+                                            onClick={() => handleApprove(selectedItem)}
+                                            disabled={processing === selectedItem.id}
+                                        >
+                                            {processing === selectedItem.id ? (
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <CheckCircle className="mr-2 h-4 w-4" />
+                                            )}
+                                            Setujui
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <DialogFooter>
-                                <Button
-                                    variant="outline"
-                                    className="text-red-600 hover:bg-red-50"
-                                    onClick={() => setShowRejectDialog(true)}
-                                    disabled={processing === selectedItem.id}
-                                >
-                                    <XCircle className="mr-2 h-4 w-4" />
-                                    Tolak
-                                </Button>
-                                <Button
-                                    onClick={() => handleApprove(selectedItem)}
-                                    disabled={processing === selectedItem.id}
-                                >
-                                    {processing === selectedItem.id ? (
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <CheckCircle className="mr-2 h-4 w-4" />
-                                    )}
-                                    Setujui
-                                </Button>
-                            </DialogFooter>
-                        </>
-                    )}
+                            </>
+                        );
+                    })()}
                 </DialogContent>
             </Dialog>
 
             {/* Reject Dialog */}
             <Dialog open={showRejectDialog} onOpenChange={() => setShowRejectDialog(false)}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Tolak Pengajuan</DialogTitle>
-                        <DialogDescription>
-                            Berikan alasan penolakan untuk {selectedItem?.employeeName}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                        <div>
-                            <Label htmlFor="reason">Alasan Penolakan</Label>
-                            <Textarea
-                                id="reason"
-                                placeholder="Minimal 10 karakter..."
-                                value={rejectReason}
-                                onChange={(e) => setRejectReason(e.target.value)}
-                                className="mt-2"
-                                rows={4}
-                            />
-                            {rejectReason.length > 0 && rejectReason.length < 10 && (
-                                <p className="mt-1 text-xs text-red-500">
-                                    Minimal 10 karakter ({rejectReason.length}/10)
-                                </p>
-                            )}
+                <DialogContent className="max-w-md overflow-hidden p-0">
+                    {/* Red Header */}
+                    <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-5 text-white">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20">
+                                <XCircle className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-white/80">Konfirmasi</p>
+                                <h2 className="text-xl font-bold">Tolak Pengajuan</h2>
+                            </div>
                         </div>
                     </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowRejectDialog(false)}>
-                            Batal
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => selectedItem && handleReject(selectedItem)}
-                            disabled={processing === selectedItem?.id || rejectReason.length < 10}
-                        >
-                            {processing === selectedItem?.id ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                                <XCircle className="mr-2 h-4 w-4" />
-                            )}
-                            Tolak Pengajuan
-                        </Button>
-                    </DialogFooter>
+
+                    <div className="p-6">
+                        {/* Employee Info */}
+                        {selectedItem && (
+                            <div className="mb-5 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-600 shadow-sm">
+                                    <User className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-slate-900">{selectedItem.employeeName}</p>
+                                    <p className="text-sm text-slate-500">{typeConfig[selectedItem.type].label}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Reason Input */}
+                        <div className="mb-6">
+                            <Label htmlFor="reason" className="text-sm font-semibold text-slate-700">
+                                Alasan Penolakan <span className="text-red-500">*</span>
+                            </Label>
+                            <Textarea
+                                id="reason"
+                                placeholder="Jelaskan alasan penolakan pengajuan ini..."
+                                value={rejectReason}
+                                onChange={(e) => setRejectReason(e.target.value)}
+                                className="mt-2 min-h-[120px] resize-none border-slate-200 focus:border-red-300 focus:ring-red-200"
+                            />
+                            <div className="mt-2 flex items-center justify-between">
+                                {rejectReason.length > 0 && rejectReason.length < 10 ? (
+                                    <p className="text-xs text-red-500">
+                                        Minimal 10 karakter ({rejectReason.length}/10)
+                                    </p>
+                                ) : (
+                                    <p className="text-xs text-slate-400">Minimal 10 karakter</p>
+                                )}
+                                <p className="text-xs text-slate-400">{rejectReason.length} karakter</p>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3">
+                            <Button
+                                variant="outline"
+                                className="flex-1"
+                                onClick={() => setShowRejectDialog(false)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                className="flex-1"
+                                onClick={() => selectedItem && handleReject(selectedItem)}
+                                disabled={processing === selectedItem?.id || rejectReason.length < 10}
+                            >
+                                {processing === selectedItem?.id ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <XCircle className="mr-2 h-4 w-4" />
+                                )}
+                                Tolak Pengajuan
+                            </Button>
+                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>
