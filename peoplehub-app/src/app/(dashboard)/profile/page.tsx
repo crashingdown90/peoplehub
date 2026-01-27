@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 interface LeaveBalance {
     id: string;
@@ -120,7 +121,7 @@ export default function ProfilePage() {
 
     async function fetchProfile() {
         try {
-            const res = await fetch("/api/auth/me");
+            const res = await fetchWithCsrf("/api/auth/me");
             const data = await res.json();
             if (data.success) {
                 setUserData(data.data);
@@ -142,7 +143,7 @@ export default function ProfilePage() {
 
     async function fetchPrefs() {
         try {
-            const res = await fetch("/api/notifications/preferences");
+            const res = await fetchWithCsrf("/api/notifications/preferences");
             const data = await res.json();
             if (data.success) {
                 setPrefs(data.data);
@@ -156,7 +157,7 @@ export default function ProfilePage() {
         if (!prefs) return;
         setSaving(true);
         try {
-            await fetch("/api/notifications/preferences", {
+            await fetchWithCsrf("/api/notifications/preferences", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(prefs),
@@ -174,7 +175,7 @@ export default function ProfilePage() {
         setEditSuccess(false);
 
         try {
-            const res = await fetch("/api/employees/profile", {
+            const res = await fetchWithCsrf("/api/employees/profile", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(editForm),
@@ -231,7 +232,7 @@ export default function ProfilePage() {
                 const base64 = reader.result as string;
 
                 // Upload to server
-                const res = await fetch("/api/employees/profile", {
+                const res = await fetchWithCsrf("/api/employees/profile", {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ photoBase64: base64 }),

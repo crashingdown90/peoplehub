@@ -6,12 +6,17 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Receipt, Plus, Trash2, Loader2 } from "lucide-react";
+import { Receipt, Plus, Trash2, Loader2, Upload, X } from "lucide-react";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 interface ReimburseItem {
     description: string;
+    unitPrice: string;
+    quantity: string;
     amount: string;
     date: string;
+    receiptFile?: File | null;
+    receiptUrl?: string;
 }
 
 interface ReimburseRequest {
@@ -21,7 +26,7 @@ interface ReimburseRequest {
     totalAmount: number;
     status: string;
     createdAt: string;
-    items: Array<{ description: string; amount: number; date: string }>;
+    items: Array<{ description: string; unitPrice: number | null; quantity: number; amount: number; date: string; receiptUrl: string | null }>;
 }
 
 const CATEGORIES = ["Transport", "Meals", "Accommodation", "Equipment", "Other"];
@@ -39,7 +44,7 @@ export default function ReimbursePage() {
     });
 
     const [items, setItems] = useState<ReimburseItem[]>([
-        { description: "", amount: "", date: "" },
+        { description: "", unitPrice: "", quantity: "1", amount: "", date: "", receiptFile: null },
     ]);
 
     useEffect(() => {
@@ -48,7 +53,7 @@ export default function ReimbursePage() {
 
     async function fetchRequests() {
         try {
-            const res = await fetch("/api/reimburse/requests");
+            const res = await fetchWithCsrf("/api/reimburse/requests");
             const data = await res.json();
             if (data.success) {
                 setRequests(data.data);
@@ -61,17 +66,45 @@ export default function ReimbursePage() {
     }
 
     function addItem() {
-        setItems([...items, { description: "", amount: "", date: "" }]);
+        setItems([...items, { description: "", unitPrice: "", quantity: "1", amount: "", date: "", receiptFile: null }]);
     }
 
     function removeItem(index: number) {
         setItems(items.filter((_, i) => i !== index));
     }
 
-    function updateItem(index: number, field: keyof ReimburseItem, value: string) {
+    function updateItem(index: number, field: keyof ReimburseItem, value: string | File | null) {
         const updated = [...items];
-        updated[index][field] = value;
+        if (field === "receiptFile") {
+            updated[index].receiptFile = value as File | null;
+        } else {
+            (updated[index] as unknown as Record<string, string>)[field] = value as string;
+        }
+
+        // Auto-calculate amount when unitPrice or quantity changes
+        if (field === "unitPrice" || field === "quantity") {
+            const up = parseFloat(updated[index].unitPrice) || 0;
+            const qty = parseInt(updated[index].quantity) || 1;
+            updated[index].amount = (up * qty).toString();
+        }
+
         setItems(updated);
+    }
+
+    async function uploadReceipt(file: File): Promise<string | null> {
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+            const res = await fetchWithCsrf("/api/upload/receipt", {
+                method: "POST",
+                body: formData,
+            });
+            const data = await res.json();
+            if (data.success) return data.data.url;
+            return null;
+        } catch {
+            return null;
+        }
     }
 
     async function handleSubmit(e: React.FormEvent) {
@@ -79,9 +112,7 @@ export default function ReimbursePage() {
         setSubmitting(true);
         setError("");
 
-        const validItems = items
-            .filter((i) => i.description && i.amount && i.date)
-            .map((i) => ({ ...i, amount: parseFloat(i.amount) }));
+        const validItems = items.filter((i) => i.description && i.amount && i.date);
 
         if (validItems.length === 0) {
             setError("Minimal 1 item reimburse");
@@ -90,10 +121,28 @@ export default function ReimbursePage() {
         }
 
         try {
-            const res = await fetch("/api/reimburse/requests", {
+            // Upload receipts first
+            const itemsWithReceipts = await Promise.all(
+                validItems.map(async (item) => {
+                    let receiptUrl = item.receiptUrl;
+                    if (item.receiptFile) {
+                        receiptUrl = await uploadReceipt(item.receiptFile) || undefined;
+                    }
+                    return {
+                        description: item.description,
+                        unitPrice: parseFloat(item.unitPrice) || undefined,
+                        quantity: parseInt(item.quantity) || 1,
+                        amount: parseFloat(item.amount),
+                        date: item.date,
+                        receiptUrl,
+                    };
+                })
+            );
+
+            const res = await fetchWithCsrf("/api/reimburse/requests", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...form, items: validItems }),
+                body: JSON.stringify({ ...form, items: itemsWithReceipts }),
             });
 
             const data = await res.json();
@@ -101,7 +150,7 @@ export default function ReimbursePage() {
             if (data.success) {
                 setShowForm(false);
                 setForm({ category: "Transport", description: "" });
-                setItems([{ description: "", amount: "", date: "" }]);
+                setItems([{ description: "", unitPrice: "", quantity: "1", amount: "", date: "", receiptFile: null }]);
                 fetchRequests();
             } else {
                 setError(data.error?.message || "Gagal mengajukan reimburse");
@@ -186,39 +235,96 @@ export default function ReimbursePage() {
                                         </Button>
                                     </div>
 
-                                    <div className="space-y-2">
+                                    <div className="space-y-3">
                                         {items.map((item, index) => (
-                                            <div key={index} className="flex gap-2">
-                                                <input
-                                                    className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                                                    placeholder="Keterangan"
-                                                    value={item.description}
-                                                    onChange={(e) => updateItem(index, "description", e.target.value)}
-                                                />
-                                                <input
-                                                    className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                                                    type="number"
-                                                    placeholder="Jumlah"
-                                                    value={item.amount}
-                                                    onChange={(e) => updateItem(index, "amount", e.target.value)}
-                                                />
-                                                <input
-                                                    className="w-36 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                                                    type="date"
-                                                    value={item.date}
-                                                    onChange={(e) => updateItem(index, "date", e.target.value)}
-                                                />
-                                                {items.length > 1 && (
-                                                    <Button type="button" variant="ghost" size="sm" onClick={() => removeItem(index)}>
-                                                        <Trash2 className="h-4 w-4 text-red-500" />
-                                                    </Button>
-                                                )}
+                                            <div key={index} className="rounded-lg border border-slate-200 p-3 space-y-2">
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                                                        placeholder="Nama Item"
+                                                        value={item.description}
+                                                        onChange={(e) => updateItem(index, "description", e.target.value)}
+                                                    />
+                                                    <input
+                                                        className="w-36 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                                                        type="date"
+                                                        value={item.date}
+                                                        onChange={(e) => updateItem(index, "date", e.target.value)}
+                                                    />
+                                                    {items.length > 1 && (
+                                                        <Button type="button" variant="ghost" size="sm" onClick={() => removeItem(index)}>
+                                                            <Trash2 className="h-4 w-4 text-red-500" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                                <div className="flex gap-2 items-end">
+                                                    <div className="flex-1">
+                                                        <label className="mb-1 block text-xs text-slate-500">Harga Satuan</label>
+                                                        <input
+                                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                                                            type="number"
+                                                            placeholder="Rp"
+                                                            value={item.unitPrice}
+                                                            onChange={(e) => updateItem(index, "unitPrice", e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div className="w-20">
+                                                        <label className="mb-1 block text-xs text-slate-500">Jumlah</label>
+                                                        <input
+                                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                                                            type="number"
+                                                            min="1"
+                                                            value={item.quantity}
+                                                            onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                                                        />
+                                                    </div>
+                                                    <div className="w-36">
+                                                        <label className="mb-1 block text-xs text-slate-500">Subtotal</label>
+                                                        <input
+                                                            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium"
+                                                            type="number"
+                                                            placeholder="Total"
+                                                            value={item.amount}
+                                                            readOnly
+                                                        />
+                                                    </div>
+                                                </div>
+                                                {/* Receipt Upload */}
+                                                <div className="flex items-center gap-2">
+                                                    {item.receiptFile ? (
+                                                        <div className="flex items-center gap-2 rounded-lg bg-green-50 px-3 py-1.5 text-sm text-green-700">
+                                                            <Receipt className="h-3 w-3" />
+                                                            <span className="truncate max-w-[200px]">{item.receiptFile.name}</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => updateItem(index, "receiptFile", null)}
+                                                                className="ml-1"
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <label className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-50">
+                                                            <Upload className="h-3 w-3" />
+                                                            Upload Nota
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                className="hidden"
+                                                                onChange={(e) => {
+                                                                    const file = e.target.files?.[0] || null;
+                                                                    updateItem(index, "receiptFile", file);
+                                                                }}
+                                                            />
+                                                        </label>
+                                                    )}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
 
                                     {totalItems > 0 && (
-                                        <div className="mt-2 text-right text-sm font-medium text-slate-700">
+                                        <div className="mt-3 rounded-lg bg-blue-50 px-4 py-2 text-right text-sm font-semibold text-blue-800">
                                             Total: {formatCurrency(totalItems)}
                                         </div>
                                     )}

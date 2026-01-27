@@ -34,6 +34,7 @@ import {
     User,
     Building,
 } from "lucide-react";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 interface Employee {
     id: string;
@@ -96,7 +97,7 @@ export default function AdminBankChangesPage() {
                 params.set("status", statusFilter);
             }
 
-            const res = await fetch(`/api/admin/bank-change-requests?${params}`);
+            const res = await fetchWithCsrf(`/api/admin/bank-change-requests?${params}`);
             const data = await res.json();
 
             if (data.success) {
@@ -117,7 +118,7 @@ export default function AdminBankChangesPage() {
         setError(null);
 
         try {
-            const res = await fetch(`/api/admin/bank-change-requests/${selectedRequest.id}`, {
+            const res = await fetchWithCsrf(`/api/admin/bank-change-requests/${selectedRequest.id}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "approve" }),
@@ -146,7 +147,7 @@ export default function AdminBankChangesPage() {
         setError(null);
 
         try {
-            const res = await fetch(`/api/admin/bank-change-requests/${selectedRequest.id}`, {
+            const res = await fetchWithCsrf(`/api/admin/bank-change-requests/${selectedRequest.id}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

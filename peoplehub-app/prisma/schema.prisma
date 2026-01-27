@@ -590,6 +590,8 @@ model ReimburseItem {
   id          String           @id @default(cuid())
   reimburseId String
   description String
+  unitPrice   Decimal?
+  quantity    Int              @default(1)
   amount      Decimal
   receiptUrl  String?
   date        DateTime         @db.Date

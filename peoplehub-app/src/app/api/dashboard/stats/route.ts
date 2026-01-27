@@ -140,11 +140,12 @@ async function getEmployeeStatsRaw(tenantId: string, employeeId: string, today: 
             orderBy: { period: "desc" },
             select: { period: true, netSalary: true },
         }),
-        // recent activity (attendance logs)
-        prisma.auditLog.findMany({
-            where: { tenantId, actorId: employeeId },
-            orderBy: { createdAt: "desc" },
-            take: 5
+        // recent attendance records
+        prisma.attendance.findMany({
+            where: { tenantId, employeeId },
+            orderBy: { attendanceDate: "desc" },
+            take: 5,
+            select: { id: true, clockIn: true, clockOut: true, status: true, attendanceDate: true, workMode: true },
         }),
         // recent leave requests
         prisma.leaveRequest.findMany({
@@ -172,7 +173,31 @@ async function getEmployeeStatsRaw(tenantId: string, employeeId: string, today: 
         };
     });
 
-    // Transform activity
+    // Transform activity from attendance and leave records
+    const attendanceActivities: { id: string; type: string; title: string; description: string; timestamp: Date; status: string }[] = [];
+    for (const att of recentLogs) {
+        if (att.clockIn) {
+            attendanceActivities.push({
+                id: `att-in-${att.id}`,
+                type: "attendance",
+                title: "Clock In",
+                description: `${att.workMode || "WFO"} - ${att.attendanceDate.toLocaleDateString("id-ID")}`,
+                timestamp: att.clockIn,
+                status: att.status === "LATE" ? "warning" : "success",
+            });
+        }
+        if (att.clockOut) {
+            attendanceActivities.push({
+                id: `att-out-${att.id}`,
+                type: "attendance",
+                title: "Clock Out",
+                description: att.attendanceDate.toLocaleDateString("id-ID"),
+                timestamp: att.clockOut,
+                status: "success",
+            });
+        }
+    }
+
     const activities = [
         ...recentLeaves.map(l => ({
             id: l.id,
@@ -182,14 +207,7 @@ async function getEmployeeStatsRaw(tenantId: string, employeeId: string, today: 
             timestamp: l.createdAt,
             status: l.status === "APPROVED" ? "success" : l.status === "REJECTED" ? "error" : "warning"
         })),
-        ...recentLogs.map(l => ({
-            id: l.id,
-            type: "activity",
-            title: l.action,
-            description: l.objectType,
-            timestamp: l.createdAt,
-            status: "default"
-        }))
+        ...attendanceActivities,
     ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
 
     return {

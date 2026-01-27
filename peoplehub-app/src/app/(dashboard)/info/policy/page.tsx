@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { AcknowledgementButton, DocumentVersionBadge } from '@/components/ui';
 import { Alert } from '@/components/ui/alert';
 import { Download, Clock, AlertCircle } from 'lucide-react';
+import { fetchWithCsrf } from "@/lib/api-client";
 
 // Sample policy content - in production this would come from API/CMS
 const POLICY_CONTENT = {
@@ -95,7 +96,7 @@ export default function CompanyPolicyPage() {
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // TODO: Replace with actual API call to record acknowledgement
-        // await fetch('/api/documents/acknowledge', {
+        // await fetchWithCsrf('/api/documents/acknowledge', {
         //     method: 'POST',
         //     body: JSON.stringify({ documentId, version, acknowledgedAt: new Date().toISOString() })
         // });

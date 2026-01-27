@@ -26,6 +26,7 @@ import {
     Send,
 } from "lucide-react";
 import Link from "next/link";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 interface BankChangeRequest {
     id: string;
@@ -97,7 +98,7 @@ export default function BankChangePage() {
 
     async function fetchData() {
         try {
-            const res = await fetch("/api/profile/bank-change-request");
+            const res = await fetchWithCsrf("/api/profile/bank-change-request");
             const data = await res.json();
 
             if (data.success) {
@@ -118,7 +119,7 @@ export default function BankChangePage() {
         setError(null);
 
         try {
-            const res = await fetch("/api/profile/bank-change-request", {
+            const res = await fetchWithCsrf("/api/profile/bank-change-request", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(form),

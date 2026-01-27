@@ -9,6 +9,7 @@ import {
     CreditCard, Download, Loader2, ChevronDown, FileText,
     CheckCircle, AlertCircle, Play, Send, RefreshCw
 } from "lucide-react";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 interface Payslip {
     id: string;
@@ -74,7 +75,7 @@ export default function AdminPayrollPage() {
                 period: selectedPeriod,
                 ...(selectedStatus ? { status: selectedStatus } : {}),
             });
-            const res = await fetch(`/api/payroll/payslips?${params}`);
+            const res = await fetchWithCsrf(`/api/payroll/payslips?${params}`);
             const data = await res.json();
             if (data.success) {
                 setPayslips(data.data);
@@ -105,7 +106,7 @@ export default function AdminPayrollPage() {
 
         setGenerating(true);
         try {
-            const res = await fetch("/api/payroll/payslips/generate", {
+            const res = await fetchWithCsrf("/api/payroll/payslips/generate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ period: selectedPeriod }),
@@ -137,7 +138,7 @@ export default function AdminPayrollPage() {
 
         setPublishing(true);
         try {
-            const res = await fetch("/api/payroll/payslips/publish", {
+            const res = await fetchWithCsrf("/api/payroll/payslips/publish", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ period: selectedPeriod }),

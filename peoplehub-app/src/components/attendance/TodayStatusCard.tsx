@@ -57,7 +57,7 @@ export function TodayStatusCard({ attendance, schedule }: TodayStatusCardProps) 
             case "PRESENT":
                 return (
                     <Badge className="bg-green-100 text-green-700 border-green-200">
-                        Hadir Tepat Waktu
+                        Tepat Waktu
                     </Badge>
                 );
             case "LATE":

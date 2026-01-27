@@ -16,6 +16,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
+import { fetchWithCsrf } from "@/lib/api-client";
 
 export default function NewWebhookPage() {
     const router = useRouter();

@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 const resetPasswordSchema = z.object({
     password: z
@@ -60,7 +61,7 @@ function ResetPasswordContent() {
 
         const verifyToken = async () => {
             try {
-                const response = await fetch("/api/auth/reset-password/verify", {
+                const response = await fetchWithCsrf("/api/auth/reset-password/verify", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ token }),
@@ -94,7 +95,7 @@ function ResetPasswordContent() {
         setError(null);
 
         try {
-            const response = await fetch("/api/auth/reset-password/reset", {
+            const response = await fetchWithCsrf("/api/auth/reset-password/reset", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

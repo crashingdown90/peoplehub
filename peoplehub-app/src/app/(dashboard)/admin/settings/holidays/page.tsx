@@ -19,6 +19,7 @@ import {
   Globe,
   Building2,
 } from "lucide-react";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 interface Branch {
   id: string;
@@ -73,7 +74,7 @@ export default function HolidaysSettingsPage() {
       if (filterBranch) params.set("branchId", filterBranch);
       if (filterNational) params.set("isNational", filterNational);
 
-      const res = await fetch(`/api/admin/settings/holidays?${params}`);
+      const res = await fetchWithCsrf(`/api/admin/settings/holidays?${params}`);
       const data = await res.json();
 
       if (data.success) {
@@ -111,7 +112,7 @@ export default function HolidaysSettingsPage() {
         : "/api/admin/settings/holidays";
       const method = editingId ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await fetchWithCsrf(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -153,7 +154,7 @@ export default function HolidaysSettingsPage() {
   const handleDelete = async (id: string) => {
     try {
       setSubmitting(true);
-      const res = await fetch(`/api/admin/settings/holidays/${id}`, {
+      const res = await fetchWithCsrf(`/api/admin/settings/holidays/${id}`, {
         method: "DELETE",
       });
       const data = await res.json();

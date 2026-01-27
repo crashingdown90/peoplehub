@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 const forgotPasswordSchema = z.object({
     email: z.string().email("Email tidak valid"),
@@ -38,7 +39,7 @@ export default function ForgotPasswordPage() {
         setError(null);
 
         try {
-            const response = await fetch("/api/auth/reset-password/request", {
+            const response = await fetchWithCsrf("/api/auth/reset-password/request", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data),

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Loader2, ChevronDown, UserPlus } from "lucide-react";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 const createEmployeeSchema = z.object({
     userId: z.string().min(1, "User wajib dipilih"),
@@ -76,11 +77,11 @@ export default function NewEmployeePage() {
         async function fetchOptions() {
             try {
                 const [usersRes, branchesRes, deptsRes, posRes, empsRes] = await Promise.all([
-                    fetch("/api/admin/users?status=APPROVED&hasNoEmployee=true"),
-                    fetch("/api/admin/branches"),
-                    fetch("/api/admin/departments"),
-                    fetch("/api/admin/positions"),
-                    fetch("/api/admin/employees?status=ACTIVE&limit=100"),
+                    fetchWithCsrf("/api/admin/users?status=APPROVED&hasNoEmployee=true"),
+                    fetchWithCsrf("/api/admin/branches"),
+                    fetchWithCsrf("/api/admin/departments"),
+                    fetchWithCsrf("/api/admin/positions"),
+                    fetchWithCsrf("/api/admin/employees?status=ACTIVE&limit=100"),
                 ]);
 
                 const [usersData, branchesData, deptsData, posData, empsData] = await Promise.all([
@@ -118,7 +119,7 @@ export default function NewEmployeePage() {
         setError(null);
 
         try {
-            const response = await fetch("/api/admin/employees", {
+            const response = await fetchWithCsrf("/api/admin/employees", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data),

@@ -30,6 +30,7 @@ import {
     ChevronRight,
     Inbox,
 } from "lucide-react";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 type ApprovalType = "LEAVE" | "ATTENDANCE_CORRECTION" | "TRAVEL" | "REIMBURSE";
 
@@ -80,7 +81,7 @@ export default function ApprovalsPage() {
         try {
             setLoading(true);
             const typeParam = activeTab !== "all" ? `&type=${activeTab}` : "";
-            const res = await fetch(`/api/approvals/all?status=PENDING${typeParam}`);
+            const res = await fetchWithCsrf(`/api/approvals/all?status=PENDING${typeParam}`);
             const data = await res.json();
             if (data.success) {
                 setItems(data.data || []);
@@ -94,7 +95,7 @@ export default function ApprovalsPage() {
 
     const fetchStats = useCallback(async () => {
         try {
-            const res = await fetch("/api/approvals/stats");
+            const res = await fetchWithCsrf("/api/approvals/stats");
             const data = await res.json();
             if (data.success) {
                 setStats(data.data);
@@ -121,7 +122,7 @@ export default function ApprovalsPage() {
                 TRAVEL: "travel",
                 REIMBURSE: "reimburse",
             };
-            const res = await fetch(`/api/approvals/${typeMap[item.type]}/${item.id}/approve`, {
+            const res = await fetchWithCsrf(`/api/approvals/${typeMap[item.type]}/${item.id}/approve`, {
                 method: "POST",
             });
             const data = await res.json();
@@ -150,7 +151,7 @@ export default function ApprovalsPage() {
                 TRAVEL: "travel",
                 REIMBURSE: "reimburse",
             };
-            const res = await fetch(`/api/approvals/${typeMap[item.type]}/${item.id}/reject`, {
+            const res = await fetchWithCsrf(`/api/approvals/${typeMap[item.type]}/${item.id}/reject`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ reason: rejectReason }),

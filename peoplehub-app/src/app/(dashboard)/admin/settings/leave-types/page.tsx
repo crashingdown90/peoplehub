@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   RefreshCcw,
 } from "lucide-react";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 interface LeaveType {
   id: string;
@@ -70,7 +71,7 @@ export default function LeaveTypesSettingsPage() {
       if (includeInactive) params.set("includeInactive", "true");
       if (search) params.set("search", search);
 
-      const res = await fetch(`/api/admin/settings/leave-types?${params}`);
+      const res = await fetchWithCsrf(`/api/admin/settings/leave-types?${params}`);
       const data = await res.json();
 
       if (data.success) {
@@ -107,7 +108,7 @@ export default function LeaveTypesSettingsPage() {
         : "/api/admin/settings/leave-types";
       const method = editingId ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await fetchWithCsrf(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -148,7 +149,7 @@ export default function LeaveTypesSettingsPage() {
   const handleDelete = async (id: string) => {
     try {
       setSubmitting(true);
-      const res = await fetch(`/api/admin/settings/leave-types/${id}`, {
+      const res = await fetchWithCsrf(`/api/admin/settings/leave-types/${id}`, {
         method: "DELETE",
       });
       const data = await res.json();
@@ -170,7 +171,7 @@ export default function LeaveTypesSettingsPage() {
   const handleReactivate = async (id: string) => {
     try {
       setSubmitting(true);
-      const res = await fetch(`/api/admin/settings/leave-types/${id}`, {
+      const res = await fetchWithCsrf(`/api/admin/settings/leave-types/${id}`, {
         method: "PATCH",
       });
       const data = await res.json();

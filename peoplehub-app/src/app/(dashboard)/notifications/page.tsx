@@ -3,9 +3,11 @@
 // @ai:cx
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell, CheckCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 interface Notification {
     id: string;
@@ -18,6 +20,7 @@ interface Notification {
 }
 
 export default function NotificationsPage() {
+    const router = useRouter();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -28,7 +31,7 @@ export default function NotificationsPage() {
 
     async function fetchNotifications() {
         try {
-            const res = await fetch("/api/notifications");
+            const res = await fetchWithCsrf("/api/notifications");
             const data = await res.json();
             if (data.success) {
                 setNotifications(data.data);
@@ -42,7 +45,7 @@ export default function NotificationsPage() {
     }
 
     async function markAsRead(id: string) {
-        await fetch(`/api/notifications/${id}/read`, { method: "POST" });
+        await fetchWithCsrf(`/api/notifications/${id}/read`, { method: "POST" });
         setNotifications(notifications.map(n =>
             n.id === id ? { ...n, isRead: true } : n
         ));
@@ -50,7 +53,7 @@ export default function NotificationsPage() {
     }
 
     async function markAllAsRead() {
-        await fetch("/api/notifications/read-all", { method: "POST" });
+        await fetchWithCsrf("/api/notifications/read-all", { method: "POST" });
         setNotifications(notifications.map(n => ({ ...n, isRead: true })));
         setUnreadCount(0);
     }
@@ -115,9 +118,9 @@ export default function NotificationsPage() {
                             <Card
                                 key={notif.id}
                                 className={`cursor-pointer transition-colors ${!notif.isRead ? "bg-blue-50/50" : ""}`}
-                                onClick={() => {
-                                    if (!notif.isRead) markAsRead(notif.id);
-                                    if (notif.link) window.location.href = notif.link;
+                                onClick={async () => {
+                                    if (!notif.isRead) await markAsRead(notif.id);
+                                    if (notif.link) router.push(notif.link);
                                 }}
                             >
                                 <CardContent className="py-3">

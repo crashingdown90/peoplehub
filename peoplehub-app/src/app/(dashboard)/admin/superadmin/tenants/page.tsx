@@ -56,6 +56,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/useToast";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 // Types
 interface Tenant {
@@ -167,7 +168,7 @@ export default function TenantManagementPage() {
       });
       if (search) params.set("search", search);
 
-      const res = await fetch(`/api/admin/superadmin/tenants?${params}`);
+      const res = await fetchWithCsrf(`/api/admin/superadmin/tenants?${params}`);
       const json = await res.json();
 
       if (json.success) {
@@ -197,7 +198,7 @@ export default function TenantManagementPage() {
   const fetchTenantDetail = async (id: string) => {
     setLoadingDetail(true);
     try {
-      const res = await fetch(`/api/admin/superadmin/tenants/${id}`);
+      const res = await fetchWithCsrf(`/api/admin/superadmin/tenants/${id}`);
       const json = await res.json();
 
       if (json.success) {
@@ -241,7 +242,7 @@ export default function TenantManagementPage() {
 
     setFormLoading(true);
     try {
-      const res = await fetch("/api/admin/superadmin/tenants", {
+      const res = await fetchWithCsrf("/api/admin/superadmin/tenants", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -283,7 +284,7 @@ export default function TenantManagementPage() {
 
     setFormLoading(true);
     try {
-      const res = await fetch(`/api/admin/superadmin/tenants/${selectedTenant.id}`, {
+      const res = await fetchWithCsrf(`/api/admin/superadmin/tenants/${selectedTenant.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -319,7 +320,7 @@ export default function TenantManagementPage() {
   // Toggle tenant active status
   const handleToggleActive = async (tenant: Tenant) => {
     try {
-      const res = await fetch(`/api/admin/superadmin/tenants/${tenant.id}`, {
+      const res = await fetchWithCsrf(`/api/admin/superadmin/tenants/${tenant.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !tenant.isActive }),
@@ -351,7 +352,7 @@ export default function TenantManagementPage() {
     if (!selectedTenant) return;
 
     try {
-      const res = await fetch(`/api/admin/superadmin/tenants/${selectedTenant.id}`, {
+      const res = await fetchWithCsrf(`/api/admin/superadmin/tenants/${selectedTenant.id}`, {
         method: "DELETE",
       });
 

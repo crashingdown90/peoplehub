@@ -25,6 +25,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { BANK_LIST } from "@/constants/banks";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 interface Registration {
     id: string;
@@ -89,7 +90,7 @@ export default function RegistrationsPage() {
     async function fetchRegistrations(status: "PENDING" | "APPROVED" | "REJECTED") {
         try {
             setLoading(true);
-            const res = await fetch(`/api/admin/registrations?status=${status}`);
+            const res = await fetchWithCsrf(`/api/admin/registrations?status=${status}`);
             const data = await res.json();
             if (data.success) {
                 setRegistrations(data.data);
@@ -112,7 +113,7 @@ export default function RegistrationsPage() {
         }
         setProcessingId(id);
         try {
-            const res = await fetch(`/api/admin/registrations/${id}/approve`, { method: "POST" });
+            const res = await fetchWithCsrf(`/api/admin/registrations/${id}/approve`, { method: "POST" });
             if (res.ok) {
                 setRegistrations((prev) => prev.filter((r) => r.id !== id));
                 if (selected?.id === id) {
@@ -142,7 +143,7 @@ export default function RegistrationsPage() {
         setRejectError(null);
         setProcessingId(id);
         try {
-            const res = await fetch(`/api/admin/registrations/${id}/reject`, {
+            const res = await fetchWithCsrf(`/api/admin/registrations/${id}/reject`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ reason }),

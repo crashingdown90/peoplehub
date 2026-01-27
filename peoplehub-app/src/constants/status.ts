@@ -55,7 +55,7 @@ export const EMPLOYEE_STATUS_COLORS: Record<EmployeeStatus, string> = {
  * Attendance status labels in Indonesian
  */
 export const ATTENDANCE_STATUS_LABELS: Record<AttendanceStatus, string> = {
-    [AttendanceStatus.PRESENT]: 'Hadir',
+    [AttendanceStatus.PRESENT]: 'Tepat Waktu',
     [AttendanceStatus.LATE]: 'Terlambat',
     [AttendanceStatus.ABSENT]: 'Tidak Hadir',
     [AttendanceStatus.LEAVE]: 'Cuti',

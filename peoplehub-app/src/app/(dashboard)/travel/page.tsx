@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plane, Plus, Calendar, DollarSign, Loader2 } from "lucide-react";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 interface TravelRequest {
     id: string;
@@ -43,7 +44,7 @@ export default function TravelPage() {
 
     async function fetchRequests() {
         try {
-            const res = await fetch("/api/travel/requests");
+            const res = await fetchWithCsrf("/api/travel/requests");
             const data = await res.json();
             if (data.success) {
                 setRequests(data.data);
@@ -61,7 +62,7 @@ export default function TravelPage() {
         setError("");
 
         try {
-            const res = await fetch("/api/travel/requests", {
+            const res = await fetchWithCsrf("/api/travel/requests", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

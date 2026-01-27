@@ -9,6 +9,8 @@ const reimburseSchema = z.object({
     description: z.string().min(10, "Deskripsi minimal 10 karakter"),
     items: z.array(z.object({
         description: z.string().min(3),
+        unitPrice: z.number().min(100, "Minimal Rp 100").optional(),
+        quantity: z.number().int().min(1).default(1),
         amount: z.number().min(1000, "Minimal Rp 1.000"),
         date: z.string(),
         receiptUrl: z.string().optional(),
@@ -55,7 +57,7 @@ export async function GET(request: NextRequest) {
             data: requests.map(r => ({
                 ...r,
                 totalAmount: Number(r.totalAmount),
-                items: r.items.map(i => ({ ...i, amount: Number(i.amount) })),
+                items: r.items.map(i => ({ ...i, amount: Number(i.amount), unitPrice: i.unitPrice ? Number(i.unitPrice) : null })),
             })),
             meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
         });
@@ -101,6 +103,8 @@ export async function POST(request: NextRequest) {
                 items: {
                     create: items.map(item => ({
                         description: item.description,
+                        unitPrice: item.unitPrice,
+                        quantity: item.quantity || 1,
                         amount: item.amount,
                         date: new Date(item.date),
                         receiptUrl: item.receiptUrl,
@@ -126,7 +130,7 @@ export async function POST(request: NextRequest) {
             data: {
                 ...reimburseRequest,
                 totalAmount: Number(reimburseRequest.totalAmount),
-                items: reimburseRequest.items.map(i => ({ ...i, amount: Number(i.amount) })),
+                items: reimburseRequest.items.map(i => ({ ...i, amount: Number(i.amount), unitPrice: i.unitPrice ? Number(i.unitPrice) : null })),
             },
             message: "Pengajuan reimburse berhasil",
         }, { status: 201 });

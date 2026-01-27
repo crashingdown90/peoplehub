@@ -71,6 +71,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/useToast";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 // Types
 interface User {
@@ -233,7 +234,7 @@ export default function UserManagementPage() {
   // Fetch tenants for filter
   const fetchTenants = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/superadmin/tenants?limit=100");
+      const res = await fetchWithCsrf("/api/admin/superadmin/tenants?limit=100");
       if (res.ok) {
         const data = await res.json();
         setTenants(data.data.tenants || []);
@@ -255,7 +256,7 @@ export default function UserManagementPage() {
       if (selectedRole !== "all") params.set("role", selectedRole);
       if (selectedStatus !== "all") params.set("status", selectedStatus);
 
-      const res = await fetch(`/api/admin/superadmin/users?${params.toString()}`);
+      const res = await fetchWithCsrf(`/api/admin/superadmin/users?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
         setUsers(data.data.users || []);
@@ -276,7 +277,7 @@ export default function UserManagementPage() {
   const fetchUserDetail = async (userId: string) => {
     setLoadingDetail(true);
     try {
-      const res = await fetch(`/api/admin/superadmin/users/${userId}`);
+      const res = await fetchWithCsrf(`/api/admin/superadmin/users/${userId}`);
       if (res.ok) {
         const data = await res.json();
         setUserDetail(data.data);
@@ -332,7 +333,7 @@ export default function UserManagementPage() {
     if (!userToEdit) return;
 
     try {
-      const res = await fetch(`/api/admin/superadmin/users/${userToEdit.id}`, {
+      const res = await fetchWithCsrf(`/api/admin/superadmin/users/${userToEdit.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editForm),
@@ -357,7 +358,7 @@ export default function UserManagementPage() {
     if (!userToEdit) return;
 
     try {
-      const res = await fetch(`/api/admin/superadmin/users/${userToEdit.id}`, {
+      const res = await fetchWithCsrf(`/api/admin/superadmin/users/${userToEdit.id}`, {
         method: "DELETE",
       });
 
@@ -378,7 +379,7 @@ export default function UserManagementPage() {
   // Handle reactivate user
   const handleReactivate = async (user: User) => {
     try {
-      const res = await fetch(`/api/admin/superadmin/users/${user.id}`, {
+      const res = await fetchWithCsrf(`/api/admin/superadmin/users/${user.id}`, {
         method: "PATCH",
       });
 

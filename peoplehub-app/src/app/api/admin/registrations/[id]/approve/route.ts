@@ -157,6 +157,27 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
                 },
             });
 
+            // Auto-create leave balances for all active leave types
+            const activeLeaveTypes = await tx.leaveType.findMany({
+                where: { tenantId: context.tenantId, isActive: true },
+                select: { id: true, defaultBalance: true },
+            });
+
+            if (activeLeaveTypes.length > 0) {
+                const currentYear = new Date().getFullYear();
+                await tx.leaveBalance.createMany({
+                    data: activeLeaveTypes.map((lt) => ({
+                        tenantId: context.tenantId,
+                        employeeId: employee.id,
+                        leaveTypeId: lt.id,
+                        year: currentYear,
+                        initialBalance: lt.defaultBalance,
+                        usedBalance: 0,
+                        remainingBalance: lt.defaultBalance,
+                    })),
+                });
+            }
+
             // Audit log
             await tx.auditLog.create({
                 data: {

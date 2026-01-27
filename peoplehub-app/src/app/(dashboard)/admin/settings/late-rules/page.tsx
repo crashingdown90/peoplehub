@@ -20,6 +20,7 @@ import {
   Ban,
   RotateCcw,
 } from "lucide-react";
+import { fetchWithCsrf } from "@/lib/api-client";
 
 interface Branch {
   id: string;
@@ -79,7 +80,7 @@ export default function LateRulesSettingsPage() {
       if (filterBranch) params.set("branchId", filterBranch);
       if (filterActive) params.set("isActive", filterActive);
 
-      const res = await fetch(`/api/admin/late-rules?${params}`);
+      const res = await fetchWithCsrf(`/api/admin/late-rules?${params}`);
       const data = await res.json();
 
       if (data.success) {
@@ -96,7 +97,7 @@ export default function LateRulesSettingsPage() {
 
   const fetchBranches = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/branches");
+      const res = await fetchWithCsrf("/api/admin/branches");
       const data = await res.json();
       if (data.success) {
         setBranches(data.data || []);
@@ -136,7 +137,7 @@ export default function LateRulesSettingsPage() {
         : "/api/admin/late-rules";
       const method = editingId ? "PATCH" : "POST";
 
-      const res = await fetch(url, {
+      const res = await fetchWithCsrf(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -180,7 +181,7 @@ export default function LateRulesSettingsPage() {
   const handleDelete = async (id: string) => {
     try {
       setSubmitting(true);
-      const res = await fetch(`/api/admin/late-rules/${id}`, {
+      const res = await fetchWithCsrf(`/api/admin/late-rules/${id}`, {
         method: "DELETE",
       });
       const data = await res.json();
@@ -202,7 +203,7 @@ export default function LateRulesSettingsPage() {
   const handleToggleActive = async (rule: LateRule) => {
     try {
       setSubmitting(true);
-      const res = await fetch(`/api/admin/late-rules/${rule.id}`, {
+      const res = await fetchWithCsrf(`/api/admin/late-rules/${rule.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !rule.isActive }),

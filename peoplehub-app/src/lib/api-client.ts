@@ -2,6 +2,74 @@
  * API Client for PeopleHub
  * Centralized API calls with error handling, caching, and offline support
  */
+import { CSRF_HEADER_NAME } from "@/lib/security/csrf-constants";
+
+// ==========================================
+// CSRF-AWARE FETCH UTILITY
+// ==========================================
+
+let _csrfToken: string | null = null;
+const _CSRF_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
+
+async function _fetchCsrfToken(): Promise<string> {
+    const res = await fetch("/api/auth/csrf", {
+        method: "GET",
+        credentials: "include",
+    });
+    if (!res.ok) throw new Error("Failed to fetch CSRF token");
+    const data = await res.json();
+    const token: string = data.token;
+    _csrfToken = token;
+    return token;
+}
+
+async function _ensureCsrfToken(): Promise<string> {
+    if (_csrfToken) return _csrfToken;
+    return _fetchCsrfToken();
+}
+
+/**
+ * Drop-in replacement for fetch() with automatic CSRF token handling.
+ * - Adds x-csrf-token header for POST/PUT/PATCH/DELETE requests
+ * - Auto-refreshes token and retries on 403 CSRF errors
+ */
+export async function fetchWithCsrf(
+    url: string | URL | Request,
+    init?: RequestInit,
+): Promise<Response> {
+    const options: RequestInit = { ...init, credentials: init?.credentials || "include" };
+    const method = (options.method || "GET").toUpperCase();
+
+    if (_CSRF_METHODS.includes(method)) {
+        const token = await _ensureCsrfToken();
+        const existingHeaders = options.headers instanceof Headers
+            ? Object.fromEntries(options.headers.entries())
+            : (options.headers as Record<string, string>) || {};
+        options.headers = { ...existingHeaders, [CSRF_HEADER_NAME]: token };
+    }
+
+    const response = await fetch(url, options);
+
+    // On CSRF 403, refresh token and retry once
+    if (response.status === 403 && _CSRF_METHODS.includes(method)) {
+        const body = await response.clone().json().catch(() => null);
+        if (body?.error?.code === "CSRF_VALIDATION_FAILED" || body?.error?.code === "CSRF_ERROR") {
+            _csrfToken = null;
+            const newToken = await _fetchCsrfToken();
+            const retryHeaders = options.headers instanceof Headers
+                ? Object.fromEntries(options.headers.entries())
+                : (options.headers as Record<string, string>) || {};
+            options.headers = { ...retryHeaders, [CSRF_HEADER_NAME]: newToken };
+            return fetch(url, options);
+        }
+    }
+
+    return response;
+}
+
+// ==========================================
+// LEGACY API CLIENT CLASS
+// ==========================================
 
 interface APIConfig {
     baseURL: string;

@@ -1,5 +1,6 @@
 // @ai:perf - GET today's attendance with caching
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 import { AttendanceService } from "@/services";
 import { getCache, CacheKeys, CacheTags } from "@/lib/cache";
@@ -40,6 +41,18 @@ export async function GET() {
 
     const attendance = result.data;
 
+    // Fetch actual schedule for today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const schedule = await prisma.schedule.findFirst({
+      where: {
+        employeeId: context.employeeId,
+        scheduleDate: today,
+      },
+      include: { shift: { select: { name: true, startTime: true, endTime: true } } },
+    });
+
     const responseData: TodayAttendanceResponse = {
       hasAttendance: !!attendance,
       hasClockedIn: !!attendance?.clockIn,
@@ -55,9 +68,9 @@ export async function GET() {
         }
         : null,
       schedule: {
-        shiftName: "Regular",
-        startTime: "08:00",
-        endTime: "17:00",
+        shiftName: schedule?.shift?.name || "Regular",
+        startTime: schedule?.shift?.startTime || "08:00",
+        endTime: schedule?.shift?.endTime || "17:00",
       },
     };
 
