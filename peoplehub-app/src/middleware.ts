@@ -7,6 +7,12 @@ import { verifyTokenEdge, type JWTPayload } from "@/lib/auth/edge-jwt";
 const publicRoutes = ["/login", "/register", "/forgot-password", "/reset-password"];
 const publicApiRoutes = ["/api/auth/login", "/api/auth/register", "/api/auth/logout", "/api/auth/csrf", "/api/health", "/api/tenants"];
 
+// Routes that are exempt from CSRF validation (public POST endpoints)
+const csrfExemptRoutes = ["/api/auth/login", "/api/auth/register", "/api/auth/logout", "/api/auth/csrf", "/api/auth/verify-email", "/api/auth/reset-password", "/api/auth/forgot-password"];
+
+// HTTP methods that require CSRF validation
+const CSRF_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
+
 // Routes that require specific roles
 const roleRoutes: Record<string, string[]> = {
     // Dashboard page routes
@@ -137,6 +143,30 @@ function checkRateLimit(
 // CR-005: Removed setInterval cleanup to prevent memory leaks
 // Lazy cleanup is already handled in checkRateLimit (lines 82-85)
 
+/**
+ * Edge-compatible constant-time string comparison for CSRF tokens
+ */
+function timingSafeEqual(a: string, b: string): boolean {
+    if (a.length !== b.length) return false;
+    let result = 0;
+    for (let i = 0; i < a.length; i++) {
+        result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    }
+    return result === 0;
+}
+
+/**
+ * Validate CSRF token: compare x-csrf-token header against csrf-token cookie
+ * Works in Edge Runtime without Node.js crypto
+ */
+function validateCsrfMiddleware(request: NextRequest): boolean {
+    const headerToken = request.headers.get("x-csrf-token");
+    const cookieToken = request.cookies.get("csrf-token")?.value;
+
+    if (!headerToken || !cookieToken) return false;
+    return timingSafeEqual(headerToken, cookieToken);
+}
+
 // ==========================================
 // MIDDLEWARE
 // ==========================================
@@ -195,6 +225,26 @@ export async function middleware(request: NextRequest) {
                             "X-RateLimit-Remaining": "0",
                         },
                     }
+                );
+            }
+        }
+    }
+
+    // CSRF validation for state-changing API requests
+    if (pathname.startsWith("/api") && CSRF_METHODS.includes(request.method)) {
+        const isCsrfExempt = csrfExemptRoutes.some(route => pathname.startsWith(route));
+        if (!isCsrfExempt) {
+            const isValidCsrf = validateCsrfMiddleware(request);
+            if (!isValidCsrf) {
+                return NextResponse.json(
+                    {
+                        success: false,
+                        error: {
+                            code: "CSRF_VALIDATION_FAILED",
+                            message: "CSRF token tidak valid atau tidak ada",
+                        },
+                    },
+                    { status: 403 }
                 );
             }
         }

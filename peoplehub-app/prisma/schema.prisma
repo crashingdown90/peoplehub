@@ -197,6 +197,7 @@ model Shift {
   schedules    Schedule[]
   tenant       Tenant     @relation(fields: [tenantId], references: [id])
 
+  @@index([tenantId])
   @@map("shifts")
 }
 
@@ -326,7 +327,7 @@ model LeaveBalance {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   employee         Employee  @relation("EmployeeLeaveBalances", fields: [employeeId], references: [id], onDelete: Cascade)
-  leaveType        LeaveType @relation(fields: [leaveTypeId], references: [id])
+  leaveType        LeaveType @relation(fields: [leaveTypeId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, leaveTypeId, year])
   @@index([tenantId, employeeId, year])
@@ -355,7 +356,7 @@ model LeaveRequest {
   /// Soft delete timestamp
   deletedAt           DateTime?
   employee            Employee       @relation("EmployeeLeaveRequests", fields: [employeeId], references: [id], onDelete: Cascade)
-  leaveType           LeaveType      @relation(fields: [leaveTypeId], references: [id])
+  leaveType           LeaveType      @relation(fields: [leaveTypeId], references: [id], onDelete: Restrict)
 
   @@index([tenantId, status])
   @@index([employeeId, status])
@@ -438,10 +439,9 @@ model Payslip {
   updatedAt           DateTime      @updatedAt
   employee            Employee      @relation("EmployeePayslips", fields: [employeeId], references: [id], onDelete: Cascade)
 
-  @@unique([employeeId, period])
+  @@unique([tenantId, employeeId, period])
   @@index([tenantId, period])
   @@index([tenantId, status])
-  @@index([tenantId, employeeId])
   @@map("payslips")
 }
 
@@ -489,7 +489,7 @@ model Notification {
 model NotificationPreference {
   id                 String   @id @default(cuid())
   tenantId           String
-  userId             String   @unique
+  userId             String
   emailEnabled       Boolean  @default(true)
   emailDigest        String   @default("REALTIME")
   inAppEnabled       Boolean  @default(true)
@@ -500,6 +500,8 @@ model NotificationPreference {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
+  @@unique([tenantId, userId])
+  @@index([tenantId])
   @@map("notification_preferences")
 }
 
@@ -592,8 +594,9 @@ model ReimburseItem {
   receiptUrl  String?
   date        DateTime         @db.Date
   createdAt   DateTime         @default(now())
-  reimburse   ReimburseRequest @relation(fields: [reimburseId], references: [id])
+  reimburse   ReimburseRequest @relation(fields: [reimburseId], references: [id], onDelete: Cascade)
 
+  @@index([reimburseId])
   @@map("reimburse_items")
 }
 
@@ -630,7 +633,7 @@ model Expense {
   notes           String?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
-  category        ExpenseCategory @relation(fields: [categoryId], references: [id])
+  category        ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   employee        Employee        @relation("EmployeeExpenses", fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, employeeId])
@@ -684,8 +687,8 @@ model KpiTarget {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   employee    Employee     @relation("EmployeeKpiTargets", fields: [employeeId], references: [id], onDelete: Cascade)
-  indicator   KpiIndicator @relation(fields: [indicatorId], references: [id])
-  period      KpiPeriod    @relation(fields: [periodId], references: [id])
+  indicator   KpiIndicator @relation(fields: [indicatorId], references: [id], onDelete: Restrict)
+  period      KpiPeriod    @relation(fields: [periodId], references: [id], onDelete: Restrict)
 
   @@unique([employeeId, periodId, indicatorId])
   @@index([tenantId, periodId])
@@ -722,7 +725,7 @@ model WebhookLog {
   response  String?
   attempts  Int      @default(1)
   sentAt    DateTime @default(now())
-  webhook   Webhook  @relation(fields: [webhookId], references: [id])
+  webhook   Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
 
   @@index([webhookId, sentAt])
   @@map("webhook_logs")
@@ -764,7 +767,7 @@ model TicketComment {
   isInternal  Boolean  @default(false)
   attachments Json?
   createdAt   DateTime @default(now())
-  ticket      Ticket   @relation(fields: [ticketId], references: [id])
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
   @@index([ticketId, createdAt])
   @@map("ticket_comments")
@@ -980,7 +983,7 @@ model AnnouncementRead {
   announcementId String
   employeeId     String
   readAt         DateTime     @default(now())
-  announcement   Announcement @relation(fields: [announcementId], references: [id])
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
 
   @@unique([announcementId, employeeId])
   @@index([employeeId])
@@ -1021,7 +1024,7 @@ model LetterRequest {
   issuedById          String?
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
-  letterCategory      LetterCategory @relation(fields: [letterCategoryId], references: [id])
+  letterCategory      LetterCategory @relation(fields: [letterCategoryId], references: [id], onDelete: Restrict)
 
   @@unique([tenantId, letterNumber])
   @@index([tenantId, status])

@@ -23,7 +23,7 @@ export async function GET() {
     }
 
     let preferences = await prisma.notificationPreference.findUnique({
-      where: { userId: context.userId },
+      where: { tenantId_userId: { tenantId: context.tenantId, userId: context.userId } },
     });
 
     // Create default preferences if not exists
@@ -86,7 +86,7 @@ export async function PUT(request: NextRequest) {
 
     // Upsert preferences
     const preferences = await prisma.notificationPreference.upsert({
-      where: { userId: context.userId },
+      where: { tenantId_userId: { tenantId: context.tenantId, userId: context.userId } },
       create: {
         tenantId: context.tenantId,
         userId: context.userId,

@@ -322,7 +322,7 @@ export class NotificationService {
   ): Promise<ServiceResponse<Record<string, unknown>>> {
     let preferences = await prisma.notificationPreference.findUnique({
       where: {
-        userId: context.userId,
+        tenantId_userId: { tenantId: context.tenantId, userId: context.userId },
       },
     });
 
@@ -356,7 +356,7 @@ export class NotificationService {
   ): Promise<ServiceResponse<Record<string, unknown>>> {
     const preferences = await prisma.notificationPreference.upsert({
       where: {
-        userId: context.userId,
+        tenantId_userId: { tenantId: context.tenantId, userId: context.userId },
       },
       update: data,
       create: {

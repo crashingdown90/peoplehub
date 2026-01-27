@@ -345,7 +345,7 @@ export class EmailService {
     userId: string,
     notificationType: "attendance" | "leave" | "approval" | "announcement" | "system"
   ): Promise<boolean> {
-    const prefs = await prisma.notificationPreference.findUnique({
+    const prefs = await prisma.notificationPreference.findFirst({
       where: { userId },
     });
 

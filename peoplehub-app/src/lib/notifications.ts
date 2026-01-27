@@ -25,7 +25,7 @@ interface CreateNotificationParams {
 export async function createNotification(params: CreateNotificationParams) {
     try {
         // Check user preferences
-        const prefs = await prisma.notificationPreference.findUnique({
+        const prefs = await prisma.notificationPreference.findFirst({
             where: { userId: params.userId },
         });
 
