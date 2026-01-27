@@ -103,25 +103,25 @@ model Employee {
   updatedAt             DateTime               @updatedAt
   /// Soft delete timestamp
   deletedAt             DateTime?
-  attendanceCorrections AttendanceCorrection[]
-  attendances           Attendance[]
-  bankChangeRequests    BankChangeRequest[]
-  cashAdvances          CashAdvance[]
-  branch                Branch?                @relation(fields: [branchId], references: [id])
-  department            Department?            @relation(fields: [departmentId], references: [id])
-  manager               Employee?              @relation("ManagerSubordinates", fields: [managerId], references: [id])
+  attendanceCorrections AttendanceCorrection[] @relation("EmployeeCorrections")
+  attendances           Attendance[]           @relation("EmployeeAttendances")
+  bankChangeRequests    BankChangeRequest[]    @relation("EmployeeBankChanges")
+  cashAdvances          CashAdvance[]          @relation("EmployeeCashAdvances")
+  branch                Branch?                @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  department            Department?            @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  manager               Employee?              @relation("ManagerSubordinates", fields: [managerId], references: [id], onDelete: SetNull)
   subordinates          Employee[]             @relation("ManagerSubordinates")
-  position              Position?              @relation(fields: [positionId], references: [id])
+  position              Position?              @relation(fields: [positionId], references: [id], onDelete: SetNull)
   tenant                Tenant                 @relation(fields: [tenantId], references: [id])
-  user                  User                   @relation(fields: [userId], references: [id])
-  expenses              Expense[]
-  kpiTargets            KpiTarget[]
-  leaveBalances         LeaveBalance[]
-  leaveRequests         LeaveRequest[]
-  overtimeRequests      OvertimeRequest[]
-  payslips              Payslip[]
-  reimburseRequests     ReimburseRequest[]
-  travelRequests        TravelRequest[]
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses              Expense[]              @relation("EmployeeExpenses")
+  kpiTargets            KpiTarget[]            @relation("EmployeeKpiTargets")
+  leaveBalances         LeaveBalance[]         @relation("EmployeeLeaveBalances")
+  leaveRequests         LeaveRequest[]         @relation("EmployeeLeaveRequests")
+  overtimeRequests      OvertimeRequest[]      @relation("EmployeeOvertimeRequests")
+  payslips              Payslip[]              @relation("EmployeePayslips")
+  reimburseRequests     ReimburseRequest[]     @relation("EmployeeReimburseRequests")
+  travelRequests        TravelRequest[]        @relation("EmployeeTravelRequests")
 
   @@unique([tenantId, employeeNumber])
   @@unique([tenantId, employeeCode])
@@ -213,6 +213,8 @@ model Schedule {
   shift        Shift?      @relation(fields: [shiftId], references: [id])
 
   @@unique([employeeId, scheduleDate])
+  @@index([tenantId, scheduleDate])
+  @@index([tenantId, employeeId])
   @@map("schedules")
 }
 
@@ -256,8 +258,8 @@ model Attendance {
   livenessChallengeOut String?
   clockInGpsAccuracy   Decimal?
   clockOutGpsAccuracy  Decimal?
-  employee             Employee         @relation(fields: [employeeId], references: [id])
-  schedule             Schedule?        @relation(fields: [scheduleId], references: [id])
+  employee             Employee         @relation("EmployeeAttendances", fields: [employeeId], references: [id], onDelete: Cascade)
+  schedule             Schedule?        @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
   tenant               Tenant           @relation(fields: [tenantId], references: [id])
 
   @@unique([tenantId, employeeId, attendanceDate])
@@ -323,7 +325,7 @@ model LeaveBalance {
   expiryDate       DateTime? @db.Date
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
-  employee         Employee  @relation(fields: [employeeId], references: [id])
+  employee         Employee  @relation("EmployeeLeaveBalances", fields: [employeeId], references: [id], onDelete: Cascade)
   leaveType        LeaveType @relation(fields: [leaveTypeId], references: [id])
 
   @@unique([employeeId, leaveTypeId, year])
@@ -352,7 +354,7 @@ model LeaveRequest {
   updatedAt           DateTime       @updatedAt
   /// Soft delete timestamp
   deletedAt           DateTime?
-  employee            Employee       @relation(fields: [employeeId], references: [id])
+  employee            Employee       @relation("EmployeeLeaveRequests", fields: [employeeId], references: [id], onDelete: Cascade)
   leaveType           LeaveType      @relation(fields: [leaveTypeId], references: [id])
 
   @@index([tenantId, status])
@@ -434,7 +436,7 @@ model Payslip {
   notes               String?
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
-  employee            Employee      @relation(fields: [employeeId], references: [id])
+  employee            Employee      @relation("EmployeePayslips", fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@unique([employeeId, period])
   @@index([tenantId, period])
@@ -517,7 +519,7 @@ model AttendanceCorrection {
   rejectionReason   String?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
-  employee          Employee       @relation(fields: [employeeId], references: [id])
+  employee          Employee       @relation("EmployeeCorrections", fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, status])
   @@index([employeeId, status])
@@ -546,7 +548,7 @@ model TravelRequest {
   updatedAt           DateTime       @updatedAt
   /// Soft delete timestamp
   deletedAt           DateTime?
-  employee            Employee       @relation(fields: [employeeId], references: [id])
+  employee            Employee       @relation("EmployeeTravelRequests", fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, status])
   @@index([employeeId, status])
@@ -574,7 +576,7 @@ model ReimburseRequest {
   /// Soft delete timestamp
   deletedAt           DateTime?
   items               ReimburseItem[]
-  employee            Employee        @relation(fields: [employeeId], references: [id])
+  employee            Employee        @relation("EmployeeReimburseRequests", fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, status])
   @@index([employeeId, status])
@@ -629,7 +631,7 @@ model Expense {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   category        ExpenseCategory @relation(fields: [categoryId], references: [id])
-  employee        Employee        @relation(fields: [employeeId], references: [id])
+  employee        Employee        @relation("EmployeeExpenses", fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, employeeId])
   @@index([tenantId, status])
@@ -681,7 +683,7 @@ model KpiTarget {
   notes       String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  employee    Employee     @relation(fields: [employeeId], references: [id])
+  employee    Employee     @relation("EmployeeKpiTargets", fields: [employeeId], references: [id], onDelete: Cascade)
   indicator   KpiIndicator @relation(fields: [indicatorId], references: [id])
   period      KpiPeriod    @relation(fields: [periodId], references: [id])
 
@@ -965,7 +967,7 @@ model OvertimeRequest {
   completedAt      DateTime?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
-  employee         Employee       @relation(fields: [employeeId], references: [id])
+  employee         Employee       @relation("EmployeeOvertimeRequests", fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, employeeId])
   @@index([tenantId, overtimeDate])
@@ -1084,7 +1086,7 @@ model CashAdvance {
   rejectionReason String?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-  employee        Employee          @relation(fields: [employeeId], references: [id])
+  employee        Employee          @relation("EmployeeCashAdvances", fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, employeeId])
   @@index([tenantId, status])
@@ -1111,7 +1113,7 @@ model BankChangeRequest {
   rejectionReason       String?
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
-  employee              Employee         @relation(fields: [employeeId], references: [id])
+  employee              Employee         @relation("EmployeeBankChanges", fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, employeeId])
   @@index([tenantId, status])

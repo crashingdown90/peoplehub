@@ -5,7 +5,7 @@ import { verifyTokenEdge, type JWTPayload } from "@/lib/auth/edge-jwt";
 
 // Routes that don't require authentication
 const publicRoutes = ["/login", "/register", "/forgot-password", "/reset-password"];
-const publicApiRoutes = ["/api/auth/login", "/api/auth/register", "/api/auth/logout", "/api/auth/csrf", "/api/health", "/api/tenants", "/api/metrics"];
+const publicApiRoutes = ["/api/auth/login", "/api/auth/register", "/api/auth/logout", "/api/auth/csrf", "/api/health", "/api/tenants"];
 
 // Routes that require specific roles
 const roleRoutes: Record<string, string[]> = {

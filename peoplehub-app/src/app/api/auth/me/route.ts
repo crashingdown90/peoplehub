@@ -2,6 +2,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 
+/**
+ * Mask sensitive string: show only last 4 characters
+ * e.g., "1234567890123456" → "************3456"
+ */
+function maskSensitive(value: string | null | undefined): string | null {
+    if (!value) return null;
+    if (value.length <= 4) return "****";
+    return "*".repeat(value.length - 4) + value.slice(-4);
+}
+
 // GET /api/auth/me - Get current user profile
 export async function GET() {
     try {
@@ -80,7 +90,20 @@ export async function GET() {
             );
         }
 
-        return NextResponse.json({ success: true, data: user });
+        // Mask sensitive PII data before returning
+        const maskedUser = {
+            ...user,
+            employee: user.employee ? {
+                ...user.employee,
+                nik: maskSensitive(user.employee.nik),
+                npwp: maskSensitive(user.employee.npwp),
+                bankAccountNumber: maskSensitive(user.employee.bankAccountNumber),
+                bpjsKesehatan: maskSensitive(user.employee.bpjsKesehatan),
+                bpjsKetenagakerjaan: maskSensitive(user.employee.bpjsKetenagakerjaan),
+            } : null,
+        };
+
+        return NextResponse.json({ success: true, data: maskedUser });
     } catch (error) {
         console.error("Get me error:", error);
         return NextResponse.json(

@@ -48,6 +48,16 @@ interface ImageProcessOptions {
 }
 
 /**
+ * Validate that buffer contains a valid image by checking magic bytes
+ * Returns true if the buffer starts with known image signatures
+ */
+export function validateImageBuffer(buffer: Buffer): boolean {
+    if (buffer.length < 4) return false;
+    const type = getImageTypeFromBuffer(buffer);
+    return type !== null;
+}
+
+/**
  * Compress and resize image using sharp
  */
 async function processImage(
@@ -165,6 +175,14 @@ export async function saveProfilePhoto(
     }
 
     const originalSize = buffer.length;
+
+    // Validate file is actually an image using magic bytes
+    if (!validateImageBuffer(buffer)) {
+        return {
+            success: false,
+            error: "File bukan gambar yang valid (hanya JPEG, PNG, GIF, WebP)",
+        };
+    }
 
     // Compress and resize the image
     const compressedBuffer = await processImage(buffer, IMAGE_CONFIG.profile);

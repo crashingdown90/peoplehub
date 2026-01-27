@@ -78,6 +78,7 @@ export class LeaveService {
     const overlapping = await prisma.leaveRequest.findFirst({
       where: withTenant(context, {
         employeeId: context.employeeId!,
+        deletedAt: null,
         status: { notIn: ["REJECTED", "CANCELLED"] as ApprovalStatus[] },
         OR: [
           {
@@ -135,6 +136,7 @@ export class LeaveService {
 
     const where: Record<string, unknown> = {
       tenantId: context.tenantId,
+      deletedAt: null,
     };
 
     // Scope based on role
@@ -226,7 +228,7 @@ export class LeaveService {
     notes?: string
   ): Promise<ServiceResponse<LeaveRequest>> {
     const request = await prisma.leaveRequest.findFirst({
-      where: withTenant(context, { id: requestId }),
+      where: withTenant(context, { id: requestId, deletedAt: null }),
       include: { employee: true },
     });
 
@@ -272,7 +274,7 @@ export class LeaveService {
     }
 
     const request = await prisma.leaveRequest.findFirst({
-      where: withTenant(context, { id: requestId }),
+      where: withTenant(context, { id: requestId, deletedAt: null }),
     });
 
     if (!request) {
@@ -322,7 +324,7 @@ export class LeaveService {
     reason: string
   ): Promise<ServiceResponse<LeaveRequest>> {
     const request = await prisma.leaveRequest.findFirst({
-      where: withTenant(context, { id: requestId }),
+      where: withTenant(context, { id: requestId, deletedAt: null }),
       include: { employee: true },
     });
 
@@ -366,6 +368,7 @@ export class LeaveService {
       where: withTenant(context, {
         id: requestId,
         employeeId: context.employeeId!,
+        deletedAt: null,
       }),
     });
 

@@ -29,10 +29,10 @@ export async function getRequestContext(): Promise<RequestContext | null> {
   }
 
   // Fallback: If employeeId is missing in headers (e.g., token was issued before employee record was created),
-  // try to fetch it from the database once.
+  // try to fetch it from the database once, scoped to the user's tenant.
   if (!employeeId) {
-    const employee = await prisma.employee.findUnique({
-      where: { userId },
+    const employee = await prisma.employee.findFirst({
+      where: { userId, tenantId },
       select: { id: true },
     });
     if (employee) {
