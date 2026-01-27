@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { AnnouncementService } from "@/services/announcement/announcement.service";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const createSchema = z.object({
     title: z.string().min(3, "Judul minimal 3 karakter"),
@@ -84,10 +85,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(result);
     } catch (error) {
         console.error("Get announcements error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -139,9 +137,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, data: result.data }, { status: 201 });
     } catch (error) {
         console.error("Create announcement error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

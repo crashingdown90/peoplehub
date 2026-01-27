@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const bulkRejectSchema = z.object({
     ids: z.array(z.string()).min(1, "Minimal 1 ID"),
@@ -113,9 +114,6 @@ export async function POST(request: NextRequest) {
         });
     } catch (error) {
         console.error("Bulk reject error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

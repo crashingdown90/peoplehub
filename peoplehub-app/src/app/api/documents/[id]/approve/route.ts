@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { DocumentService } from "@/services/document";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // POST /api/documents/[id]/approve - Approve document
 export async function POST(
@@ -38,9 +39,6 @@ export async function POST(
     });
   } catch (error) {
     console.error("Approve document error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

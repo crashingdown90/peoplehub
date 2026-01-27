@@ -81,6 +81,7 @@ export class AdminService {
 
     const where: Record<string, unknown> = {
       tenantId: context.tenantId,
+      deletedAt: null,
     };
 
     if (status) where.status = status;

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { ShiftService } from "@/services/shift";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
 
@@ -50,10 +51,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Get shifts error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -108,9 +106,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Create shift error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

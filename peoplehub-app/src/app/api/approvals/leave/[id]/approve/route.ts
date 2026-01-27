@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { ApprovalService } from "@/services";
 import { notifyLeaveApproved } from "@/lib/notifications";
+import { handlePrismaError } from "@/lib/api-utils";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -92,9 +93,6 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
     });
   } catch (error) {
     console.error("Approve leave error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

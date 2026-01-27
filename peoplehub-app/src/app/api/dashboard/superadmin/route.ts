@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/dashboard/superadmin - Get superadmin dashboard data
 export async function GET() {
@@ -167,9 +168,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Get superadmin dashboard error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

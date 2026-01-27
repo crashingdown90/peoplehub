@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { WebhookService } from "@/services/webhook";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/admin/webhooks/[id]/logs - Get webhook delivery logs
 export async function GET(
@@ -42,9 +43,6 @@ export async function GET(
     });
   } catch (error) {
     console.error("Get webhook logs error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

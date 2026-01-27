@@ -4,6 +4,7 @@ import { getRequestContext } from "@/lib/request-context";
 import { TicketService } from "@/services/ticket";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const assignSchema = z.object({
   assignedToId: z.string().cuid("User ID tidak valid"),
@@ -93,9 +94,6 @@ export async function POST(
     });
   } catch (error) {
     console.error("Assign ticket error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

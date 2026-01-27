@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { OffboardingService } from "@/services/offboarding";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const updateTaskSchema = z.object({
   completed: z.boolean().optional(),
@@ -61,9 +62,6 @@ export async function PUT(
     });
   } catch (error) {
     console.error("Update offboarding task error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

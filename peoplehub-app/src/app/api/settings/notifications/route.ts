@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/tenant";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // Notification settings structure
 interface NotificationSettings {
@@ -94,10 +95,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error("GET /api/settings/notifications error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -184,9 +182,6 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error) {
     console.error("PUT /api/settings/notifications error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

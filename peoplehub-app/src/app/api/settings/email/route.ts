@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/tenant";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // Validation schema
 const EmailPreferencesSchema = z.object({
@@ -57,10 +58,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error("GET /api/settings/email error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -136,9 +134,6 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error) {
     console.error("PUT /api/settings/email error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { NotificationService } from "@/services/notification";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/notifications - Get my notifications
 export async function GET(request: NextRequest) {
@@ -65,9 +66,6 @@ export async function GET(request: NextRequest) {
         });
     } catch (error) {
         console.error("Get notifications error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

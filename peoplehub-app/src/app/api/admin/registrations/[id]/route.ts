@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/tenant";
 import { AdminService } from "@/services/admin";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // Validation schema for registration action
 const RegistrationActionSchema = z.object({
@@ -62,9 +63,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     });
   } catch (error) {
     console.error("PUT /api/admin/registrations/[id] error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

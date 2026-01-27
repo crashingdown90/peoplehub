@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { ApprovalService } from "@/services";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/approvals/stats - Get approval statistics
 export async function GET() {
@@ -37,9 +38,6 @@ export async function GET() {
         });
     } catch (error) {
         console.error("Get approval stats error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

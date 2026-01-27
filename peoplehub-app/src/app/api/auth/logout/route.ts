@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { clearAuthCookie, getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { handlePrismaError } from "@/lib/api-utils";
 
 /**
  * Get the base URL for redirects, using forwarded headers or env var
@@ -73,16 +74,7 @@ export async function POST(request: NextRequest) {
         const isApiCall = acceptHeader.includes("application/json");
 
         if (isApiCall) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: {
-                        code: "INTERNAL_ERROR",
-                        message: "Terjadi kesalahan server",
-                    },
-                },
-                { status: 500 }
-            );
+            return handlePrismaError(error);
         }
 
         // Redirect to login even on error using correct base URL

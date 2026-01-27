@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { NotificationService } from "@/services/notification";
+import { handlePrismaError } from "@/lib/api-utils";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -37,9 +38,6 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
         });
     } catch (error) {
         console.error("Mark notification read error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

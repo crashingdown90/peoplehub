@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { PayrollService } from "@/services";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/payroll/payslips - Get payslips (own or all for admin)
 export async function GET(request: NextRequest) {
@@ -80,10 +81,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Get payslips error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 

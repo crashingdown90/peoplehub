@@ -1,6 +1,7 @@
 // @ai:cl - Public API to get list of banks for registration
 import { NextResponse } from "next/server";
 import { BANK_LIST } from "@/constants/banks";
+import { handlePrismaError } from "@/lib/api-utils";
 
 export async function GET() {
     try {
@@ -16,15 +17,6 @@ export async function GET() {
         });
     } catch (error) {
         console.error("Get banks error:", error);
-        return NextResponse.json(
-            {
-                success: false,
-                error: {
-                    code: "INTERNAL_ERROR",
-                    message: "Gagal mengambil data bank",
-                },
-            },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

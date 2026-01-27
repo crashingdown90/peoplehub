@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const periodSchema = z.object({
     name: z.string().min(3, "Nama minimal 3 karakter"),
@@ -29,10 +30,7 @@ export async function GET() {
         return NextResponse.json({ success: true, data: periods });
     } catch (error) {
         console.error("Get KPI periods error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -77,9 +75,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true, data: period }, { status: 201 });
     } catch (error) {
         console.error("Create KPI period error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

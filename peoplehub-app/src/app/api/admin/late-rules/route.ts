@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 import { LateRuleService } from "@/services";
 import { createLateRuleSchema, lateRuleFilterSchema } from "@/validations/late-rule.schema";
+import { handlePrismaError } from "@/lib/api-utils";
 
 /**
  * GET /api/admin/late-rules
@@ -63,10 +64,7 @@ export async function GET(request: NextRequest) {
         });
     } catch (error) {
         console.error("Get late rules error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -130,9 +128,6 @@ export async function POST(request: NextRequest) {
         );
     } catch (error) {
         console.error("Create late rule error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

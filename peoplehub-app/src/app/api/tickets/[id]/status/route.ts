@@ -4,6 +4,7 @@ import { getRequestContext } from "@/lib/request-context";
 import { TicketService } from "@/services/ticket";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const statusSchema = z.object({
   status: z.enum(["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"], {
@@ -89,9 +90,6 @@ export async function PUT(
     });
   } catch (error) {
     console.error("Change ticket status error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

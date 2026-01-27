@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { EmailVerifyService } from "@/services/auth/email-verify.service";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // ==========================================
 // SCHEMAS
@@ -61,16 +62,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (err) {
     console.error("Verify email API error:", err);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Terjadi kesalahan server",
-        },
-      },
-      { status: 500 }
-    );
+    return handlePrismaError(err);
   }
 }
 
@@ -119,15 +111,6 @@ export async function PUT(request: NextRequest) {
     });
   } catch (err) {
     console.error("Resend verification API error:", err);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Terjadi kesalahan server",
-        },
-      },
-      { status: 500 }
-    );
+    return handlePrismaError(err);
   }
 }

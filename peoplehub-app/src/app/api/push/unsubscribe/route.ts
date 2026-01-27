@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { PushService } from "@/services/push";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const unsubscribeSchema = z.object({
   endpoint: z.string().url("Endpoint tidak valid"),
@@ -55,9 +56,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Unsubscribe push error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

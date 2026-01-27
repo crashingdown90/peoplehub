@@ -5,6 +5,7 @@ import { getRequestContext, hasRole } from "@/lib/request-context";
 import { EmailService } from "@/services/email";
 import { formatDate } from "@/constants/locale";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const rejectSchema = z.object({
     reason: z.string().min(10, "Alasan penolakan minimal 10 karakter"),
@@ -119,9 +120,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         });
     } catch (error) {
         console.error("Reject registration error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

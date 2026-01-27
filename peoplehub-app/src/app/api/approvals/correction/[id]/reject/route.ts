@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const rejectSchema = z.object({
     reason: z.string().min(10, "Alasan minimal 10 karakter"),
@@ -76,9 +77,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         return NextResponse.json({ success: true, message: "Koreksi ditolak" });
     } catch (error) {
         console.error("Reject correction error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

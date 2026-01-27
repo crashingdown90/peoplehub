@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/admin/departments - Get departments for dropdown
 export async function GET() {
@@ -30,9 +31,6 @@ export async function GET() {
         return NextResponse.json({ success: true, data: departments });
     } catch (error) {
         console.error("Get departments error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

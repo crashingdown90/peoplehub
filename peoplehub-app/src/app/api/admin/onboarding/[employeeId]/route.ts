@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { OnboardingService } from "@/services/onboarding";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/admin/onboarding/[employeeId] - Get onboarding for an employee
 export async function GET(
@@ -37,10 +38,7 @@ export async function GET(
     });
   } catch (error) {
     console.error("Get onboarding error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -81,9 +79,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error("Cancel onboarding error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

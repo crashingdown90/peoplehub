@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { TicketService } from "@/services/ticket";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const addCommentSchema = z.object({
   content: z.string().min(1, "Komentar tidak boleh kosong").max(5000, "Komentar terlalu panjang"),
@@ -44,10 +45,7 @@ export async function GET(
     });
   } catch (error) {
     console.error("Get comments error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -106,9 +104,6 @@ export async function POST(
     );
   } catch (error) {
     console.error("Add comment error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

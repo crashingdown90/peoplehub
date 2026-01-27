@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 import { ExpenseService } from "@/services/expense";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // POST /api/expenses/[id]/pay - Mark expense as paid
 export async function POST(
@@ -59,9 +60,6 @@ export async function POST(
         });
     } catch (error) {
         console.error("Mark expense as paid error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

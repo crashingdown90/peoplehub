@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { PushService } from "@/services/push";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const sendPushSchema = z.object({
   userId: z.string().cuid().optional(),
@@ -97,9 +98,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Send push error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

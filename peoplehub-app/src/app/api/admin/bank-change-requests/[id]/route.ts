@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -59,10 +60,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         });
     } catch (error) {
         console.error("GET /api/admin/bank-change-requests/[id] error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -248,9 +246,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
     } catch (error) {
         console.error("POST /api/admin/bank-change-requests/[id] error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const targetSchema = z.object({
     periodId: z.string().cuid(),
@@ -121,10 +122,7 @@ export async function GET(request: NextRequest) {
         });
     } catch (error) {
         console.error("Get KPI targets error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -185,9 +183,6 @@ export async function POST(request: NextRequest) {
         }, { status: 201 });
     } catch (error) {
         console.error("Create KPI target error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

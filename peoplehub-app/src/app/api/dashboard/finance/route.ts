@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/dashboard/finance - Get finance-specific dashboard data
 export async function GET() {
@@ -226,9 +227,6 @@ export async function GET() {
         });
     } catch (error) {
         console.error("Get finance dashboard error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

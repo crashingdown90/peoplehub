@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/leave/types - Get available leave types
 export async function GET() {
@@ -30,9 +31,6 @@ export async function GET() {
         return NextResponse.json({ success: true, data: leaveTypes });
     } catch (error) {
         console.error("Get leave types error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

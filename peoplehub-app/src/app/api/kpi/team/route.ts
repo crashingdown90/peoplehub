@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/tenant";
 import { KpiService } from "@/services/kpi";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/kpi/team - Get team KPI targets (MANAGER only)
 export async function GET(request: NextRequest) {
@@ -39,9 +40,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("GET /api/kpi/team error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

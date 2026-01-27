@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 import { ExpenseService } from "@/services/expense";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const createCategorySchema = z.object({
     code: z.string().min(2, "Kode minimal 2 karakter").max(20, "Kode maksimal 20 karakter"),
@@ -41,10 +42,7 @@ export async function GET(request: NextRequest) {
         });
     } catch (error) {
         console.error("Get expense categories error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -113,9 +111,6 @@ export async function POST(request: NextRequest) {
         );
     } catch (error) {
         console.error("Create expense category error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

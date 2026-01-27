@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/tenant";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // Validation schema for creating a tenant
 const CreateTenantSchema = z.object({
@@ -138,10 +139,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("GET /api/admin/superadmin/tenants error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -238,9 +236,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("POST /api/admin/superadmin/tenants error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

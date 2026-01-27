@@ -9,6 +9,7 @@ import { EmailService } from "@/services/email";
 import { formatDate } from "@/constants/locale";
 
 import { validateCsrf, getCsrfErrorResponse } from "@/lib/security/csrf";
+import { handlePrismaError } from "@/lib/api-utils";
 
 export async function POST(request: NextRequest) {
     try {
@@ -284,15 +285,6 @@ export async function POST(request: NextRequest) {
         );
     } catch (error) {
         console.error("Register error:", error);
-        return NextResponse.json(
-            {
-                success: false,
-                error: {
-                    code: "INTERNAL_ERROR",
-                    message: "Terjadi kesalahan server",
-                },
-            },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

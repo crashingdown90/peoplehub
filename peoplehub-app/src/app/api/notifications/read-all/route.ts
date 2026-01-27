@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { NotificationService } from "@/services/notification";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // POST /api/notifications/read-all - Mark all notifications as read
 export async function POST() {
@@ -31,9 +32,6 @@ export async function POST() {
         });
     } catch (error) {
         console.error("Mark all read error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

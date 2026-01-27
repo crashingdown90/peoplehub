@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/tenant";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // Validation schema for updating a user
 const UpdateUserSchema = z.object({
@@ -207,10 +208,7 @@ export async function GET(
     });
   } catch (error) {
     console.error("GET /api/admin/superadmin/users/[id] error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -335,10 +333,7 @@ export async function PUT(
     });
   } catch (error) {
     console.error("PUT /api/admin/superadmin/users/[id] error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -416,10 +411,7 @@ export async function DELETE(
     });
   } catch (error) {
     console.error("DELETE /api/admin/superadmin/users/[id] error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -489,9 +481,6 @@ export async function PATCH(
     });
   } catch (error) {
     console.error("PATCH /api/admin/superadmin/users/[id] error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

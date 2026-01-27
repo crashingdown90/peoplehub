@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 import { saveProfilePhoto, deleteFile } from "@/lib/upload";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png"];
@@ -48,10 +49,7 @@ export async function GET() {
         return NextResponse.json({ success: true, data: user });
     } catch (error) {
         console.error("Get profile error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -269,9 +267,6 @@ export async function PATCH(request: NextRequest) {
         });
     } catch (error) {
         console.error("Update profile error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

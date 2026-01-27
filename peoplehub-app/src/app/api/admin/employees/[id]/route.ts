@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { EmployeeService } from "@/services";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const updateEmployeeSchema = z.object({
     fullName: z.string().min(2).optional(),
@@ -95,10 +96,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
         });
     } catch (error) {
         console.error("Get employee detail error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -173,10 +171,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         });
     } catch (error) {
         console.error("Update employee error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -221,9 +216,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         });
     } catch (error) {
         console.error("Terminate employee error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

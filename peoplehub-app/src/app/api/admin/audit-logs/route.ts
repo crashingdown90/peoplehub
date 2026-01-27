@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/tenant";
 import { AdminService } from "@/services/admin";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/admin/audit-logs - List audit logs (IT_OPS/SUPER_ADMIN)
 export async function GET(request: NextRequest) {
@@ -45,9 +46,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("GET /api/admin/audit-logs error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

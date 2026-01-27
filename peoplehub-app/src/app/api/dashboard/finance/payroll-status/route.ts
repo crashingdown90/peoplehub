@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/dashboard/finance/payroll-status - Get current payroll period status
 export async function GET(request: NextRequest) {
@@ -129,9 +130,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Get payroll status error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

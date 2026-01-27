@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const updateIndicatorSchema = z.object({
     code: z.string().min(2, "Kode minimal 2 karakter").optional(),
@@ -68,10 +69,7 @@ export async function PUT(
         });
     } catch (error) {
         console.error("Update KPI indicator error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -122,9 +120,6 @@ export async function DELETE(
         return NextResponse.json({ success: true, message: "Indikator berhasil dihapus" });
     } catch (error) {
         console.error("Delete KPI indicator error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

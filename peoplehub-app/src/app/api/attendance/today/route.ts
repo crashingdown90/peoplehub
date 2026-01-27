@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { AttendanceService } from "@/services";
 import { getCache, CacheKeys, CacheTags } from "@/lib/cache";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // Cache TTL: 30 seconds for attendance status (short because it changes on clock-in/out)
 const ATTENDANCE_TODAY_TTL = 30 * 1000;
@@ -69,10 +70,7 @@ export async function GET() {
     return NextResponse.json({ success: true, data: responseData });
   } catch (error) {
     console.error("Get today attendance error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 

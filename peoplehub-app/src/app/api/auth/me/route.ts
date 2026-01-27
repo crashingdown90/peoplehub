@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 /**
  * Mask sensitive string: show only last 4 characters
@@ -106,9 +107,6 @@ export async function GET() {
         return NextResponse.json({ success: true, data: maskedUser });
     } catch (error) {
         console.error("Get me error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

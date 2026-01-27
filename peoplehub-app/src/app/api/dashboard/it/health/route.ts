@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/dashboard/it/health - Get system health status
 export async function GET() {
@@ -159,10 +160,10 @@ export async function GET() {
 
     // Get system metrics
     const metrics = {
-      totalUsers: await prisma.user.count({ where: { tenantId: context.tenantId } }),
-      activeUsers: await prisma.user.count({ where: { tenantId: context.tenantId, status: "ACTIVE" } }),
-      totalEmployees: await prisma.employee.count({ where: { tenantId: context.tenantId } }),
-      activeEmployees: await prisma.employee.count({ where: { tenantId: context.tenantId, status: "ACTIVE" } }),
+      totalUsers: await prisma.user.count({ where: { tenantId: context.tenantId, deletedAt: null } }),
+      activeUsers: await prisma.user.count({ where: { tenantId: context.tenantId, status: "ACTIVE", deletedAt: null } }),
+      totalEmployees: await prisma.employee.count({ where: { tenantId: context.tenantId, deletedAt: null } }),
+      activeEmployees: await prisma.employee.count({ where: { tenantId: context.tenantId, status: "ACTIVE", deletedAt: null } }),
     };
 
     return NextResponse.json({
@@ -177,9 +178,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Get health check error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

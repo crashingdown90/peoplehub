@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/admin/registrations - Get pending registrations
 export async function GET(request: NextRequest) {
@@ -34,6 +35,7 @@ export async function GET(request: NextRequest) {
                     tenantId: context.tenantId,
                     status: status as "PENDING" | "APPROVED" | "REJECTED",
                     employee: null, // Only users without employee record (pending approval)
+                    deletedAt: null,
                 },
                 select: {
                     // Basic info
@@ -79,6 +81,7 @@ export async function GET(request: NextRequest) {
                     tenantId: context.tenantId,
                     status: status as "PENDING" | "APPROVED" | "REJECTED",
                     employee: null,
+                    deletedAt: null,
                 },
             }),
         ]);
@@ -127,9 +130,6 @@ export async function GET(request: NextRequest) {
         });
     } catch (error) {
         console.error("Get registrations error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

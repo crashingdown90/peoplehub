@@ -2,6 +2,7 @@
 // NOTE: Loan model belum ada di schema, returning placeholder data
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/dashboard/finance/loans - Get employee loans summary
 // Returns placeholder since Loan model not implemented yet
@@ -47,9 +48,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Get loans error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

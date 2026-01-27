@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const updateSchema = z.object({
     actualValue: z.number(),
@@ -95,10 +96,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         });
     } catch (error) {
         console.error("Update KPI target error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -141,9 +139,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         });
     } catch (error) {
         console.error("Delete KPI target error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

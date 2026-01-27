@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { ReportBuilderService } from "@/services/report-builder";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // DELETE /api/reports/builder/[id] - Delete report config
 export async function DELETE(
@@ -37,9 +38,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error("Delete report config error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

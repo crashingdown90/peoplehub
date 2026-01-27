@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { OffboardingService } from "@/services/offboarding";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const createOffboardingSchema = z.object({
   employeeId: z.string().cuid("ID karyawan tidak valid"),
@@ -57,10 +58,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Get offboarding list error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -116,9 +114,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Create offboarding error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const correctionSchema = z.object({
     attendanceDate: z.string().min(1, "Tanggal wajib diisi"),
@@ -51,10 +52,7 @@ export async function GET(request: NextRequest) {
         });
     } catch (error) {
         console.error("Get corrections error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -144,9 +142,6 @@ export async function POST(request: NextRequest) {
         }, { status: 201 });
     } catch (error) {
         console.error("Create correction error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

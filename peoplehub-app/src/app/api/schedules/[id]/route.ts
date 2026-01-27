@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { ScheduleService } from "@/services/schedule";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const updateScheduleSchema = z.object({
   shiftId: z.string().cuid().optional().nullable(),
@@ -44,10 +45,7 @@ export async function GET(
     });
   } catch (error) {
     console.error("Get schedule error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -106,10 +104,7 @@ export async function PUT(
     });
   } catch (error) {
     console.error("Update schedule error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -148,9 +143,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error("Delete schedule error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

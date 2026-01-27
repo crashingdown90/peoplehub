@@ -7,6 +7,7 @@ import { getCache, CacheKeys, CacheTags } from "@/lib/cache";
 import path from "path";
 import { writeFile, mkdir } from "fs/promises";
 import { validateCsrf, getCsrfErrorResponse } from "@/lib/security/csrf";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // POST /api/attendance/clock-out
 export async function POST(request: NextRequest) {
@@ -123,9 +124,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Clock out error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

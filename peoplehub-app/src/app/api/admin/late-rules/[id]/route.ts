@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 import { LateRuleService } from "@/services";
 import { updateLateRuleSchema } from "@/validations/late-rule.schema";
+import { handlePrismaError } from "@/lib/api-utils";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -48,10 +49,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         });
     } catch (error) {
         console.error("Get late rule error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -118,10 +116,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         });
     } catch (error) {
         console.error("Update late rule error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -173,9 +168,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         });
     } catch (error) {
         console.error("Delete late rule error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

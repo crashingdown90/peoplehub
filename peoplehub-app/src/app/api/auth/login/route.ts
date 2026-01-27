@@ -6,6 +6,7 @@ import { loginSchema } from "@/lib/validations";
 import { validateCsrf } from "@/lib/security/csrf";
 
 import { checkRateLimit, createRateLimitResponse, getClientIP, getRateLimitKey } from "@/lib/rate-limit";
+import { handlePrismaError } from "@/lib/api-utils";
 
 export async function POST(request: NextRequest) {
     try {
@@ -210,15 +211,6 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error("Login error:", error);
         console.error("Error stack:", error instanceof Error ? error.stack : "No stack");
-        return NextResponse.json(
-            {
-                success: false,
-                error: {
-                    code: "INTERNAL_ERROR",
-                    message: "Terjadi kesalahan server",
-                },
-            },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

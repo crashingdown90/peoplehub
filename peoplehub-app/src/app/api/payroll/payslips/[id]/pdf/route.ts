@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -168,9 +169,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         });
     } catch (error) {
         console.error("Generate payslip PDF error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

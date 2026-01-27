@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, requireRole } from "@/lib/request-context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -62,9 +63,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         });
     } catch (error) {
         console.error("Cancel leave request error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

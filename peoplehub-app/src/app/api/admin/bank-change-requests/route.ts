@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/admin/bank-change-requests - List all bank change requests
 export async function GET(request: NextRequest) {
@@ -81,9 +82,6 @@ export async function GET(request: NextRequest) {
         });
     } catch (error) {
         console.error("GET /api/admin/bank-change-requests error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

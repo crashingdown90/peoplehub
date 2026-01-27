@@ -5,6 +5,7 @@ import { getRequestContext } from "@/lib/request-context";
 import { LeaveService } from "@/services";
 import { z } from "zod";
 import { validateCsrf, getCsrfErrorResponse } from "@/lib/security/csrf";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const leaveRequestSchema = z.object({
   leaveTypeId: z.string().cuid("Jenis cuti wajib dipilih"),
@@ -58,10 +59,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Get leave requests error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -179,9 +177,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Create leave request error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // Validation schema for update
 const UpdateHolidaySchema = z.object({
@@ -74,10 +75,7 @@ export async function GET(
     });
   } catch (error) {
     console.error("GET /api/admin/settings/holidays/[id] error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -188,10 +186,7 @@ export async function PUT(
     });
   } catch (error) {
     console.error("PUT /api/admin/settings/holidays/[id] error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -244,9 +239,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error("DELETE /api/admin/settings/holidays/[id] error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

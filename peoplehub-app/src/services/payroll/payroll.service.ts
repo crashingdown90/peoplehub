@@ -1,6 +1,7 @@
 // @ai:cl - Payroll service - business logic layer
 import { prisma } from "@/lib/db";
 import { RequestContext, withTenant } from "@/lib/tenant";
+import { notifyPayslipPublished } from "@/lib/notifications";
 import {
   ServiceResponse,
   success,
@@ -317,7 +318,14 @@ export class PayrollService {
       },
     });
 
-    // TODO: Send notification to employee
+    // Send notification to employee
+    const employee = await prisma.employee.findUnique({
+      where: { id: payslip.employeeId },
+      select: { userId: true },
+    });
+    if (employee?.userId) {
+      await notifyPayslipPublished(context.tenantId, employee.userId, updated.period);
+    }
 
     return success(updated);
   }

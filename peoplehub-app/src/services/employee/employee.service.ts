@@ -148,7 +148,7 @@ export class EmployeeService {
       return error(ErrorCodes.FORBIDDEN, "Anda tidak memiliki akses ke data karyawan");
     }
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = { deletedAt: null };
 
     // Super Admin can access all tenants or filter by specific tenant
     if (context.role === "SUPER_ADMIN") {

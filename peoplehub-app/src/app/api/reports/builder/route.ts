@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { ReportBuilderService } from "@/services/report-builder";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const columnSchema = z.object({
   field: z.string(),
@@ -72,10 +73,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Get saved reports error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -129,9 +127,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Save report config error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

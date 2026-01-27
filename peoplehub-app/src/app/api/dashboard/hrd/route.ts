@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/dashboard/hrd - Get HRD-specific dashboard data (company-wide)
 export async function GET() {
@@ -34,17 +35,17 @@ export async function GET() {
 
         // Total active employees
         const totalEmployees = await prisma.employee.count({
-            where: { tenantId, status: "ACTIVE" },
+            where: { tenantId, status: "ACTIVE", deletedAt: null },
         });
 
         // Pending registrations
         const pendingRegistrations = await prisma.user.count({
-            where: { tenantId, status: "PENDING" },
+            where: { tenantId, status: "PENDING", deletedAt: null },
         });
 
         // Recent pending registrations list
         const pendingRegistrationsList = await prisma.user.findMany({
-            where: { tenantId, status: "PENDING" },
+            where: { tenantId, status: "PENDING", deletedAt: null },
             select: {
                 id: true,
                 email: true,
@@ -233,9 +234,6 @@ export async function GET() {
         });
     } catch (error) {
         console.error("Get HRD dashboard error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

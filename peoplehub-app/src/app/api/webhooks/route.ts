@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { z } from "zod";
 import crypto from "crypto";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const webhookSchema = z.object({
     name: z.string().min(3, "Nama minimal 3 karakter"),
@@ -63,10 +64,7 @@ export async function GET() {
         });
     } catch (error) {
         console.error("Get webhooks error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -138,9 +136,6 @@ export async function POST(request: NextRequest) {
         }, { status: 201 });
     } catch (error) {
         console.error("Create webhook error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

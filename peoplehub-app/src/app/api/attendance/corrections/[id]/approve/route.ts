@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
+import { notifyAttendanceCorrectionApproved, notifyAttendanceCorrectionRejected } from "@/lib/notifications";
 
 const approveSchema = z.object({
   action: z.enum(["APPROVE", "REJECT"]),
@@ -80,7 +82,7 @@ export async function POST(
         status: "PENDING",
       },
       include: {
-        employee: { select: { fullName: true, managerId: true } },
+        employee: { select: { fullName: true, managerId: true, userId: true } },
       },
     });
 
@@ -171,7 +173,14 @@ export async function POST(
         },
       });
 
-      // TODO: Send notification to employee
+      // Send notification to employee
+      if (correction.employee.userId) {
+        await notifyAttendanceCorrectionApproved(
+          context.tenantId,
+          correction.employee.userId,
+          correction.attendanceDate.toLocaleDateString("id-ID"),
+        );
+      }
 
       return NextResponse.json({
         success: true,
@@ -204,7 +213,15 @@ export async function POST(
         },
       });
 
-      // TODO: Send notification to employee
+      // Send notification to employee
+      if (correction.employee.userId) {
+        await notifyAttendanceCorrectionRejected(
+          context.tenantId,
+          correction.employee.userId,
+          correction.attendanceDate.toLocaleDateString("id-ID"),
+          rejectionReason || "Tidak ada alasan",
+        );
+      }
 
       return NextResponse.json({
         success: true,
@@ -213,12 +230,6 @@ export async function POST(
     }
   } catch (error) {
     console.error("Approve correction error:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" },
-      },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

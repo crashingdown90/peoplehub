@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PasswordResetService } from "@/services/auth/password-reset.service";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // ==========================================
 // SCHEMAS
@@ -121,16 +122,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (err) {
     console.error("Reset password API error:", err);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Terjadi kesalahan server",
-        },
-      },
-      { status: 500 }
-    );
+    return handlePrismaError(err);
   }
 }
 
@@ -174,15 +166,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (err) {
     console.error("Validate token API error:", err);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Terjadi kesalahan server",
-        },
-      },
-      { status: 500 }
-    );
+    return handlePrismaError(err);
   }
 }

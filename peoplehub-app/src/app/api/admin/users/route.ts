@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/tenant";
 import { AdminService } from "@/services/admin";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/admin/users - List all users (IT_OPS/SUPER_ADMIN)
 export async function GET(request: NextRequest) {
@@ -44,9 +45,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("GET /api/admin/users error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Internal server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

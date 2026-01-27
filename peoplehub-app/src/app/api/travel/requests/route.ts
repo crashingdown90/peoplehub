@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const travelSchema = z.object({
     destination: z.string().min(3, "Destinasi minimal 3 karakter"),
@@ -58,10 +59,7 @@ export async function GET(request: NextRequest) {
         });
     } catch (error) {
         console.error("Get travel requests error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -133,9 +131,6 @@ export async function POST(request: NextRequest) {
         }, { status: 201 });
     } catch (error) {
         console.error("Create travel request error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

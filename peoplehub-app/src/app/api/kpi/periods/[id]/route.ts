@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const updatePeriodSchema = z.object({
     name: z.string().min(3, "Nama minimal 3 karakter").optional(),
@@ -68,10 +69,7 @@ export async function PUT(
         return NextResponse.json({ success: true, data: period });
     } catch (error) {
         console.error("Update KPI period error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -122,9 +120,6 @@ export async function DELETE(
         return NextResponse.json({ success: true, message: "Periode berhasil dihapus" });
     } catch (error) {
         console.error("Delete KPI period error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

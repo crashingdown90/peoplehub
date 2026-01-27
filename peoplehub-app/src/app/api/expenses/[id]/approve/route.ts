@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 import { ExpenseService } from "@/services/expense";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const approveExpenseSchema = z.object({
     notes: z.string().optional(),
@@ -85,9 +86,6 @@ export async function POST(
         });
     } catch (error) {
         console.error("Approve expense error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

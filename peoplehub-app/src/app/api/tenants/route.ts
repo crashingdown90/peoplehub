@@ -1,6 +1,7 @@
 // @ai:cl - Public API to get list of active tenants for registration
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { handlePrismaError } from "@/lib/api-utils";
 
 export async function GET() {
     try {
@@ -21,15 +22,6 @@ export async function GET() {
         });
     } catch (error) {
         console.error("Get tenants error:", error);
-        return NextResponse.json(
-            {
-                success: false,
-                error: {
-                    code: "INTERNAL_ERROR",
-                    message: "Gagal mengambil data perusahaan",
-                },
-            },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

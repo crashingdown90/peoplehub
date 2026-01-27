@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // Validation schema for new bank change request
 const BankChangeRequestSchema = z.object({
@@ -61,10 +62,7 @@ export async function GET() {
         });
     } catch (error) {
         console.error("GET /api/profile/bank-change-request error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -168,9 +166,6 @@ export async function POST(request: NextRequest) {
         });
     } catch (error) {
         console.error("POST /api/profile/bank-change-request error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

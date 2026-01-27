@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const indicatorSchema = z.object({
     code: z.string().min(2, "Kode minimal 2 karakter"),
@@ -35,10 +36,7 @@ export async function GET() {
         });
     } catch (error) {
         console.error("Get KPI indicators error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -84,9 +82,6 @@ export async function POST(request: NextRequest) {
         }, { status: 201 });
     } catch (error) {
         console.error("Create KPI indicator error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

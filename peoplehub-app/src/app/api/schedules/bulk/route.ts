@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { ScheduleService } from "@/services/schedule";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const bulkScheduleSchema = z.object({
   employeeIds: z.array(z.string().cuid()).min(1, "Minimal pilih 1 karyawan"),
@@ -70,9 +71,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Bulk create schedules error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

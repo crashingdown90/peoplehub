@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { PayrollService } from "@/services";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const publishSchema = z.object({
     period: z.string().regex(/^\d{4}-\d{2}$/, "Format periode harus YYYY-MM"),
@@ -60,9 +61,6 @@ export async function POST(request: NextRequest) {
         });
     } catch (error) {
         console.error("Publish payslips error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

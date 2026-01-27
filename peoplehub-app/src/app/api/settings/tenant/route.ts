@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/tenant";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // Validation schema for updating tenant settings
 const UpdateTenantSchema = z.object({
@@ -54,10 +55,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error("GET /api/settings/tenant error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -131,9 +129,6 @@ export async function PUT(request: NextRequest) {
     });
   } catch (error) {
     console.error("PUT /api/settings/tenant error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

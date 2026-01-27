@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { OnboardingService } from "@/services/onboarding";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/admin/onboarding/stats - Get onboarding statistics
 export async function GET(request: NextRequest) {
@@ -31,9 +32,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Get onboarding stats error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

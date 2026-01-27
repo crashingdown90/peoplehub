@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/tenant";
 import { AnnouncementService } from "@/services/announcement";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/announcements/unread-count - Get unread count for badge
 export async function GET() {
@@ -26,9 +27,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("GET /api/announcements/unread-count error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

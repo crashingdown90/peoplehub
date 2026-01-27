@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { TicketService } from "@/services/ticket";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const createTicketSchema = z.object({
   category: z.enum(["HR", "IT", "FINANCE", "OTHER"], {
@@ -53,10 +54,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Get tickets error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -108,9 +106,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Create ticket error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

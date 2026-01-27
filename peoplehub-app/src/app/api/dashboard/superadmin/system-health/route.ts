@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/dashboard/superadmin/system-health - Get system-wide health status
 export async function GET() {
@@ -71,6 +72,7 @@ export async function GET() {
       where: {
         employee: { is: null },
         role: { not: "SUPER_ADMIN" },
+        deletedAt: null,
       },
     });
 
@@ -141,7 +143,7 @@ export async function GET() {
 
     // 7. Check storage/attachments
     const attachmentCount = await prisma.leaveRequest.count({
-      where: { attachmentUrl: { not: null } },
+      where: { attachmentUrl: { not: null }, deletedAt: null },
     });
     checks.push({
       name: "storage",
@@ -157,8 +159,8 @@ export async function GET() {
     // Get system metrics
     const metrics = {
       totalTenants: tenants.length,
-      totalUsers: await prisma.user.count(),
-      totalEmployees: await prisma.employee.count(),
+      totalUsers: await prisma.user.count({ where: { deletedAt: null } }),
+      totalEmployees: await prisma.employee.count({ where: { deletedAt: null } }),
       totalAuditLogs: await prisma.auditLog.count(),
       dbSize: "N/A", // Would need admin access to get this
     };
@@ -193,9 +195,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Get system health error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { TicketService } from "@/services/ticket";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/tickets/stats - Get ticket statistics
 export async function GET(request: NextRequest) {
@@ -30,9 +31,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Get ticket stats error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

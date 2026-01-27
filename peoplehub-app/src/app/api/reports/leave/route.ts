@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { ReportService } from "@/services/report";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/reports/leave - Generate leave report
 export async function GET(request: NextRequest) {
@@ -48,9 +49,6 @@ export async function GET(request: NextRequest) {
         });
     } catch (error) {
         console.error("Generate leave report error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

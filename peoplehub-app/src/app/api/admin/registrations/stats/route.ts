@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/tenant/context";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // ==========================================
 // GET /api/admin/registrations/stats
@@ -180,15 +181,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (err) {
     console.error("Registration stats API error:", err);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: "INTERNAL_ERROR",
-          message: "Terjadi kesalahan server",
-        },
-      },
-      { status: 500 }
-    );
+    return handlePrismaError(err);
   }
 }

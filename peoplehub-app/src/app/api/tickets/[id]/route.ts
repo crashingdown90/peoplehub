@@ -4,6 +4,7 @@ import { getRequestContext } from "@/lib/request-context";
 import { TicketService } from "@/services/ticket";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const updateTicketSchema = z.object({
   category: z.enum(["HR", "IT", "FINANCE", "OTHER"]).optional(),
@@ -44,10 +45,7 @@ export async function GET(
     });
   } catch (error) {
     console.error("Get ticket error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -103,10 +101,7 @@ export async function PUT(
     });
   } catch (error) {
     console.error("Update ticket error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -163,9 +158,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error("Delete ticket error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { OffboardingService } from "@/services/offboarding";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const exitInterviewSchema = z.object({
   notes: z.string().min(10, "Catatan minimal 10 karakter"),
@@ -65,9 +66,6 @@ export async function POST(
     });
   } catch (error) {
     console.error("Complete exit interview error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

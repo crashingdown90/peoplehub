@@ -8,6 +8,7 @@ import { z } from "zod";
 import path from "path";
 import { writeFile, mkdir } from "fs/promises";
 import { validateCsrf, getCsrfErrorResponse } from "@/lib/security/csrf";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const clockInSchema = z.object({
   workMode: z.enum(["WFO", "WFH"]),
@@ -153,9 +154,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Clock in error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { getCache, CacheKeys, CacheTTL, CacheTags } from "@/lib/cache";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/dashboard/stats - Get dashboard statistics
 export async function GET() {
@@ -72,10 +73,7 @@ export async function GET() {
         return NextResponse.json({ success: true, data: result });
     } catch (error) {
         console.error("Get dashboard stats error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -125,7 +123,7 @@ async function getEmployeeStatsRaw(tenantId: string, employeeId: string, today: 
         }),
         // Pending leave requests
         prisma.leaveRequest.count({
-            where: { tenantId, employeeId, status: "PENDING" },
+            where: { tenantId, employeeId, status: "PENDING", deletedAt: null },
         }),
         // Leave balances (all types)
         prisma.leaveBalance.findMany({
@@ -150,7 +148,7 @@ async function getEmployeeStatsRaw(tenantId: string, employeeId: string, today: 
         }),
         // recent leave requests
         prisma.leaveRequest.findMany({
-            where: { tenantId, employeeId },
+            where: { tenantId, employeeId, deletedAt: null },
             orderBy: { createdAt: "desc" },
             take: 3,
             include: { leaveType: true }

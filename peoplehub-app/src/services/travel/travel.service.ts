@@ -1,6 +1,8 @@
 // @ai:cl - Travel request service - business logic layer
 import { prisma } from "@/lib/db";
 import { RequestContext, withTenant, withTenantData, scopeFilter } from "@/lib/tenant";
+import { createNotification } from "@/lib/notifications";
+import { NotificationType } from "@/types";
 import {
     ServiceResponse,
     success,
@@ -257,7 +259,23 @@ export class TravelService {
             },
         });
 
-        // TODO: Send notification to HRD
+        // Notify HRD about manager-approved travel request
+        const hrdUsers = await prisma.user.findMany({
+            where: { tenantId: context.tenantId, role: "HRD", deletedAt: null },
+            select: { id: true },
+        });
+        for (const hrd of hrdUsers) {
+            await createNotification({
+                tenantId: context.tenantId,
+                userId: hrd.id,
+                type: NotificationType.APPROVAL,
+                title: "Perjalanan Dinas Menunggu Approval",
+                message: `Request perjalanan dinas ke ${travelRequest.destination} menunggu approval HRD`,
+                link: `/approvals/travel/${id}`,
+                objectType: "TravelRequest",
+                objectId: id,
+            });
+        }
 
         return success(updated);
     }
@@ -295,7 +313,23 @@ export class TravelService {
             },
         });
 
-        // TODO: Send notification to employee
+        // Notify employee about approved travel
+        const empApproved = await prisma.employee.findUnique({
+            where: { id: travelRequest.employeeId },
+            select: { userId: true },
+        });
+        if (empApproved?.userId) {
+            await createNotification({
+                tenantId: context.tenantId,
+                userId: empApproved.userId,
+                type: NotificationType.APPROVAL,
+                title: "Perjalanan Dinas Disetujui",
+                message: `Request perjalanan dinas ke ${travelRequest.destination} telah disetujui`,
+                link: `/travel`,
+                objectType: "TravelRequest",
+                objectId: id,
+            });
+        }
 
         return success(updated);
     }
@@ -340,7 +374,23 @@ export class TravelService {
             },
         });
 
-        // TODO: Send notification to employee
+        // Notify employee about rejected travel
+        const empRejected = await prisma.employee.findUnique({
+            where: { id: travelRequest.employeeId },
+            select: { userId: true },
+        });
+        if (empRejected?.userId) {
+            await createNotification({
+                tenantId: context.tenantId,
+                userId: empRejected.userId,
+                type: NotificationType.APPROVAL,
+                title: "Perjalanan Dinas Ditolak",
+                message: `Request perjalanan dinas ke ${travelRequest.destination} ditolak. Alasan: ${reason}`,
+                link: `/travel`,
+                objectType: "TravelRequest",
+                objectId: id,
+            });
+        }
 
         return success(updated);
     }

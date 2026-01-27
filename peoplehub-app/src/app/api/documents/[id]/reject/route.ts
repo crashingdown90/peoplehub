@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { DocumentService } from "@/services/document";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const rejectSchema = z.object({
   reason: z.string().min(10, "Alasan penolakan minimal 10 karakter"),
@@ -60,9 +61,6 @@ export async function POST(
     });
   } catch (error) {
     console.error("Reject document error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

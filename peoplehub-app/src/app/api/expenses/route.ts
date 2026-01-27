@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/request-context";
 import { ExpenseService } from "@/services/expense";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const createExpenseSchema = z.object({
     categoryId: z.string().cuid("Kategori wajib dipilih"),
@@ -75,10 +76,7 @@ export async function GET(request: NextRequest) {
         });
     } catch (error) {
         console.error("Get expenses error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -168,9 +166,6 @@ export async function POST(request: NextRequest) {
         );
     } catch (error) {
         console.error("Create expense error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { NotificationService } from "@/services/notification";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const preferencesSchema = z.object({
     emailEnabled: z.boolean().optional(),
@@ -38,10 +39,7 @@ export async function GET() {
         return NextResponse.json({ success: true, data: result.data });
     } catch (error) {
         console.error("Get preferences error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -83,9 +81,6 @@ export async function PUT(request: NextRequest) {
         });
     } catch (error) {
         console.error("Update preferences error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

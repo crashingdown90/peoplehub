@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getRequestContext } from "@/lib/tenant";
+import { handlePrismaError } from "@/lib/api-utils";
 
 // GET /api/admin/superadmin/audit-logs - List all audit logs across tenants
 export async function GET(request: NextRequest) {
@@ -198,9 +199,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("GET /api/admin/superadmin/audit-logs error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

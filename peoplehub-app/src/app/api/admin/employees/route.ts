@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext, hasRole } from "@/lib/request-context";
 import { EmployeeService } from "@/services";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const createEmployeeSchema = z.object({
     userId: z.string().min(1, "User ID wajib diisi"),
@@ -70,10 +71,7 @@ export async function GET(request: NextRequest) {
         });
     } catch (error) {
         console.error("Get employees error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }
 
@@ -151,9 +149,6 @@ export async function POST(request: NextRequest) {
         );
     } catch (error) {
         console.error("Create employee error:", error);
-        return NextResponse.json(
-            { success: false, error: { code: "INTERNAL_ERROR", message: "Terjadi kesalahan server" } },
-            { status: 500 }
-        );
+        return handlePrismaError(error);
     }
 }

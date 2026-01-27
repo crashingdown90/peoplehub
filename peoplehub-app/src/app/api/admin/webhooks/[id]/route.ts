@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@/lib/request-context";
 import { WebhookService, WEBHOOK_EVENTS, WebhookEvent } from "@/services/webhook";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const validEvents = Object.keys(WEBHOOK_EVENTS) as WebhookEvent[];
 
@@ -50,10 +51,7 @@ export async function GET(
     });
   } catch (error) {
     console.error("Get webhook error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -109,10 +107,7 @@ export async function PUT(
     });
   } catch (error) {
     console.error("Update webhook error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
 
@@ -150,9 +145,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error("Delete webhook error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }

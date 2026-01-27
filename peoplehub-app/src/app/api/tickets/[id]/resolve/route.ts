@@ -4,6 +4,7 @@ import { getRequestContext } from "@/lib/request-context";
 import { TicketService } from "@/services/ticket";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
 
 const resolveSchema = z.object({
   resolution: z.string().min(10, "Resolusi minimal 10 karakter").max(5000, "Resolusi terlalu panjang"),
@@ -76,9 +77,6 @@ export async function POST(
     });
   } catch (error) {
     console.error("Resolve ticket error:", error);
-    return NextResponse.json(
-      { success: false, error: { code: "INTERNAL_ERROR", message: "Server error" } },
-      { status: 500 }
-    );
+    return handlePrismaError(error);
   }
 }
