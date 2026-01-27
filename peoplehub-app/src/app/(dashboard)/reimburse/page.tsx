@@ -29,7 +29,16 @@ interface ReimburseRequest {
     items: Array<{ description: string; unitPrice: number | null; quantity: number; amount: number; date: string; receiptUrl: string | null }>;
 }
 
-const CATEGORIES = ["Transport", "Meals", "Accommodation", "Equipment", "Other"];
+const CATEGORIES: Record<string, string> = {
+    MEDICAL: "Kesehatan",
+    TRANSPORT: "Transportasi",
+    COMMUNICATION: "Komunikasi",
+    MEALS: "Makan",
+    OFFICE_SUPPLIES: "Perlengkapan Kantor",
+    TRAINING: "Pelatihan",
+    PARKING: "Parkir",
+    OTHER: "Lainnya",
+};
 
 export default function ReimbursePage() {
     const [requests, setRequests] = useState<ReimburseRequest[]>([]);
@@ -39,7 +48,7 @@ export default function ReimbursePage() {
     const [error, setError] = useState("");
 
     const [form, setForm] = useState({
-        category: "Transport",
+        category: "TRANSPORT",
         description: "",
     });
 
@@ -149,11 +158,16 @@ export default function ReimbursePage() {
 
             if (data.success) {
                 setShowForm(false);
-                setForm({ category: "Transport", description: "" });
+                setForm({ category: "TRANSPORT", description: "" });
                 setItems([{ description: "", unitPrice: "", quantity: "1", amount: "", date: "", receiptFile: null }]);
                 fetchRequests();
             } else {
-                setError(data.error?.message || "Gagal mengajukan reimburse");
+                if (data.error?.details?.length) {
+                    const messages = data.error.details.map((d: { message: string }) => d.message).join(", ");
+                    setError(messages);
+                } else {
+                    setError(data.error?.message || "Gagal mengajukan reimburse");
+                }
             }
         } catch (err) {
             console.error(err);
@@ -213,8 +227,8 @@ export default function ReimbursePage() {
                                             value={form.category}
                                             onChange={(e) => setForm({ ...form, category: e.target.value })}
                                         >
-                                            {CATEGORIES.map((c) => (
-                                                <option key={c} value={c}>{c}</option>
+                                            {Object.entries(CATEGORIES).map(([key, label]) => (
+                                                <option key={key} value={key}>{label}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -364,7 +378,7 @@ export default function ReimbursePage() {
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-                                                    {req.category}
+                                                    {CATEGORIES[req.category] || req.category}
                                                 </span>
                                                 {getStatusBadge(req.status)}
                                             </div>

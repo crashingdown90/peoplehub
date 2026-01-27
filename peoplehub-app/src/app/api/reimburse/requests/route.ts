@@ -5,14 +5,14 @@ import { z } from "zod";
 import { handlePrismaError } from "@/lib/api-utils";
 
 const reimburseSchema = z.object({
-    category: z.enum(["Transport", "Meals", "Accommodation", "Equipment", "Other"]),
-    description: z.string().min(10, "Deskripsi minimal 10 karakter"),
+    category: z.enum(["MEDICAL", "TRANSPORT", "COMMUNICATION", "MEALS", "OFFICE_SUPPLIES", "TRAINING", "PARKING", "OTHER"]),
+    description: z.string().min(10, "Deskripsi minimal 10 karakter").max(500, "Deskripsi maksimal 500 karakter"),
     items: z.array(z.object({
-        description: z.string().min(3),
+        description: z.string().min(1, "Deskripsi item wajib diisi").max(200, "Deskripsi maksimal 200 karakter"),
         unitPrice: z.number().min(100, "Minimal Rp 100").optional(),
         quantity: z.number().int().min(1).default(1),
-        amount: z.number().min(1000, "Minimal Rp 1.000"),
-        date: z.string(),
+        amount: z.number().min(1, "Jumlah minimal Rp 1"),
+        date: z.string().min(1, "Tanggal transaksi wajib diisi"),
         receiptUrl: z.string().optional(),
     })).min(1, "Minimal 1 item"),
 });
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
 
         if (!result.success) {
             return NextResponse.json(
-                { success: false, error: { code: "VALIDATION_ERROR", details: result.error.issues } },
+                { success: false, error: { code: "VALIDATION_ERROR", message: "Data tidak valid", details: result.error.issues } },
                 { status: 400 }
             );
         }
