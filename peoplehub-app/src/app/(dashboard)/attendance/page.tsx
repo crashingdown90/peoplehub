@@ -42,14 +42,7 @@ export default function AttendancePage() {
     const [workMode, setWorkMode] = useState<"WFO" | "WFH">("WFO");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [currentTime, setCurrentTime] = useState(new Date());
     const [action, setAction] = useState<"clock-in" | "clock-out">("clock-in");
-
-    // Update clock every second
-    useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
 
     // Fetch today's status
     const fetchStatus = useCallback(async () => {
@@ -264,17 +257,13 @@ export default function AttendancePage() {
                 {/* Header */}
                 <div className="mb-6 text-center">
                     <h1 className="text-2xl font-bold text-slate-900">Absensi</h1>
-                    <p className="text-slate-600">
-                        {currentTime.toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-                    </p>
+                    <LiveDate />
                 </div>
 
                 {/* Clock */}
                 <Card className="mb-6">
                     <CardContent className="pt-6 text-center">
-                        <div className="text-5xl font-bold text-slate-900 tabular-nums">
-                            {currentTime.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-                        </div>
+                        <LiveClock />
                         <p className="mt-2 text-sm text-slate-500">
                             Shift: {status?.schedule.startTime} - {status?.schedule.endTime}
                         </p>
@@ -447,5 +436,51 @@ export default function AttendancePage() {
                 </Button>
             </div>
         </div>
+    );
+}
+
+/**
+ * Isolated clock component to prevent whole-page re-renders every second
+ */
+function LiveClock() {
+    const [time, setTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    return (
+        <div className="text-5xl font-bold text-slate-900 tabular-nums">
+            {time.toLocaleTimeString("id-ID", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+            })}
+        </div>
+    );
+}
+
+/**
+ * Isolated date component to encapsulate date formatting
+ */
+function LiveDate() {
+    const [date, setDate] = useState(new Date());
+
+    useEffect(() => {
+        // Update every second for precision at midnight
+        const timer = setInterval(() => setDate(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    return (
+        <p className="text-slate-600">
+            {date.toLocaleDateString("id-ID", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            })}
+        </p>
     );
 }
