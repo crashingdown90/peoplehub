@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+:root {
+  /* Premium Light Mode Colors (Enforced) */
+  --color-text: #0f172a; /* Slate 900 - High contrast text */
+  --color-text-subtle: #334155; /* Slate 700 - Readable secondary text */
+  --color-text-muted: #64748b; /* Slate 500 - De-emphasized text */
+
+  --color-border: #cbd5e1; /* Slate 300 - Distinct borders */
+  --color-bg: #f8fafc; /* Slate 50 - Soft app background */
+  --color-surface: #ffffff; /* White - Card/Container background */
+
+  --color-accent: #2563eb; /* Blue 600 - Primary brand color */
+  --color-accent-hover: #1d4ed8; /* Blue 700 - Hover state */
+
+  /* Status Colors (High Contrast) */
+  --color-success: #16a34a; /* Green 600 */
+  --color-success-bg: #dcfce7; /* Green 100 */
+  --color-warning: #d97706; /* Amber 600 */
+  --color-warning-bg: #fef3c7; /* Amber 100 */
+  --color-error: #dc2626; /* Red 600 */
+  --color-error-bg: #fee2e2; /* Red 100 */
+  --color-info: #0284c7; /* Sky 600 */
+  --color-info-bg: #e0f2fe; /* Sky 100 */
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+
+  /* Typography */
+  --font-family:
+    var(--font-manrope), "Manrope", "Inter", system-ui, -apple-system,
+    sans-serif;
+  --font-size-body: 14px;
+  --font-size-heading: 18px;
+  --font-size-meta: 12px;
+  --line-height: 1.5;
+
+  /* Components */
+  --radius: 8px;
+  --shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --transition: 150ms ease;
+
+  /* Z-index */
+  --z-nav: 100;
+  --z-dropdown: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: var(--line-height);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hard reset for inputs to ensure visibility */
+input,
+textarea,
+select {
+  color: var(--color-text);
+  background-color: var(--color-surface);
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #94a3b8; /* Slate 400 for visibility */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b; /* Slate 500 */
+}

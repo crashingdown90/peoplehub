@@ -1,0 +1,79 @@
+{
+  "version": "1.0.0",
+  "currentSprint": "Sprint-1-Foundation",
+  "lastUpdated": "2024-01-19",
+  "assignments": {
+    "CL": {
+      "name": "Claude AI",
+      "branch": "feat/cl-foundation",
+      "currentTask": "Setup project foundation and services layer",
+      "status": "in_progress",
+      "files": [
+        "src/middleware.ts",
+        "src/lib/auth/*",
+        "src/lib/tenant/*",
+        "src/lib/security/*",
+        "src/lib/db/*",
+        "src/services/*",
+        "src/app/api/**/*",
+        "prisma/*"
+      ],
+      "completedTasks": [
+        "Review existing project structure",
+        "Create .ai-config folder"
+      ],
+      "pendingTasks": [
+        "Reorganize lib folder structure",
+        "Enhance multi-tenant middleware",
+        "Add security utilities",
+        "Create services layer"
+      ]
+    },
+    "AG": {
+      "name": "Antigravity",
+      "branch": "refactor/ag-types",
+      "currentTask": "Waiting for CL to complete foundation",
+      "status": "pending",
+      "files": [
+        "src/types/*",
+        "src/utils/*",
+        "src/hooks/*",
+        "src/constants/*"
+      ],
+      "completedTasks": [],
+      "pendingTasks": [
+        "Define TypeScript types from Prisma schema",
+        "Create utility functions",
+        "Setup custom hooks"
+      ]
+    },
+    "CX": {
+      "name": "Codex GPT",
+      "branch": "feat/cx-ui-components",
+      "currentTask": "Waiting for AG to complete types",
+      "status": "pending",
+      "files": [
+        "src/components/ui/*",
+        "src/components/forms/*",
+        "src/components/layouts/*",
+        "src/components/features/*",
+        "src/app/(pages)/*",
+        "src/styles/*"
+      ],
+      "completedTasks": [],
+      "pendingTasks": [
+        "Build design system components",
+        "Create layout components",
+        "Build form components",
+        "Implement pages"
+      ]
+    }
+  },
+  "mergeOrder": [
+    "Types & Constants (AG)",
+    "Services & API (CL)",
+    "UI Components (CX)",
+    "Page Components (CX)",
+    "Integration (HUMAN)"
+  ]
+}

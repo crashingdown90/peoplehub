@@ -1,0 +1,59 @@
+# =============================================================================
+# PeopleHub Docker Compose - Development Override
+# =============================================================================
+#
+# This file overrides docker-compose.yml for development
+#
+# Usage:
+#   docker-compose up -d  (automatically uses override)
+#   
+# Note: This file is automatically merged with docker-compose.yml
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # Development App Configuration
+  # ---------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: peoplehub-app-dev
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_APP_URL=http://localhost:3000
+    volumes:
+      # Mount source code for hot-reload
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+      - "9229:9229" # Node.js debugger port
+    command: npm run dev
+
+  # ---------------------------------------------------------------------------
+  # Development Database Configuration  
+  # ---------------------------------------------------------------------------
+  db:
+    ports:
+      - "5433:5432" # Changed to 5433 to avoid conflict
+    environment:
+      - POSTGRES_USER=peoplehub
+      - POSTGRES_PASSWORD=peoplehub_dev
+      - POSTGRES_DB=peoplehub_dev
+
+  # ---------------------------------------------------------------------------
+  # Development Redis Configuration  
+  # ---------------------------------------------------------------------------
+  # Note: Redis port is not exposed to host to avoid conflicts
+  # Services can still access Redis via internal Docker network
+  redis:
+    container_name: peoplehub-redis-dev
+
+  # ---------------------------------------------------------------------------
+  # Disable Nginx in development (use Next.js directly)
+  # ---------------------------------------------------------------------------
+  nginx:
+    profiles:
+      - production # Only start with: docker-compose --profile production up

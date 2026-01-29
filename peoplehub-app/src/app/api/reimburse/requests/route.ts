@@ -1,0 +1,141 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { getRequestContext } from "@/lib/request-context";
+import { z } from "zod";
+import { handlePrismaError } from "@/lib/api-utils";
+
+const reimburseSchema = z.object({
+    category: z.enum(["MEDICAL", "TRANSPORT", "COMMUNICATION", "MEALS", "OFFICE_SUPPLIES", "TRAINING", "PARKING", "OTHER"]),
+    description: z.string().min(10, "Deskripsi minimal 10 karakter").max(500, "Deskripsi maksimal 500 karakter"),
+    items: z.array(z.object({
+        description: z.string().min(1, "Deskripsi item wajib diisi").max(200, "Deskripsi maksimal 200 karakter"),
+        unitPrice: z.number().min(100, "Minimal Rp 100").optional(),
+        quantity: z.number().int().min(1).default(1),
+        amount: z.number().min(1, "Jumlah minimal Rp 1"),
+        date: z.string().min(1, "Tanggal transaksi wajib diisi"),
+        receiptUrl: z.string().optional(),
+    })).min(1, "Minimal 1 item"),
+});
+
+// GET /api/reimburse/requests - Get my reimburse requests
+export async function GET(request: NextRequest) {
+    try {
+        const context = await getRequestContext();
+
+        if (!context || !context.employeeId) {
+            return NextResponse.json(
+                { success: false, error: { code: "UNAUTHORIZED", message: "Employee not found" } },
+                { status: 401 }
+            );
+        }
+
+        const { searchParams } = new URL(request.url);
+        const status = searchParams.get("status");
+        const page = parseInt(searchParams.get("page") || "1");
+        const limit = parseInt(searchParams.get("limit") || "20");
+        const skip = (page - 1) * limit;
+
+        const where = {
+            tenantId: context.tenantId,
+            employeeId: context.employeeId,
+            ...(status ? { status: status as "PENDING" | "APPROVED" | "REJECTED" } : {}),
+        };
+
+        const [requests, total] = await Promise.all([
+            prisma.reimburseRequest.findMany({
+                where,
+                include: { items: true },
+                orderBy: { createdAt: "desc" },
+                skip,
+                take: limit,
+            }),
+            prisma.reimburseRequest.count({ where }),
+        ]);
+
+        return NextResponse.json({
+            success: true,
+            data: requests.map(r => ({
+                ...r,
+                totalAmount: Number(r.totalAmount),
+                items: r.items.map(i => ({ ...i, amount: Number(i.amount), unitPrice: i.unitPrice ? Number(i.unitPrice) : null })),
+            })),
+            meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        });
+    } catch (error) {
+        console.error("Get reimburse requests error:", error);
+        return handlePrismaError(error);
+    }
+}
+
+// POST /api/reimburse/requests - Create reimburse request
+export async function POST(request: NextRequest) {
+    try {
+        const context = await getRequestContext();
+
+        if (!context || !context.employeeId) {
+            return NextResponse.json(
+                { success: false, error: { code: "UNAUTHORIZED", message: "Employee not found" } },
+                { status: 401 }
+            );
+        }
+
+        const body = await request.json();
+        const result = reimburseSchema.safeParse(body);
+
+        if (!result.success) {
+            return NextResponse.json(
+                { success: false, error: { code: "VALIDATION_ERROR", message: "Data tidak valid", details: result.error.issues } },
+                { status: 400 }
+            );
+        }
+
+        const { category, description, items } = result.data;
+        const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
+
+        const reimburseRequest = await prisma.reimburseRequest.create({
+            data: {
+                tenantId: context.tenantId,
+                employeeId: context.employeeId,
+                category,
+                description,
+                totalAmount,
+                status: "PENDING",
+                items: {
+                    create: items.map(item => ({
+                        description: item.description,
+                        unitPrice: item.unitPrice,
+                        quantity: item.quantity || 1,
+                        amount: item.amount,
+                        date: new Date(item.date),
+                        receiptUrl: item.receiptUrl,
+                    })),
+                },
+            },
+            include: { items: true },
+        });
+
+        await prisma.auditLog.create({
+            data: {
+                tenantId: context.tenantId,
+                actorId: context.userId,
+                action: "REIMBURSE_REQUESTED",
+                objectType: "ReimburseRequest",
+                objectId: reimburseRequest.id,
+                afterData: JSON.parse(JSON.stringify({ category, totalAmount, itemCount: items.length })),
+            },
+        });
+
+        return NextResponse.json({
+            success: true,
+            data: {
+                ...reimburseRequest,
+                totalAmount: Number(reimburseRequest.totalAmount),
+                items: reimburseRequest.items.map(i => ({ ...i, amount: Number(i.amount), unitPrice: i.unitPrice ? Number(i.unitPrice) : null })),
+            },
+            message: "Pengajuan reimburse berhasil",
+        }, { status: 201 });
+    } catch (error) {
+        console.error("Create reimburse request error:", error);
+        return handlePrismaError(error);
+    }
+}
