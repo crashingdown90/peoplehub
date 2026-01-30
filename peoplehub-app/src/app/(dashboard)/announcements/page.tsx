@@ -79,6 +79,7 @@ export default function AnnouncementsInboxPage() {
                 setAnnouncements((prev) =>
                     prev.map((a) => (a.id === ann.id ? { ...a, isRead: true } : a))
                 );
+                window.dispatchEvent(new CustomEvent("unread-updated"));
             } catch (err) {
                 console.error(err);
             } finally {

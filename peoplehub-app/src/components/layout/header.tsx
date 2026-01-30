@@ -3,7 +3,7 @@
 // @ai:cx - Dashboard header with notifications and user menu
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Bell, Menu, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -53,23 +53,47 @@ export function Header({ onMenuToggle }: HeaderProps) {
         return plain.length > 120 ? `${plain.slice(0, 120)}...` : plain;
     };
 
-    useEffect(() => {
-        const fetchUnreadAnnouncements = async () => {
-            try {
-                const res = await fetch("/api/announcements/unread-count");
-                const data = await res.json();
-                if (data.success) {
-                    setUnreadAnnouncements(data.data.count || 0);
-                }
-            } catch {
-                // Silent fail
+    const fetchUnreadAnnouncements = useCallback(async () => {
+        try {
+            const res = await fetch("/api/announcements/unread-count");
+            const data = await res.json();
+            if (data.success) {
+                setUnreadAnnouncements(data.data.count || 0);
             }
-        };
+        } catch {
+            // Silent fail
+        }
+    }, []);
 
+    const fetchAnnouncements = useCallback(async () => {
+        try {
+            const res = await fetch("/api/announcements?unreadOnly=true&limit=5");
+            const data = await res.json();
+            if (data.success) {
+                setAnnouncements(data.data || []);
+            }
+        } catch {
+            // Silent fail
+        }
+    }, []);
+
+    const fetchRecentNotifications = useCallback(async () => {
+        try {
+            const res = await fetch("/api/notifications?unread=true&limit=5");
+            const data = await res.json();
+            if (data.success && Array.isArray(data.data)) {
+                setRecentNotifications(data.data);
+            }
+        } catch {
+            // Silent fail
+        }
+    }, []);
+
+    useEffect(() => {
         fetchUnreadAnnouncements();
         const interval = setInterval(fetchUnreadAnnouncements, 60000);
         return () => clearInterval(interval);
-    }, []);
+    }, [fetchUnreadAnnouncements]);
 
     useEffect(() => {
         if (notificationMenuRef.current) {
@@ -78,40 +102,26 @@ export function Header({ onMenuToggle }: HeaderProps) {
     }, [pathname]);
 
     useEffect(() => {
-        const fetchAnnouncements = async () => {
-            try {
-                const res = await fetch("/api/announcements?unreadOnly=true&limit=5");
-                const data = await res.json();
-                if (data.success) {
-                    setAnnouncements(data.data || []);
-                }
-            } catch {
-                // Silent fail
-            }
-        };
-
         fetchAnnouncements();
         const interval = setInterval(fetchAnnouncements, 60000);
         return () => clearInterval(interval);
-    }, []);
+    }, [fetchAnnouncements]);
 
     useEffect(() => {
-        const fetchRecentNotifications = async () => {
-            try {
-                const res = await fetch("/api/notifications?unread=true&limit=5");
-                const data = await res.json();
-                if (data.success && Array.isArray(data.data)) {
-                    setRecentNotifications(data.data);
-                }
-            } catch {
-                // Silent fail
-            }
-        };
-
         fetchRecentNotifications();
         const interval = setInterval(fetchRecentNotifications, 60000);
         return () => clearInterval(interval);
-    }, []);
+    }, [fetchRecentNotifications]);
+
+    useEffect(() => {
+        const handleUnreadUpdate = () => {
+            fetchUnreadAnnouncements();
+            fetchAnnouncements();
+            fetchRecentNotifications();
+        };
+        window.addEventListener("unread-updated", handleUnreadUpdate);
+        return () => window.removeEventListener("unread-updated", handleUnreadUpdate);
+    }, [fetchUnreadAnnouncements, fetchAnnouncements, fetchRecentNotifications]);
 
     return (
         <header className="sticky top-0 z-40 flex items-center justify-between border-b border-(--color-border) bg-(--color-surface)/90 px-4 py-3 backdrop-blur transition-colors">

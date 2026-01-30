@@ -124,7 +124,7 @@ export function AttendanceHeatmap({ data, className }: AttendanceHeatmapProps) {
                                         />
                                         {/* Tooltip on hover */}
                                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
-                                            <div className="bg-popover text-popover-foreground text-xs rounded-md shadow-md p-2 whitespace-nowrap border">
+                                            <div className="bg-white text-slate-900 text-xs rounded-md shadow-lg p-2 whitespace-nowrap border border-slate-300 opacity-100">
                                                 <div className="font-medium">{dayName}, {dateStr}</div>
                                                 <div className="mt-1 space-y-0.5">
                                                     <div className="flex items-center gap-2">

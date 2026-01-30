@@ -90,6 +90,7 @@ export default function NotificationsPage() {
             );
         }
         setUnreadCount(Math.max(0, unreadCount - 1));
+        window.dispatchEvent(new CustomEvent("unread-updated"));
     }
 
     async function markAllAsRead() {
@@ -97,6 +98,7 @@ export default function NotificationsPage() {
         setNotifications(notifications.map(n => ({ ...n, isRead: true })));
         setAnnouncements(announcements.map(a => ({ ...a, isRead: true })));
         setUnreadCount(0);
+        window.dispatchEvent(new CustomEvent("unread-updated"));
     }
 
     const formatTime = (dateStr: string) => {
