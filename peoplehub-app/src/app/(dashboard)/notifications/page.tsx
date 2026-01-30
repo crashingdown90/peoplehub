@@ -2,10 +2,10 @@
 
 // @ai:cx
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bell, CheckCheck, Loader2 } from "lucide-react";
+import { Bell, CheckCheck, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { fetchWithCsrf } from "@/lib/api-client";
 
@@ -19,9 +19,30 @@ interface Notification {
     createdAt: string;
 }
 
+interface AnnouncementItem {
+    id: string;
+    title: string;
+    content: string;
+    publishedAt: string | null;
+    createdAt: string;
+    isRead: boolean;
+}
+
+type UnifiedItem = {
+    id: string;
+    source: "notification" | "announcement";
+    type: string;
+    title: string;
+    message: string;
+    link: string | null;
+    isRead: boolean;
+    createdAt: string;
+};
+
 export default function NotificationsPage() {
     const router = useRouter();
     const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(true);
 
@@ -31,11 +52,19 @@ export default function NotificationsPage() {
 
     async function fetchNotifications() {
         try {
-            const res = await fetchWithCsrf("/api/notifications");
-            const data = await res.json();
-            if (data.success) {
-                setNotifications(data.data);
-                setUnreadCount(data.meta.unreadCount);
+            const [notifRes, annRes] = await Promise.all([
+                fetchWithCsrf("/api/notifications"),
+                fetchWithCsrf("/api/announcements"),
+            ]);
+            const notifData = await notifRes.json();
+            const annData = await annRes.json();
+
+            if (notifData.success) {
+                setNotifications(notifData.data || []);
+                setUnreadCount(notifData.meta?.unreadCount || 0);
+            }
+            if (annData.success) {
+                setAnnouncements(annData.data || []);
             }
         } catch (err) {
             console.error(err);
@@ -44,17 +73,29 @@ export default function NotificationsPage() {
         }
     }
 
-    async function markAsRead(id: string) {
-        await fetchWithCsrf(`/api/notifications/${id}/read`, { method: "POST" });
-        setNotifications(notifications.map(n =>
-            n.id === id ? { ...n, isRead: true } : n
-        ));
+    async function markAsRead(item: UnifiedItem) {
+        if (item.source === "announcement") {
+            await fetchWithCsrf(`/api/announcements/${item.id}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "read" }),
+            });
+            setAnnouncements((prev) =>
+                prev.map((a) => (a.id === item.id ? { ...a, isRead: true } : a))
+            );
+        } else {
+            await fetchWithCsrf(`/api/notifications/${item.id}/read`, { method: "POST" });
+            setNotifications((prev) =>
+                prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n))
+            );
+        }
         setUnreadCount(Math.max(0, unreadCount - 1));
     }
 
     async function markAllAsRead() {
         await fetchWithCsrf("/api/notifications/read-all", { method: "POST" });
         setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+        setAnnouncements(announcements.map(a => ({ ...a, isRead: true })));
         setUnreadCount(0);
     }
 
@@ -75,9 +116,40 @@ export default function NotificationsPage() {
             LEAVE: "bg-green-100 text-green-600",
             APPROVAL: "bg-purple-100 text-purple-600",
             SYSTEM: "bg-orange-100 text-orange-600",
+            ANNOUNCEMENT: "bg-amber-100 text-amber-600",
         };
         return colors[type] || "bg-slate-100 text-slate-600";
     };
+
+    const getTypeIcon = (type: string) => {
+        return type === "ANNOUNCEMENT" ? Mail : Bell;
+    };
+
+    const mergedItems = useMemo<UnifiedItem[]>(() => {
+        const notifItems = notifications.map((n) => ({
+            id: n.id,
+            source: "notification" as const,
+            type: n.type,
+            title: n.title,
+            message: n.message,
+            link: n.link,
+            isRead: n.isRead,
+            createdAt: n.createdAt,
+        }));
+        const annItems = announcements.map((a) => ({
+            id: a.id,
+            source: "announcement" as const,
+            type: "ANNOUNCEMENT",
+            title: a.title,
+            message: a.content,
+            link: "/announcements",
+            isRead: a.isRead,
+            createdAt: a.publishedAt || a.createdAt,
+        }));
+        return [...notifItems, ...annItems].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+    }, [notifications, announcements]);
 
     if (loading) {
         return (
@@ -105,7 +177,7 @@ export default function NotificationsPage() {
                     )}
                 </div>
 
-                {notifications.length === 0 ? (
+                {mergedItems.length === 0 ? (
                     <Card>
                         <CardContent className="py-12 text-center">
                             <Bell className="mx-auto h-12 w-12 text-slate-300" />
@@ -114,19 +186,22 @@ export default function NotificationsPage() {
                     </Card>
                 ) : (
                     <div className="space-y-2">
-                        {notifications.map((notif) => (
+                        {mergedItems.map((notif) => (
                             <Card
                                 key={notif.id}
                                 className={`cursor-pointer transition-colors ${!notif.isRead ? "bg-blue-50/50" : ""}`}
                                 onClick={async () => {
-                                    if (!notif.isRead) await markAsRead(notif.id);
+                                    if (!notif.isRead) await markAsRead(notif);
                                     if (notif.link) router.push(notif.link);
                                 }}
                             >
                                 <CardContent className="py-3">
                                     <div className="flex items-start gap-3">
                                         <div className={`mt-1 flex h-8 w-8 items-center justify-center rounded-full ${getTypeColor(notif.type)}`}>
-                                            <Bell className="h-4 w-4" />
+                                            {(() => {
+                                                const Icon = getTypeIcon(notif.type);
+                                                return <Icon className="h-4 w-4" />;
+                                            })()}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-start justify-between gap-2">

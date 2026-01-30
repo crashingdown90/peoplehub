@@ -171,12 +171,12 @@ export async function POST(request: NextRequest) {
                     {
                         requesterId: employeeId,
                         requesterShiftDate: reqDate,
-                        status: { in: ["PENDING_PARTNER", "PENDING_MANAGER"] },
+                        status: { in: ["PENDING_PARTNER"] },
                     },
                     {
                         partnerId: employeeId,
                         partnerShiftDate: reqDate,
-                        status: { in: ["PENDING_PARTNER", "PENDING_MANAGER"] },
+                        status: { in: ["PENDING_PARTNER"] },
                     },
                 ],
             },

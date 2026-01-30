@@ -21,6 +21,9 @@ interface EmployeeDetail {
     npwp: string;
     phone: string;
     address: string;
+    bankName?: string;
+    bankAccountNumber?: string;
+    bankAccountHolder?: string;
     employmentType: string;
     workMode: string;
     status: string;
@@ -198,6 +201,18 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
                             <div className="flex justify-between"><span className="text-slate-500">Bergabung</span><span>{formatDate(employee.startDate)}</span></div>
                             <div className="flex justify-between"><span className="text-slate-500">Cabang</span><span>{employee.branch?.name || "-"}</span></div>
                             <div className="flex justify-between"><span className="text-slate-500">Atasan</span><span>{employee.manager?.fullName || "-"}</span></div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Bank Info */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-base">Informasi Bank</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3 text-sm">
+                            <div className="flex justify-between"><span className="text-slate-500">Nama Bank</span><span>{employee.bankName || "-"}</span></div>
+                            <div className="flex justify-between"><span className="text-slate-500">No. Rekening</span><span>{employee.bankAccountNumber || "-"}</span></div>
+                            <div className="flex justify-between"><span className="text-slate-500">Nama Pemilik</span><span className="text-right max-w-[200px]">{employee.bankAccountHolder || "-"}</span></div>
                         </CardContent>
                     </Card>
 

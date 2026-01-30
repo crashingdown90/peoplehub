@@ -108,6 +108,46 @@ export async function POST(
     }
 
     if (action === "APPROVE") {
+      const attendanceDate = new Date(correction.attendanceDate);
+      attendanceDate.setHours(0, 0, 0, 0);
+
+      const [tenantSettings, schedule, employee] = await Promise.all([
+        prisma.attendanceSettings.findUnique({ where: { tenantId: context.tenantId } }),
+        prisma.schedule.findFirst({
+          where: {
+            employeeId: correction.employeeId,
+            scheduleDate: attendanceDate,
+          },
+          include: { shift: true },
+        }),
+        prisma.employee.findUnique({
+          where: { id: correction.employeeId },
+          include: { defaultShift: true },
+        }),
+      ]);
+
+      const shiftStartTime =
+        schedule?.shift?.startTime ||
+        employee?.defaultShift?.startTime ||
+        tenantSettings?.defaultShiftStart ||
+        null;
+      const gracePeriodMinutes = tenantSettings?.gracePeriodMinutes ?? 5;
+
+      const calculateLateStatus = (clockIn: Date | null) => {
+        if (!clockIn || !shiftStartTime) {
+          return { status: "PRESENT" as const, lateMinutes: 0 };
+        }
+        const [shiftHour, shiftMinute] = shiftStartTime.split(":").map(Number);
+        const shiftStart = new Date(attendanceDate);
+        shiftStart.setHours(shiftHour, shiftMinute, 0, 0);
+        const lateThreshold = new Date(shiftStart.getTime() + gracePeriodMinutes * 60 * 1000);
+        if (clockIn > lateThreshold) {
+          const lateMinutes = Math.floor((clockIn.getTime() - shiftStart.getTime()) / (1000 * 60));
+          return { status: "LATE" as const, lateMinutes };
+        }
+        return { status: "PRESENT" as const, lateMinutes: 0 };
+      };
+
       // Update correction status
       await prisma.attendanceCorrection.update({
         where: { id },
@@ -119,9 +159,6 @@ export async function POST(
       });
 
       // Update or create attendance record
-      const attendanceDate = new Date(correction.attendanceDate);
-      attendanceDate.setHours(0, 0, 0, 0);
-
       const existingAttendance = await prisma.attendance.findFirst({
         where: {
           tenantId: context.tenantId,
@@ -131,17 +168,22 @@ export async function POST(
       });
 
       if (existingAttendance) {
+        const nextClockIn = correction.requestedClockIn || existingAttendance.clockIn;
+        const lateStatus = calculateLateStatus(nextClockIn);
         // Update existing attendance
         await prisma.attendance.update({
           where: { id: existingAttendance.id },
           data: {
-            clockIn: correction.requestedClockIn || existingAttendance.clockIn,
+            clockIn: nextClockIn,
             clockOut: correction.requestedClockOut || existingAttendance.clockOut,
             isCorrected: true,
+            status: lateStatus.status,
+            lateMinutes: lateStatus.lateMinutes,
             notes: `Dikoreksi pada ${new Date().toISOString()}. Alasan: ${correction.reason}`,
           },
         });
       } else if (correction.requestedClockIn) {
+        const lateStatus = calculateLateStatus(correction.requestedClockIn);
         // Create new attendance if doesn't exist and clockIn is requested
         await prisma.attendance.create({
           data: {
@@ -150,7 +192,8 @@ export async function POST(
             attendanceDate: attendanceDate,
             clockIn: correction.requestedClockIn,
             clockOut: correction.requestedClockOut,
-            status: "PRESENT",
+            status: lateStatus.status,
+            lateMinutes: lateStatus.lateMinutes,
             isCorrected: true,
             workMode: "WFO",
             notes: `Dibuat dari koreksi pada ${new Date().toISOString()}. Alasan: ${correction.reason}`,

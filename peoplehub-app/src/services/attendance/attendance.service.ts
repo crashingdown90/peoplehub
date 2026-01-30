@@ -79,6 +79,14 @@ export class AttendanceService {
       where: { tenantId: context.tenantId },
     });
 
+    // Workday check (6-day workweek by default)
+    const workDays = (tenantSettings?.workDays as number[]) || [1, 2, 3, 4, 5, 6];
+    const jsDay = today.getDay();
+    const ourDay = jsDay === 0 ? 7 : jsDay;
+    if (!workDays.includes(ourDay)) {
+      return error(ErrorCodes.NOT_WORKDAY, "Hari ini bukan hari kerja");
+    }
+
     // Get employee with branch for geofence check and default shift
     const employee = await prisma.employee.findUnique({
       where: { id: context.employeeId! },

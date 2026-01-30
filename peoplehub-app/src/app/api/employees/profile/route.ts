@@ -122,11 +122,22 @@ export async function PATCH(request: NextRequest) {
             }
 
             // Get other form fields
+            const fullName = formData.get("fullName") as string | null;
             const phone = formData.get("phone") as string | null;
             const address = formData.get("address") as string | null;
             const emergencyContactName = formData.get("emergencyContactName") as string | null;
             const emergencyContactPhone = formData.get("emergencyContactPhone") as string | null;
 
+            if (fullName !== null) {
+                const trimmed = fullName.trim();
+                if (trimmed.length < 3) {
+                    return NextResponse.json(
+                        { success: false, error: { code: "VALIDATION_ERROR", message: "Nama lengkap minimal 3 karakter" } },
+                        { status: 400 }
+                    );
+                }
+                updateData.fullName = trimmed;
+            }
             if (phone !== null) updateData.phone = phone;
             if (address !== null) updateData.address = address;
             if (emergencyContactName !== null) updateData.emergencyContactName = emergencyContactName;
@@ -136,9 +147,20 @@ export async function PATCH(request: NextRequest) {
             const body = await request.json();
 
             // Only allow updating certain fields
-            const allowedFields = ["phone", "address", "emergencyContactName", "emergencyContactPhone"];
+            const allowedFields = ["fullName", "phone", "address", "emergencyContactName", "emergencyContactPhone"];
             for (const field of allowedFields) {
                 if (body[field] !== undefined) {
+                    if (field === "fullName") {
+                        const trimmed = String(body[field]).trim();
+                        if (trimmed.length < 3) {
+                            return NextResponse.json(
+                                { success: false, error: { code: "VALIDATION_ERROR", message: "Nama lengkap minimal 3 karakter" } },
+                                { status: 400 }
+                            );
+                        }
+                        updateData[field] = trimmed;
+                        continue;
+                    }
                     updateData[field] = body[field];
                 }
             }
@@ -194,13 +216,18 @@ export async function PATCH(request: NextRequest) {
         }
 
         // Separate user fields from employee fields
-        const userFields = ["photoUrl"];
-        const employeeFields = ["phone", "address", "emergencyContactName", "emergencyContactPhone"];
+        const userFields = ["photoUrl", "fullName"];
+        const employeeFields = ["fullName", "phone", "address", "emergencyContactName", "emergencyContactPhone"];
 
         const userUpdateData: Record<string, string | null> = {};
         const employeeUpdateData: Record<string, string | null> = {};
 
         for (const [key, value] of Object.entries(updateData)) {
+            if (key === "fullName") {
+                userUpdateData[key] = value;
+                employeeUpdateData[key] = value;
+                continue;
+            }
             if (userFields.includes(key)) {
                 userUpdateData[key] = value;
             } else if (employeeFields.includes(key)) {
@@ -235,6 +262,7 @@ export async function PATCH(request: NextRequest) {
                     id: true,
                     phone: true,
                     address: true,
+                    fullName: true,
                     emergencyContactName: true,
                     emergencyContactPhone: true,
                 },

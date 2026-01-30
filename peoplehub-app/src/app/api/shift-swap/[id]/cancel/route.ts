@@ -39,7 +39,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             );
         }
 
-        if (!["PENDING_PARTNER", "PENDING_MANAGER"].includes(swap.status)) {
+        if (!["PENDING_PARTNER"].includes(swap.status)) {
             return NextResponse.json(
                 { success: false, error: { code: "CANNOT_MODIFY", message: "Hanya pengajuan yang pending bisa dibatalkan" } },
                 { status: 400 }

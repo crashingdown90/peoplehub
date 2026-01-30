@@ -49,7 +49,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         const updated = await prisma.shiftSwap.update({
             where: { id },
             data: {
-                status: "PENDING_MANAGER",
+                status: "APPROVED",
                 partnerApproved: true,
                 partnerApprovedAt: new Date(),
             },
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
                     tenantId: context.tenantId,
                     userId: requester.userId,
                     title: "Partner Menyetujui Tukar Shift",
-                    message: "Partner Anda telah menyetujui permintaan tukar shift. Menunggu persetujuan manager.",
+                    message: "Partner Anda telah menyetujui permintaan tukar shift.",
                     type: "APPROVAL",
                     link: "/shift/swap",
                 },

@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { usePermission } from "@/hooks/usePermission";
 import { PERMISSIONS, type Permission } from "@/constants/permissions";
@@ -18,7 +18,6 @@ import {
     BarChart3,
     Settings,
     ChevronDown,
-    Bell,
     Megaphone,
     Clock,
     Shield,
@@ -49,27 +48,6 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
     const pathname = usePathname();
     const { can, canAny } = usePermission();
     const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-    const [unreadCount, setUnreadCount] = useState(0);
-
-    // Fetch unread announcement count
-    useEffect(() => {
-        const fetchUnreadCount = async () => {
-            try {
-                const res = await fetch("/api/announcements/unread-count");
-                const data = await res.json();
-                if (data.success) {
-                    setUnreadCount(data.data.count);
-                }
-            } catch {
-                // Silent fail
-            }
-        };
-
-        fetchUnreadCount();
-        // Refresh every 60 seconds
-        const interval = setInterval(fetchUnreadCount, 60000);
-        return () => clearInterval(interval);
-    }, []);
 
     const menus = useMemo<MenuItem[]>(() => [
         { label: "Dashboard", href: "/dashboard", icon: Home },
@@ -135,11 +113,10 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
         { label: "Reimburse", href: "/reimburse", icon: Banknote, permission: PERMISSIONS.REIMBURSE_VIEW_OWN },
         { label: "KPI", href: "/kpi", icon: Target, permission: PERMISSIONS.KPI_VIEW_OWN },
         { label: "Slip Gaji", href: "/payslips", icon: Landmark, permission: [PERMISSIONS.PAYROLL_VIEW_OWN, PERMISSIONS.PAYROLL_VIEW_ALL] },
-        { label: "Pengumuman", href: "/announcements", icon: Megaphone, badge: unreadCount },
-        { label: "Kelola Pengumuman", href: "/admin/announcements", icon: Bell, permission: PERMISSIONS.ANNOUNCEMENTS_CREATE },
+        { label: "Kelola Pengumuman", href: "/admin/announcements", icon: Megaphone, permission: PERMISSIONS.ANNOUNCEMENTS_CREATE },
         { label: "Laporan", href: "/reports", icon: BarChart3, permission: PERMISSIONS.REPORTS_VIEW },
         { label: "Pengaturan", href: "/settings", icon: Settings, permission: PERMISSIONS.SETTINGS_VIEW },
-    ], [unreadCount]);
+    ], []);
 
     const visibleMenus = useMemo(() => {
         return menus.filter((item) => {

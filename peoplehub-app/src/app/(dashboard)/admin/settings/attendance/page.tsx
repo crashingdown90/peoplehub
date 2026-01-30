@@ -90,7 +90,7 @@ const defaultSettings: AttendanceSettings = {
     requireFaceDetection: true,
     requireLiveness: true,
     minFaceConfidence: 0.7,
-    workDays: [1, 2, 3, 4, 5],
+    workDays: [1, 2, 3, 4, 5, 6],
 };
 
 const initialLateRuleFormData: LateRuleFormData = {

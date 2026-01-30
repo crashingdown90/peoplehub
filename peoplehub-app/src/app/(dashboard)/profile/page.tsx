@@ -86,6 +86,7 @@ interface NotificationPrefs {
 }
 
 interface EditFormData {
+    fullName: string;
     phone: string;
     address: string;
     emergencyContactName: string;
@@ -108,6 +109,7 @@ export default function ProfilePage() {
     const [editError, setEditError] = useState<string | null>(null);
     const [editSuccess, setEditSuccess] = useState(false);
     const [editForm, setEditForm] = useState<EditFormData>({
+        fullName: "",
         phone: "",
         address: "",
         emergencyContactName: "",
@@ -129,6 +131,7 @@ export default function ProfilePage() {
                 const emp = data.data.employee;
                 if (emp) {
                     setEditForm({
+                        fullName: emp.fullName || "",
                         phone: emp.phone || "",
                         address: emp.address || "",
                         emergencyContactName: emp.emergencyContactName || "",
@@ -184,6 +187,13 @@ export default function ProfilePage() {
             const data = await res.json();
 
             if (data.success) {
+                const nextFullName = editForm.fullName.trim();
+                setUserData((prev) =>
+                    prev && prev.employee
+                        ? { ...prev, employee: { ...prev.employee, fullName: nextFullName } }
+                        : prev
+                );
+                setEditForm((prev) => ({ ...prev, fullName: nextFullName }));
                 setEditSuccess(true);
                 setIsEditing(false);
                 // Refresh profile data
@@ -279,6 +289,7 @@ export default function ProfilePage() {
         const emp = userData?.employee;
         if (emp) {
             setEditForm({
+                fullName: emp.fullName || "",
                 phone: emp.phone || "",
                 address: emp.address || "",
                 emergencyContactName: emp.emergencyContactName || "",
@@ -355,9 +366,22 @@ export default function ProfilePage() {
                                     </div>
 
                                     <div className="flex-1 text-center sm:text-left">
-                                        <h2 className="text-2xl font-bold text-slate-900">
-                                            {profile.fullName}
-                                        </h2>
+                                        {isEditing ? (
+                                            <div className="max-w-sm mx-auto sm:mx-0">
+                                                <Label htmlFor="profileFullName" className="sr-only">Nama Lengkap</Label>
+                                                <Input
+                                                    id="profileFullName"
+                                                    value={editForm.fullName}
+                                                    onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                                                    placeholder="Nama lengkap"
+                                                    className="text-lg font-semibold"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <h2 className="text-2xl font-bold text-slate-900">
+                                                {profile.fullName}
+                                            </h2>
+                                        )}
                                         <p className="text-lg text-slate-600">{profile.position?.name || "-"}</p>
                                         <p className="text-sm text-slate-500">#{profile.employeeNumber}</p>
                                         <div className="mt-2 flex flex-wrap items-center gap-2 justify-center sm:justify-start">
@@ -542,6 +566,16 @@ export default function ProfilePage() {
                                 <CardContent className="space-y-3 text-sm">
                                     {isEditing ? (
                                         <div className="space-y-4">
+                                            <div>
+                                                <Label htmlFor="fullName" className="text-xs">Nama Lengkap</Label>
+                                                <Input
+                                                    id="fullName"
+                                                    value={editForm.fullName}
+                                                    onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                                                    placeholder="Nama lengkap"
+                                                    className="mt-1"
+                                                />
+                                            </div>
                                             <div>
                                                 <Label className="text-xs">Email</Label>
                                                 <div className="mt-1 flex items-center gap-2 rounded-md bg-slate-100 p-2 text-slate-500">

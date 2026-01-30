@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, ArrowLeftRight, Calendar, Clock, User, Loader2, X } from "lucide-react";
 import { fetchWithCsrf } from "@/lib/api-client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Partner {
     id: string;
@@ -32,7 +33,7 @@ interface SwapRequest {
 
 const statusStyles: Record<string, string> = {
     PENDING_PARTNER: "bg-amber-100 text-amber-700",
-    PENDING_MANAGER: "bg-blue-100 text-blue-700",
+    PENDING_MANAGER: "bg-green-100 text-green-700",
     APPROVED: "bg-green-100 text-green-700",
     REJECTED: "bg-red-100 text-red-700",
     CANCELLED: "bg-gray-100 text-gray-700",
@@ -40,7 +41,7 @@ const statusStyles: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
     PENDING_PARTNER: "Menunggu Partner",
-    PENDING_MANAGER: "Menunggu Manager",
+    PENDING_MANAGER: "Disetujui",
     APPROVED: "Disetujui",
     REJECTED: "Ditolak",
     CANCELLED: "Dibatalkan",
@@ -48,12 +49,14 @@ const statusLabels: Record<string, string> = {
 
 export default function ShiftSwapPage() {
     const router = useRouter();
+    const { user } = useAuth();
     const [requests, setRequests] = useState<SwapRequest[]>([]);
     const [partners, setPartners] = useState<Partner[]>([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
+    const currentEmployeeId = user?.employee?.id || "";
 
     const [form, setForm] = useState({
         partnerId: "",
@@ -125,14 +128,9 @@ export default function ShiftSwapPage() {
     }
 
     async function handleReject(id: string) {
-        const reason = prompt("Alasan penolakan (min 10 karakter):");
-        if (!reason || reason.length < 10) return;
-
         try {
             const res = await fetchWithCsrf(`/api/shift-swap/${id}/reject`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ reason }),
             });
             const data = await res.json();
             if (data.success) fetchData();
@@ -280,99 +278,97 @@ export default function ShiftSwapPage() {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {requests.map((request) => (
-                                    <div
-                                        key={request.id}
-                                        className="rounded-lg border border-slate-200 p-4"
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <User className="h-4 w-4 text-slate-400" />
-                                                <span className="font-medium text-slate-900">
-                                                    {request.partner.name}
+                                {requests.map((request) => {
+                                    const isRequester = currentEmployeeId === request.requester.id;
+                                    const isPartner = currentEmployeeId === request.partner.id;
+                                    return (
+                                        <div
+                                            key={request.id}
+                                            className="rounded-lg border border-slate-200 p-4"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <User className="h-4 w-4 text-slate-400" />
+                                                    <span className="font-medium text-slate-900">
+                                                        {request.partner.name}
+                                                    </span>
+                                                </div>
+                                                <span
+                                                    className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${statusStyles[request.status] || "bg-gray-100"}`}
+                                                >
+                                                    {statusLabels[request.status] || request.status}
                                                 </span>
                                             </div>
-                                            <span
-                                                className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${statusStyles[request.status] || "bg-gray-100"}`}
-                                            >
-                                                {statusLabels[request.status] || request.status}
-                                            </span>
+
+                                            <p className="mt-2 text-sm text-slate-600">{request.reason}</p>
+
+                                            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                                <div className="rounded-lg bg-slate-50 p-3">
+                                                    <p className="text-xs text-slate-500">Shift Saya</p>
+                                                    <div className="mt-1 flex items-center gap-2">
+                                                        <Calendar className="h-4 w-4 text-slate-400" />
+                                                        <span className="text-sm font-medium">
+                                                            {formatDate(request.requesterShiftDate)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="mt-1 flex items-center gap-2">
+                                                        <Clock className="h-4 w-4 text-slate-400" />
+                                                        <span className="text-sm">{request.requesterShift}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="rounded-lg bg-blue-50 p-3">
+                                                    <p className="text-xs text-slate-500">Shift Partner</p>
+                                                    <div className="mt-1 flex items-center gap-2">
+                                                        <Calendar className="h-4 w-4 text-slate-400" />
+                                                        <span className="text-sm font-medium">
+                                                            {formatDate(request.partnerShiftDate)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="mt-1 flex items-center gap-2">
+                                                        <Clock className="h-4 w-4 text-slate-400" />
+                                                        <span className="text-sm">{request.partnerShift}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Action buttons */}
+                                            {request.status === "PENDING_PARTNER" && (
+                                                <div className="mt-3 flex gap-2">
+                                                    {isPartner && (
+                                                        <>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="text-green-600"
+                                                                onClick={() => handleApprovePartner(request.id)}
+                                                            >
+                                                                Setujui
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="text-red-600"
+                                                                onClick={() => handleReject(request.id)}
+                                                            >
+                                                                Tolak
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                    {isRequester && (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            onClick={() => handleCancel(request.id)}
+                                                        >
+                                                            <X className="mr-1 h-3 w-3" />
+                                                            Batalkan
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
-
-                                        <p className="mt-2 text-sm text-slate-600">{request.reason}</p>
-
-                                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                                            <div className="rounded-lg bg-slate-50 p-3">
-                                                <p className="text-xs text-slate-500">Shift Saya</p>
-                                                <div className="mt-1 flex items-center gap-2">
-                                                    <Calendar className="h-4 w-4 text-slate-400" />
-                                                    <span className="text-sm font-medium">
-                                                        {formatDate(request.requesterShiftDate)}
-                                                    </span>
-                                                </div>
-                                                <div className="mt-1 flex items-center gap-2">
-                                                    <Clock className="h-4 w-4 text-slate-400" />
-                                                    <span className="text-sm">{request.requesterShift}</span>
-                                                </div>
-                                            </div>
-                                            <div className="rounded-lg bg-blue-50 p-3">
-                                                <p className="text-xs text-slate-500">Shift Partner</p>
-                                                <div className="mt-1 flex items-center gap-2">
-                                                    <Calendar className="h-4 w-4 text-slate-400" />
-                                                    <span className="text-sm font-medium">
-                                                        {formatDate(request.partnerShiftDate)}
-                                                    </span>
-                                                </div>
-                                                <div className="mt-1 flex items-center gap-2">
-                                                    <Clock className="h-4 w-4 text-slate-400" />
-                                                    <span className="text-sm">{request.partnerShift}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Action buttons */}
-                                        {request.status === "PENDING_PARTNER" && (
-                                            <div className="mt-3 flex gap-2">
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="text-green-600"
-                                                    onClick={() => handleApprovePartner(request.id)}
-                                                >
-                                                    Setujui
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="text-red-600"
-                                                    onClick={() => handleReject(request.id)}
-                                                >
-                                                    Tolak
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={() => handleCancel(request.id)}
-                                                >
-                                                    <X className="mr-1 h-3 w-3" />
-                                                    Batalkan
-                                                </Button>
-                                            </div>
-                                        )}
-                                        {request.status === "PENDING_MANAGER" && (
-                                            <div className="mt-3">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={() => handleCancel(request.id)}
-                                                >
-                                                    <X className="mr-1 h-3 w-3" />
-                                                    Batalkan
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </CardContent>

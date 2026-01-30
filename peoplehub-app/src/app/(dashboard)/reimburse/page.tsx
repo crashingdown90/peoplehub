@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 import { Receipt, Plus, Trash2, Loader2, Upload, X } from "lucide-react";
 import { fetchWithCsrf } from "@/lib/api-client";
 
@@ -374,21 +375,27 @@ export default function ReimbursePage() {
                         {requests.map((req) => (
                             <Card key={req.id}>
                                 <CardContent className="py-4">
-                                    <div className="flex items-start justify-between">
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-                                                    {CATEGORIES[req.category] || req.category}
-                                                </span>
-                                                {getStatusBadge(req.status)}
+                                    <Link
+                                        href={`/reimburse/requests/${req.id}`}
+                                        className="block rounded-lg transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                        aria-label={`Lihat detail reimburse ${req.description}`}
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                                                        {CATEGORIES[req.category] || req.category}
+                                                    </span>
+                                                    {getStatusBadge(req.status)}
+                                                </div>
+                                                <p className="mt-2 font-medium text-slate-900">{req.description}</p>
+                                                <p className="mt-1 text-sm text-slate-500">{req.items.length} item</p>
                                             </div>
-                                            <p className="mt-2 font-medium text-slate-900">{req.description}</p>
-                                            <p className="mt-1 text-sm text-slate-500">{req.items.length} item</p>
+                                            <div className="text-right">
+                                                <p className="text-lg font-bold text-slate-900">{formatCurrency(req.totalAmount)}</p>
+                                            </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-lg font-bold text-slate-900">{formatCurrency(req.totalAmount)}</p>
-                                        </div>
-                                    </div>
+                                    </Link>
                                 </CardContent>
                             </Card>
                         ))}

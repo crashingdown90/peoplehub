@@ -58,7 +58,7 @@ export class ScheduleService {
             : null;
 
         const gracePeriod = tenantSettings?.gracePeriodMinutes ?? 5;
-        const tenantWorkDays = (tenantSettings?.workDays as number[]) || [1, 2, 3, 4, 5];
+        const tenantWorkDays = (tenantSettings?.workDays as number[]) || [1, 2, 3, 4, 5, 6];
 
         if (schedule && schedule.shift) {
             // Has specific schedule — use shift times but grace period from tenant settings

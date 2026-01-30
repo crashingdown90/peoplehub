@@ -56,11 +56,21 @@ export async function GET() {
     const { error, context } = await checkAdminAuth();
     if (error || !context) return error;
 
-    const settings = await prisma.attendanceSettings.upsert({
+    let settings = await prisma.attendanceSettings.upsert({
       where: { tenantId: context.tenantId },
       update: {},
       create: { tenantId: context.tenantId },
     });
+
+    // Ensure Saturday is included for 6-day workweek defaults
+    const workDays = (settings.workDays as number[]) || [];
+    if (workDays.length === 0 || (workDays.length === 5 && !workDays.includes(6))) {
+      const nextWorkDays = workDays.length === 0 ? [1, 2, 3, 4, 5, 6] : [...workDays, 6];
+      settings = await prisma.attendanceSettings.update({
+        where: { tenantId: context.tenantId },
+        data: { workDays: nextWorkDays },
+      });
+    }
 
     return NextResponse.json({
       success: true,

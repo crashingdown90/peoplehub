@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
     Plus, Loader2, Megaphone, Eye, Archive,
-    Send, Trash2, Pin, AlertTriangle, AlertCircle, Info, Bell
+    Send, Trash2, Pin, AlertTriangle, AlertCircle, Info, Bell, Pencil
 } from "lucide-react";
 import { useCsrf } from "@/hooks/useCsrf";
 
@@ -208,6 +208,13 @@ export default function AdminAnnouncementsPage() {
 
                                         {/* Actions */}
                                         <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => router.push(`/admin/announcements/${ann.id}/edit`)}
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="sm"

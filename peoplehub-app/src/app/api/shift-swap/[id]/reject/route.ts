@@ -1,7 +1,7 @@
 // @ai:cl - Reject shift swap request
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getRequestContext, hasRole } from "@/lib/request-context";
+import { getRequestContext } from "@/lib/request-context";
 import { handlePrismaError } from "@/lib/api-utils";
 
 interface RouteParams {
@@ -21,16 +21,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             );
         }
 
-        const body = await request.json();
-        const { reason } = body;
-
-        if (!reason || reason.trim().length < 10) {
-            return NextResponse.json(
-                { success: false, error: { code: "VALIDATION_ERROR", message: "Alasan penolakan minimal 10 karakter" } },
-                { status: 400 }
-            );
-        }
-
         const swap = await prisma.shiftSwap.findFirst({
             where: { id, tenantId: context.tenantId },
         });
@@ -42,13 +32,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             );
         }
 
-        // Partner can reject if PENDING_PARTNER, Manager/HRD can reject if PENDING_MANAGER
-        let canReject = false;
-        if (swap.status === "PENDING_PARTNER" && swap.partnerId === context.employeeId) {
-            canReject = true;
-        } else if (swap.status === "PENDING_MANAGER" && hasRole(context, ["MANAGER", "HRD", "SUPER_ADMIN"])) {
-            canReject = true;
-        }
+        // Partner can reject if PENDING_PARTNER (no manager approval needed)
+        const canReject = swap.status === "PENDING_PARTNER" && swap.partnerId === context.employeeId;
 
         if (!canReject) {
             return NextResponse.json(
@@ -61,7 +46,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             where: { id },
             data: {
                 status: "REJECTED",
-                rejectionReason: reason.trim(),
+                rejectionReason: null,
             },
         });
 
@@ -77,7 +62,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
                     tenantId: context.tenantId,
                     userId: requester.userId,
                     title: "Tukar Shift Ditolak",
-                    message: `Permintaan tukar shift Anda ditolak. Alasan: ${reason.trim()}`,
+                    message: "Permintaan tukar shift Anda ditolak.",
                     type: "SYSTEM",
                     link: "/shift/swap",
                 },
