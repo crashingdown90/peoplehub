@@ -73,13 +73,13 @@ export function AttendanceCalendarWidget({
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <CalendarIcon className="h-5 w-5 text-[var(--color-accent)]" />
-                    <h3 className="font-semibold text-[var(--color-text)]">
+                    <CalendarIcon className="h-5 w-5 text-(--color-accent)" />
+                    <h3 className="font-semibold text-(--color-text)">
                         Kehadiran Bulan Ini
                     </h3>
                 </div>
                 <Link href="/attendance">
-                    <Button variant="ghost" size="sm" className="text-[var(--color-accent)]">
+                    <Button variant="ghost" size="sm" className="text-(--color-accent)">
                         Lihat Semua
                     </Button>
                 </Link>
@@ -87,10 +87,10 @@ export function AttendanceCalendarWidget({
 
             {/* Attendance Rate */}
             <div className="mt-4">
-                <div className="text-3xl font-bold text-[var(--color-text)]">
+                <div className="text-3xl font-bold text-(--color-text)">
                     {attendanceRate}%
                 </div>
-                <p className="text-sm text-[var(--color-text-subtle)]">
+                <p className="text-sm text-(--color-subtle)">
                     Tingkat kehadiran
                 </p>
             </div>
@@ -98,7 +98,7 @@ export function AttendanceCalendarWidget({
             {/* Calendar Grid */}
             <div className="mt-6 space-y-1">
                 {/* Day labels */}
-                <div className="grid grid-cols-7 gap-1 text-xs font-medium text-[var(--color-text-subtle)]">
+                <div className="grid grid-cols-7 gap-1 text-xs font-medium text-(--color-subtle)">
                     {['M', 'S', 'S', 'R', 'K', 'J', 'S'].map((day, i) => (
                         <div key={i} className="flex h-6 items-center justify-center">
                             {day}

@@ -88,7 +88,7 @@ services:
     container_name: peoplehub-redis
     restart: unless-stopped
     ports:
-      - "6380:6379" # Changed from 6379:6379 to avoid conflict
+      - "6379:6379" # Changed from 6379:6379 to avoid conflict
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data

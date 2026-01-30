@@ -9,7 +9,7 @@ import { Bell, Menu, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import type { Announcement } from "@/types";
+import type { Announcement, Notification } from "@/types";
 
 interface HeaderProps {
     onMenuToggle?: () => void;
@@ -146,7 +146,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
                             <div className="relative">
                                 <Bell className="h-5 w-5" />
                                 {totalUnread > 0 && (
-                                    <span className="absolute -right-0.5 -top-0.5 inline-flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-(--color-error) px-1 text-[9px] font-semibold text-white">
+                                    <span className="absolute -right-0.5 -top-0.5 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-(--color-error) px-1 text-[9px] font-semibold text-white">
                                         {totalUnread}
                                     </span>
                                 )}

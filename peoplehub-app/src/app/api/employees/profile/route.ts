@@ -67,7 +67,7 @@ export async function PATCH(request: NextRequest) {
 
         const contentType = request.headers.get("content-type") || "";
 
-        let updateData: Record<string, string | null> = {};
+        const updateData: Record<string, string | null> = {};
         let oldPhotoUrl: string | null = null;
 
         // Get current photo URL to delete later if updated
