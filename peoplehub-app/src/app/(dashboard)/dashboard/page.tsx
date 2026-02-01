@@ -457,11 +457,10 @@ function FinanceDashboard({ data, userName, role }: { data: DashboardData['finan
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Payroll Pending</CardTitle>
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{data?.pendingPayroll || 0}</div>
-                        <Link href="/payroll">
+                        <Link href="/admin/payroll">
                             <Button variant="outline" className="mt-2 w-full" size="sm">
                                 Proses Payroll
                             </Button>
@@ -477,7 +476,7 @@ function FinanceDashboard({ data, userName, role }: { data: DashboardData['finan
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{data?.pendingReimbursements || 0}</div>
-                        <Link href="/reimbursements">
+                        <Link href="/approvals">
                             <Button variant="outline" className="mt-2 w-full" size="sm">
                                 Review Sekarang
                             </Button>
@@ -491,13 +490,13 @@ function FinanceDashboard({ data, userName, role }: { data: DashboardData['finan
                         <CardTitle className="text-sm font-medium">Aksi Cepat</CardTitle>
                     </CardHeader>
                     <CardContent className="grid grid-cols-2 gap-2">
-                        <Link href="/payroll/reports" className="block">
+                        <Link href="/admin/payroll" className="block">
                             <Button variant="outline" size="sm" className="w-full justify-start">
                                 <TrendingUp className="mr-2 h-4 w-4" />
                                 Laporan Payroll
                             </Button>
                         </Link>
-                        <Link href="/reimbursements" className="block">
+                        <Link href="/reimburse" className="block">
                             <Button variant="outline" size="sm" className="w-full justify-start">
                                 <FileText className="mr-2 h-4 w-4" />
                                 Reimburse List

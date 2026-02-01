@@ -113,6 +113,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
         { label: "Reimburse", href: "/reimburse", icon: Banknote, permission: PERMISSIONS.REIMBURSE_VIEW_OWN },
         { label: "KPI", href: "/kpi", icon: Target, permission: PERMISSIONS.KPI_VIEW_OWN },
         { label: "Slip Gaji", href: "/payslips", icon: Landmark, permission: [PERMISSIONS.PAYROLL_VIEW_OWN, PERMISSIONS.PAYROLL_VIEW_ALL] },
+        { label: "Manajemen Payroll", href: "/admin/payroll", icon: CreditCard, permission: PERMISSIONS.PAYROLL_MANAGE },
         { label: "Kelola Pengumuman", href: "/admin/announcements", icon: Megaphone, permission: PERMISSIONS.ANNOUNCEMENTS_CREATE },
         { label: "Laporan", href: "/reports", icon: BarChart3, permission: PERMISSIONS.REPORTS_VIEW },
         { label: "Pengaturan", href: "/settings", icon: Settings, permission: PERMISSIONS.SETTINGS_VIEW },

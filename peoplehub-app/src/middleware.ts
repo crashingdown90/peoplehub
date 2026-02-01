@@ -21,6 +21,7 @@ const roleRoutes: Record<string, string[]> = {
     "/dashboard/finance": ["FINANCE", "SUPER_ADMIN"],
     "/dashboard/admin": ["IT_OPS", "SUPER_ADMIN"],
     "/dashboard/manager": ["MANAGER", "HRD", "SUPER_ADMIN"],
+    "/payroll": ["FINANCE", "HRD", "SUPER_ADMIN"], // Added for /payroll route
     // Super Admin routes
     "/admin/superadmin": ["SUPER_ADMIN"],
     // Admin routes
@@ -28,7 +29,7 @@ const roleRoutes: Record<string, string[]> = {
     "/admin/employees": ["HRD", "SUPER_ADMIN"],
     "/admin/settings": ["HRD", "FINANCE", "SUPER_ADMIN"],
     // Finance routes
-    "/payroll": ["FINANCE", "HRD", "SUPER_ADMIN"],
+    "/admin/payroll": ["FINANCE", "HRD", "SUPER_ADMIN"],
     "/reimbursement/admin": ["FINANCE", "SUPER_ADMIN"],
     // API admin routes
     "/api/admin": ["HRD", "IT_OPS", "SUPER_ADMIN"],
