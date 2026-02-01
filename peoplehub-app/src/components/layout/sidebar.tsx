@@ -63,7 +63,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                 { label: "Audit Logs", href: "/admin/superadmin/audit-logs", icon: FileText },
             ],
         },
-        // Personnel Management group
+        // Personnel Management group Update
         {
             label: "Manajemen Karyawan",
             icon: Users,
