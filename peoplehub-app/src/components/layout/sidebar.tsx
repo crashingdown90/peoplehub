@@ -67,7 +67,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
         {
             label: "Manajemen Karyawan",
             icon: Users,
-            permission: PERMISSIONS.EMPLOYEES_VIEW,
+            permission: PERMISSIONS.EMPLOYEES_CREATE,
             children: [
                 { label: "List Karyawan", href: "/admin/employees", icon: Users },
                 { label: "Kelola KPI", href: "/admin/kpi", icon: Target, permission: PERMISSIONS.KPI_MANAGE },
@@ -81,7 +81,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
         {
             label: "Manajemen Shift",
             icon: Clock,
-            permission: PERMISSIONS.EMPLOYEES_VIEW,
+            permission: PERMISSIONS.ORG_MANAGE_SHIFTS,
             children: [
                 { 
                     label: "Template Shift", 
