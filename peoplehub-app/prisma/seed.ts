@@ -9,7 +9,8 @@ import bcrypt from "bcryptjs";
 const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-    console.error("❌ DATABASE_URL belum diset. Pastikan ada di .env.local");
+    console.error("❌ DATABASE_URL belum diset. Pastikan ada di file .env atau .env.local");
+    console.log("💡 Tips: Gunakan perintah 'npx prisma db seed' agar file .env otomatis terbaca.");
     process.exit(1);
 }
 
