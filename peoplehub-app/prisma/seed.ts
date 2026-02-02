@@ -147,7 +147,7 @@ async function main() {
                 lateDeductionEnabled: false,
                 lateDeductionType: "PER_MINUTE",
                 lateDeductionAmount: 0,
-                geofenceRadius: 100,
+                geofenceRadius: 10000,
                 geofenceEnabled: true,
                 requireFaceDetection: true,
                 requireLiveness: true,
@@ -180,7 +180,7 @@ async function main() {
                     city: branchData.city,
                     latitude: branchData.latitude,
                     longitude: branchData.longitude,
-                    geofenceRadiusMeters: 100,
+                    geofenceRadiusMeters: 10000,
                     isActive: true,
                 },
             });

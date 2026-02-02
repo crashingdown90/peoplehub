@@ -99,19 +99,20 @@ export class AttendanceService {
       if (employee?.branch) {
         const branchRadius = employee.branch.geofenceRadiusMeters
           || tenantSettings?.geofenceRadius
-          || 500;
-        const isWithinGeofence = this.checkGeofence(
-          data.latitude,
-          data.longitude,
+          || 10000; // Default to 10km if nothing specified (dev friendly)
+        const distance = this.calculateDistance(
+          data.latitude!,
+          data.longitude!,
           Number(employee.branch.latitude),
-          Number(employee.branch.longitude),
-          branchRadius
+          Number(employee.branch.longitude)
         );
 
-        if (!isWithinGeofence) {
+        console.log(`[Geofence] Employee: ${context.employeeId}, Distance: ${distance}m, Radius: ${branchRadius}m`);
+
+        if (distance > branchRadius) {
           return error(
             ErrorCodes.OUTSIDE_GEOFENCE,
-            "Anda berada di luar area kantor yang diizinkan"
+            `Anda berada di luar area kantor yang diizinkan (Jarak: ${Math.round(distance)}m, Radius: ${branchRadius}m)`
           );
         }
       }
@@ -414,15 +415,14 @@ export class AttendanceService {
   }
 
   /**
-   * Calculate distance between two coordinates (Haversine formula)
+   * Calculate distance between two coordinates (Haversine formula) in meters
    */
-  private static checkGeofence(
+  private static calculateDistance(
     lat1: number,
     lon1: number,
     lat2: number,
-    lon2: number,
-    radiusMeters: number
-  ): boolean {
+    lon2: number
+  ): number {
     const R = 6371000; // Earth's radius in meters
     const dLat = this.toRad(lat2 - lat1);
     const dLon = this.toRad(lon2 - lon1);
@@ -435,9 +435,7 @@ export class AttendanceService {
         Math.sin(dLon / 2);
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-
-    return distance <= radiusMeters;
+    return R * c;
   }
 
   private static toRad(deg: number): number {
