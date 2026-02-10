@@ -70,11 +70,9 @@ const nextConfig: NextConfig = {
   // Disable x-powered-by header
   poweredByHeader: false,
   
-  // Performance optimizations for development
+  // Performance optimizations
   experimental: {
-    // Enable SWC minification (faster)
-    swcMinify: true,
-    // Optimize package imports
+    // Optimize package imports for faster builds
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
   

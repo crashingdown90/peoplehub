@@ -1,0 +1,24 @@
+# Production configuration
+version: '3.8'
+
+services:
+  app:
+    container_name: peoplehub-app-prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+    environment:
+      - NODE_ENV=production
+    command: npm start
+    restart: unless-stopped
+    
+  db:
+    restart: unless-stopped
+    
+  redis:
+    restart: unless-stopped
+    
+  nginx:
+    restart: unless-stopped
