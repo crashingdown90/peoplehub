@@ -38,7 +38,6 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // Enable standalone output for Docker deployment
   output: "standalone",
-  
   // Configure allowed image domains
   images: {
     remotePatterns: [
@@ -55,9 +54,9 @@ const nextConfig: NextConfig = {
         hostname: "hrm-kreatifindo.cloud",
       },
     ],
+    // Allow local uploads
     unoptimized: false,
   },
-  
   async headers() {
     return [
       {
@@ -66,25 +65,8 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  
   // Disable x-powered-by header
   poweredByHeader: false,
-  
-  // Performance optimizations for development
-  experimental: {
-    // Enable SWC minification (faster)
-    swcMinify: true,
-    // Optimize package imports
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
-  },
-  
-  // Compiler optimizations
-  compiler: {
-    // Remove console logs in production
-    removeConsole: process.env.NODE_ENV === 'production' ? {
-      exclude: ['error', 'warn'],
-    } : false,
-  },
 };
 
 export default nextConfig;

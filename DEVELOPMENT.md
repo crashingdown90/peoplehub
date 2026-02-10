@@ -115,3 +115,47 @@ Hot reload **sudah berjalan** untuk:
 - ✅ Environment variables (.env) - needs restart
 
 Tidak perlu restart untuk perubahan code!
+
+## ⚡ Performance Optimization
+
+### Turbopack vs Webpack
+
+**Turbopack** (Default - FAST ⚡):
+- 10x lebih cepat untuk development
+- Hot reload lebih responsive
+- Compile time: ~100-500ms (vs 2-12s)
+
+**Webpack** (Fallback):
+```bash
+npm run dev:webpack
+```
+
+### Performance Tips
+
+1. **Use Turbopack** - Sudah default
+2. **Component Code Splitting** - Import dynamic
+3. **Optimize Images** - Use Next.js Image component
+4. **Lazy Loading** - Load components on demand
+
+### Monitoring Performance
+
+```bash
+# Watch compile times in logs
+make logs | grep "compile:"
+
+# Check build bundle size
+npm run build
+```
+
+### Common Performance Issues
+
+**Slow first load:**
+- Normal untuk first compile (1-3s)
+- Subsequent loads: <500ms
+
+**Slow page navigation:**
+- Check if using Turbopack: `docker logs peoplehub-app-dev | grep Turbopack`
+- Clear cache: `docker exec peoplehub-app-dev rm -rf .next && make restart`
+
+**Module not found:**
+- Run `make install` to sync dependencies
