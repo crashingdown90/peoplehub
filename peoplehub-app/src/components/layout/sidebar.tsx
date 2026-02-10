@@ -28,6 +28,7 @@ import {
     Plane,
     Banknote,
     Target,
+  MapPin,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -61,6 +62,7 @@ export function Sidebar({ collapsed = false }: SidebarProps) {
                 { label: "Tenants", href: "/admin/superadmin/tenants", icon: Building2 },
                 { label: "Users", href: "/admin/superadmin/users", icon: Users },
                 { label: "Audit Logs", href: "/admin/superadmin/audit-logs", icon: FileText },
+                { label: "Lokasi Kehadiran", href: "/admin/superadmin/branches", icon: MapPin },
             ],
         },
         // Personnel Management group Update
