@@ -11,11 +11,14 @@ services:
         - NODE_ENV=production
     environment:
       - NODE_ENV=production
+      - TZ=Asia/Jakarta
     command: ["node", "server.js"]
     restart: unless-stopped
     
   db:
     restart: unless-stopped
+    environment:
+      - TZ=Asia/Jakarta
     
   redis:
     restart: unless-stopped

@@ -25,6 +25,10 @@ import {
   Navigation,
   Save,
   AlertCircle,
+  Map,
+  Crosshair,
+  Ruler,
+  MapPinned,
 } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 import { fetchWithCsrf } from "@/lib/api-client";
@@ -60,6 +64,7 @@ export default function BranchLocationsPage() {
     address: "",
   });
   const [saving, setSaving] = useState(false);
+  const [gettingLocation, setGettingLocation] = useState(false);
   const { toast } = useToast();
 
   const fetchBranches = useCallback(async () => {
@@ -146,6 +151,7 @@ export default function BranchLocationsPage() {
       toast({ title: "Error", description: "Geolocation tidak didukung browser ini", variant: "destructive" });
       return;
     }
+    setGettingLocation(true);
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setEditForm(prev => ({
@@ -154,9 +160,11 @@ export default function BranchLocationsPage() {
           longitude: position.coords.longitude.toFixed(6),
         }));
         toast({ title: "Berhasil", description: "Lokasi saat ini berhasil diambil" });
+        setGettingLocation(false);
       },
       () => {
         toast({ title: "Error", description: "Gagal mendapatkan lokasi", variant: "destructive" });
+        setGettingLocation(false);
       }
     );
   };
@@ -165,6 +173,13 @@ export default function BranchLocationsPage() {
     if (lat && lng) {
       window.open(`https://www.google.com/maps?q=${lat},${lng}`, "_blank");
     }
+  };
+
+  const hasValidCoordinates = editForm.latitude && editForm.longitude &&
+    !isNaN(parseFloat(editForm.latitude)) && !isNaN(parseFloat(editForm.longitude));
+
+  const getStaticMapUrl = (lat: string, lng: string) => {
+    return `https://maps.googleapis.com/maps/api/staticmap?center=${lat},${lng}&zoom=16&size=400x200&markers=color:red%7C${lat},${lng}&key=`;
   };
 
   return (
@@ -286,96 +301,186 @@ export default function BranchLocationsPage() {
         </div>
       )}
 
-      {/* Edit Dialog */}
+      {/* Edit Dialog - Improved UI */}
       <Dialog open={!!editBranch} onOpenChange={() => setEditBranch(null)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5" />
-              Edit Lokasi: {editBranch?.name}
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <MapPinned className="h-6 w-6 text-[var(--color-primary)]" />
+              Edit Lokasi Kantor
             </DialogTitle>
             <DialogDescription>
-              Atur koordinat lokasi kantor untuk validasi geofence saat absensi
+              <span className="font-semibold text-[var(--color-text)]">{editBranch?.name}</span> — Atur koordinat lokasi untuk validasi geofence saat absensi
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-4">
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={getCurrentLocation}>
-                <Navigation className="h-4 w-4 mr-2" />
-                Gunakan Lokasi Saat Ini
+          <div className="space-y-6 py-4">
+            {/* Map Preview */}
+            <div className="rounded-lg border bg-[var(--color-bg-secondary)] overflow-hidden">
+              {hasValidCoordinates ? (
+                <div className="relative">
+                  <div className="h-40 bg-gradient-to-br from-green-100 to-blue-100 dark:from-green-900/20 dark:to-blue-900/20 flex items-center justify-center">
+                    <div className="text-center">
+                      <MapPin className="h-10 w-10 text-red-500 mx-auto mb-2" />
+                      <p className="text-sm font-mono text-[var(--color-text-secondary)]">
+                        {editForm.latitude}, {editForm.longitude}
+                      </p>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="mt-1"
+                        onClick={() => openGoogleMaps(parseFloat(editForm.latitude), parseFloat(editForm.longitude))}
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        Lihat di Google Maps
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="absolute top-2 right-2">
+                    <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      Koordinat Valid
+                    </Badge>
+                  </div>
+                </div>
+              ) : (
+                <div className="h-40 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+                  <div className="text-center text-[var(--color-text-secondary)]">
+                    <Map className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Masukkan koordinat untuk melihat preview</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                className="h-auto py-3 flex-col gap-1"
+                onClick={getCurrentLocation}
+                disabled={gettingLocation}
+              >
+                {gettingLocation ? (
+                  <RefreshCw className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Navigation className="h-5 w-5 text-blue-500" />
+                )}
+                <span className="text-xs">Gunakan Lokasi Saat Ini</span>
               </Button>
               <Button
                 variant="outline"
+                className="h-auto py-3 flex-col gap-1"
                 onClick={() => window.open("https://www.google.com/maps", "_blank")}
               >
-                <ExternalLink className="h-4 w-4" />
+                <Map className="h-5 w-5 text-green-500" />
+                <span className="text-xs">Buka Google Maps</span>
               </Button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="latitude">Latitude</Label>
-                <Input
-                  id="latitude"
-                  type="number"
-                  step="any"
-                  placeholder="-6.123456"
-                  value={editForm.latitude}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, latitude: e.target.value }))}
-                />
+            {/* Coordinate Inputs */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-[var(--color-text)]">
+                <Crosshair className="h-4 w-4" />
+                Koordinat Lokasi
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="longitude">Longitude</Label>
-                <Input
-                  id="longitude"
-                  type="number"
-                  step="any"
-                  placeholder="106.123456"
-                  value={editForm.longitude}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, longitude: e.target.value }))}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="latitude" className="text-xs text-[var(--color-text-secondary)]">
+                    Latitude (Garis Lintang)
+                  </Label>
+                  <Input
+                    id="latitude"
+                    type="number"
+                    step="any"
+                    placeholder="-6.123456"
+                    value={editForm.latitude}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, latitude: e.target.value }))}
+                    className="font-mono"
+                  />
+                  <p className="text-xs text-[var(--color-text-secondary)]">Range: -90 s/d 90</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="longitude" className="text-xs text-[var(--color-text-secondary)]">
+                    Longitude (Garis Bujur)
+                  </Label>
+                  <Input
+                    id="longitude"
+                    type="number"
+                    step="any"
+                    placeholder="106.123456"
+                    value={editForm.longitude}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, longitude: e.target.value }))}
+                    className="font-mono"
+                  />
+                  <p className="text-xs text-[var(--color-text-secondary)]">Range: -180 s/d 180</p>
+                </div>
               </div>
             </div>
 
+            {/* Radius Input */}
             <div className="space-y-2">
-              <Label htmlFor="radius">Radius Geofence (meter)</Label>
-              <Input
-                id="radius"
-                type="number"
-                min="10"
-                max="10000"
-                placeholder="100"
-                value={editForm.geofenceRadiusMeters}
-                onChange={(e) => setEditForm(prev => ({ ...prev, geofenceRadiusMeters: e.target.value }))}
-              />
+              <div className="flex items-center gap-2 text-sm font-medium text-[var(--color-text)]">
+                <Ruler className="h-4 w-4" />
+                Radius Geofence
+              </div>
+              <div className="flex items-center gap-3">
+                <Input
+                  id="radius"
+                  type="number"
+                  min="10"
+                  max="10000"
+                  placeholder="100"
+                  value={editForm.geofenceRadiusMeters}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, geofenceRadiusMeters: e.target.value }))}
+                  className="w-32 font-mono"
+                />
+                <span className="text-sm text-[var(--color-text-secondary)]">meter</span>
+                <div className="flex-1" />
+                <div className="flex gap-1">
+                  {[50, 100, 200, 500].map((r) => (
+                    <Button
+                      key={r}
+                      variant={editForm.geofenceRadiusMeters === r.toString() ? "default" : "outline"}
+                      size="sm"
+                      className="text-xs px-2"
+                      onClick={() => setEditForm(prev => ({ ...prev, geofenceRadiusMeters: r.toString() }))}
+                    >
+                      {r}m
+                    </Button>
+                  ))}
+                </div>
+              </div>
               <p className="text-xs text-[var(--color-text-secondary)]">
-                Jarak maksimal dari titik lokasi yang diizinkan untuk absensi (10-10000m)
+                Jarak maksimal dari titik lokasi yang diizinkan untuk absensi. Disarankan minimal 100m untuk toleransi GPS.
               </p>
             </div>
 
+            {/* Address Input */}
             <div className="space-y-2">
-              <Label htmlFor="address">Alamat (opsional)</Label>
+              <Label htmlFor="address" className="text-sm font-medium text-[var(--color-text)]">
+                Alamat Lengkap <span className="text-[var(--color-text-secondary)] font-normal">(opsional)</span>
+              </Label>
               <Input
                 id="address"
-                placeholder="Jl. Contoh No. 123"
+                placeholder="Jl. Contoh No. 123, Kelurahan, Kecamatan"
                 value={editForm.address}
                 onChange={(e) => setEditForm(prev => ({ ...prev, address: e.target.value }))}
               />
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setEditBranch(null)}>
               Batal
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
+            <Button onClick={handleSave} disabled={saving || !hasValidCoordinates}>
               {saving ? (
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
               ) : (
                 <Save className="h-4 w-4 mr-2" />
               )}
-              Simpan
+              Simpan Lokasi
             </Button>
           </DialogFooter>
         </DialogContent>
