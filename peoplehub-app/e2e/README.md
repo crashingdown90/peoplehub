@@ -12,9 +12,10 @@ npm run db:seed:e2e
 This creates:
 - **Test Tenant:** Test Company (TEST001)
 - **Test Users:**
-  - Employee: `employee@test.peoplehub.id` / `TestPassword123!`
-  - Manager: `manager@test.peoplehub.id` / `TestPassword123!`
-  - HRD: `hrd@test.peoplehub.id` / `TestPassword123!`
+  - Employee: `employee@test.peoplehub.id`
+  - Manager: `manager@test.peoplehub.id`
+  - HRD: `hrd@test.peoplehub.id`
+  - Password: set via `SEED_E2E_PASSWORD` (or role-specific `TEST_*_PASSWORD`)
 - **Leave Types:** Annual Leave (12 days), Sick Leave (12 days)
 - **Leave Balances:** Employee has 10 days annual leave, 12 days sick leave
 - **Sample Data:** 1 pending leave request

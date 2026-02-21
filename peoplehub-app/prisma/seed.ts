@@ -7,10 +7,17 @@ import { Pool } from "pg";
 import bcrypt from "bcryptjs";
 
 const databaseUrl = process.env.DATABASE_URL;
+const seedDefaultPassword = process.env.SEED_DEFAULT_PASSWORD;
 
 if (!databaseUrl) {
     console.error("❌ DATABASE_URL belum diset. Pastikan ada di file .env atau .env.local");
     console.log("💡 Tips: Gunakan perintah 'npx prisma db seed' agar file .env otomatis terbaca.");
+    process.exit(1);
+}
+
+if (!seedDefaultPassword) {
+    console.error("❌ SEED_DEFAULT_PASSWORD belum diset.");
+    console.error("   Set env ini di .env.local sebelum menjalankan seed produksi/demo.");
     process.exit(1);
 }
 
@@ -106,7 +113,7 @@ const branchesData: Record<string, Array<{ code: string; name: string; address: 
 async function main() {
     console.log("🌱 Memulai seed Phase 1 PeopleHub...\n");
 
-    const passwordHash = await bcrypt.hash("Demo123!", 12);
+    const passwordHash = await bcrypt.hash(seedDefaultPassword, 12);
 
     // ==========================================
     // SEED TENANTS
@@ -421,12 +428,12 @@ async function main() {
     console.log(`   • ${tenantsData.length} HRD Users (1 per tenant)`);
     console.log(`   • ${tenantsData.length} Finance Users (1 per tenant)`);
     console.log("");
-    console.log("🔐 Login HRD (semua password: Demo123!):");
+    console.log("🔐 Login HRD (password diambil dari env SEED_DEFAULT_PASSWORD):");
     for (const t of tenantsData) {
         console.log(`   • ${t.name}: hrd@${t.domain}.peoplehub.id`);
     }
     console.log("");
-    console.log("🔐 Login Finance (semua password: Demo123!):");
+    console.log("🔐 Login Finance (password diambil dari env SEED_DEFAULT_PASSWORD):");
     for (const t of tenantsData) {
         console.log(`   • ${t.name}: finance@${t.domain}.peoplehub.id`);
     }

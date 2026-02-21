@@ -8,6 +8,17 @@ const authDir = path.join(__dirname, '.auth');
 const employeeAuthFile = path.join(authDir, 'employee.json');
 const managerAuthFile = path.join(authDir, 'manager.json');
 const hrdAuthFile = path.join(authDir, 'hrd.json');
+const sharedTestPassword = process.env.SEED_E2E_PASSWORD || process.env.TEST_PASSWORD;
+
+function getTestPassword(rolePasswordEnv: string): string {
+    const rolePassword = process.env[rolePasswordEnv];
+    if (rolePassword) return rolePassword;
+    if (sharedTestPassword) return sharedTestPassword;
+
+    throw new Error(
+        `Missing ${rolePasswordEnv}. Set role password env or SEED_E2E_PASSWORD/TEST_PASSWORD.`
+    );
+}
 
 /**
  * Test credentials
@@ -19,15 +30,15 @@ const hrdAuthFile = path.join(authDir, 'hrd.json');
 const testUsers = {
     employee: {
         email: process.env.TEST_EMPLOYEE_EMAIL || 'employee@test.peoplehub.id',
-        password: process.env.TEST_EMPLOYEE_PASSWORD || 'TestPassword123!',
+        password: getTestPassword('TEST_EMPLOYEE_PASSWORD'),
     },
     manager: {
         email: process.env.TEST_MANAGER_EMAIL || 'manager@test.peoplehub.id',
-        password: process.env.TEST_MANAGER_PASSWORD || 'TestPassword123!',
+        password: getTestPassword('TEST_MANAGER_PASSWORD'),
     },
     hrd: {
         email: process.env.TEST_HRD_EMAIL || 'hrd@test.peoplehub.id',
-        password: process.env.TEST_HRD_PASSWORD || 'TestPassword123!',
+        password: getTestPassword('TEST_HRD_PASSWORD'),
     },
 };
 

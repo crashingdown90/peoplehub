@@ -6,9 +6,15 @@ import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
 
 const databaseUrl = process.env.DATABASE_URL;
+const seedE2EPassword = process.env.SEED_E2E_PASSWORD;
 
 if (!databaseUrl) {
     console.error('❌ DATABASE_URL not set. Please configure in .env');
+    process.exit(1);
+}
+
+if (!seedE2EPassword) {
+    console.error("❌ SEED_E2E_PASSWORD not set. Configure it before running db:seed:e2e.");
     process.exit(1);
 }
 
@@ -32,19 +38,19 @@ const TEST_TENANT = {
 const TEST_USERS = {
     employee: {
         email: 'employee@test.peoplehub.id',
-        password: 'TestPassword123!',
+        password: seedE2EPassword,
         fullName: 'Test Employee',
         nik: 'EMP-001',
     },
     manager: {
         email: 'manager@test.peoplehub.id',
-        password: 'TestPassword123!',
+        password: seedE2EPassword,
         fullName: 'Test Manager',
         nik: 'MGR-001',
     },
     hrd: {
         email: 'hrd@test.peoplehub.id',
-        password: 'TestPassword123!',
+        password: seedE2EPassword,
         fullName: 'Test HRD',
         nik: 'HRD-001',
     },
@@ -278,9 +284,10 @@ async function main() {
 
     console.log('✅ E2E database seeding completed!');
     console.log('\n📋 Test Users Created:');
-    console.log(`   Employee: ${TEST_USERS.employee.email} / ${TEST_USERS.employee.password}`);
-    console.log(`   Manager:  ${TEST_USERS.manager.email} / ${TEST_USERS.manager.password}`);
-    console.log(`   HRD:      ${TEST_USERS.hrd.email} / ${TEST_USERS.hrd.password}`);
+    console.log(`   Employee: ${TEST_USERS.employee.email}`);
+    console.log(`   Manager:  ${TEST_USERS.manager.email}`);
+    console.log(`   HRD:      ${TEST_USERS.hrd.email}`);
+    console.log("   Password: [diambil dari env SEED_E2E_PASSWORD]");
     console.log('\n🏢 Tenant:', TEST_TENANT.name, `(${TEST_TENANT.id})`);
     console.log('📋 Department:', department.name);
     console.log('🍃 Leave Types:', leaveTypeAnnual.name, ',', leaveTypeSick.name);

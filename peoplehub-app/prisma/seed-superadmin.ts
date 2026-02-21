@@ -7,9 +7,15 @@ import { Pool } from "pg";
 import bcrypt from "bcryptjs";
 
 const databaseUrl = process.env.DATABASE_URL;
+const superAdminPassword = process.env.SEED_SUPERADMIN_PASSWORD;
 
 if (!databaseUrl) {
     console.error("❌ DATABASE_URL belum diset. Pastikan ada di .env.local");
+    process.exit(1);
+}
+
+if (!superAdminPassword) {
+    console.error("❌ SEED_SUPERADMIN_PASSWORD belum diset.");
     process.exit(1);
 }
 
@@ -20,7 +26,7 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
     console.log("🌱 Creating Super Admin user...\n");
 
-    const passwordHash = await bcrypt.hash("SuperAdmin123!", 12);
+    const passwordHash = await bcrypt.hash(superAdminPassword, 12);
 
     // Get first tenant (Kreatifindo) for the super admin
     const tenant = await prisma.tenant.findFirst({
@@ -63,7 +69,6 @@ async function main() {
             },
         });
         console.log(`✓ Super Admin user updated: ${superAdminEmail}`);
-        console.log(`  Password: SuperAdmin123!`);
     } else {
         // Create new super admin user
         const superAdmin = await prisma.user.create({
@@ -113,7 +118,7 @@ async function main() {
     console.log("");
     console.log("🔐 Login Super Admin:");
     console.log(`   Email: ${superAdminEmail}`);
-    console.log("   Password: SuperAdmin123!");
+    console.log("   Password: [diambil dari env SEED_SUPERADMIN_PASSWORD]");
     console.log("");
 }
 

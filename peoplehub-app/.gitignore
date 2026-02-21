@@ -53,6 +53,8 @@ next-env.d.ts
 # logs and uploads (development only)
 /logs
 /uploads
+/public/uploads/*
+!/public/uploads/.gitkeep
 
 # database files (local development)
 *.db

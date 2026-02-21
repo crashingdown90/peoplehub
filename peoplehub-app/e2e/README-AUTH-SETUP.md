@@ -13,15 +13,15 @@ The `e2e/leave.spec.ts` file includes:
    const testUsers = {
        employee: {
            email: process.env.TEST_EMPLOYEE_EMAIL || "employee@test.peoplehub.id",
-           password: process.env.TEST_EMPLOYEE_PASSWORD || "TestPassword123!",
+           password: process.env.TEST_EMPLOYEE_PASSWORD || process.env.SEED_E2E_PASSWORD,
        },
        manager: {
            email: process.env.TEST_MANAGER_EMAIL || "manager@test.peoplehub.id",
-           password: process.env.TEST_MANAGER_PASSWORD || "TestPassword123!",
+           password: process.env.TEST_MANAGER_PASSWORD || process.env.SEED_E2E_PASSWORD,
        },
        hrd: {
            email: process.env.TEST_HRD_EMAIL || "hrd@test.peoplehub.id",
-           password: process.env.TEST_HRD_PASSWORD || "TestPassword123!",
+           password: process.env.TEST_HRD_PASSWORD || process.env.SEED_E2E_PASSWORD,
        },
    };
    ```

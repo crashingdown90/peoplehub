@@ -136,11 +136,11 @@ Phase 1 PeopleHub telah selesai dikembangkan oleh 3 tim AI:
 
 | Email | Password | Role |
 |-------|----------|------|
-| hrd@demo.com | Demo123! | HRD |
-| manager@demo.com | Demo123! | MANAGER |
-| employee@demo.com | Demo123! | EMPLOYEE |
-| finance@demo.com | Demo123! | FINANCE |
-| it@demo.com | Demo123! | IT_OPS |
+| hrd@demo.com | Set via `SEED_DEFAULT_PASSWORD` | HRD |
+| manager@demo.com | Set via `SEED_DEFAULT_PASSWORD` | MANAGER |
+| employee@demo.com | Set via `SEED_DEFAULT_PASSWORD` | EMPLOYEE |
+| finance@demo.com | Set via `SEED_DEFAULT_PASSWORD` | FINANCE |
+| it@demo.com | Set via `SEED_DEFAULT_PASSWORD` | IT_OPS |
 
 ---
 

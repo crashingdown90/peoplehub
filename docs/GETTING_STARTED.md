@@ -111,11 +111,11 @@ Gunakan akun demo untuk testing:
 
 | Email | Password | Role | Akses |
 |-------|----------|------|-------|
-| hrd@demo.com | Demo123! | HRD | Full access HR |
-| manager@demo.com | Demo123! | MANAGER | Tim approval |
-| employee@demo.com | Demo123! | EMPLOYEE | Self-service |
-| finance@demo.com | Demo123! | FINANCE | Payroll |
-| it@demo.com | Demo123! | IT_OPS | System admin |
+| hrd@demo.com | Set via `SEED_DEFAULT_PASSWORD` | HRD | Full access HR |
+| manager@demo.com | Set via `SEED_DEFAULT_PASSWORD` | MANAGER | Tim approval |
+| employee@demo.com | Set via `SEED_DEFAULT_PASSWORD` | EMPLOYEE | Self-service |
+| finance@demo.com | Set via `SEED_DEFAULT_PASSWORD` | FINANCE | Payroll |
+| it@demo.com | Set via `SEED_DEFAULT_PASSWORD` | IT_OPS | System admin |
 
 ---
 

@@ -5,9 +5,15 @@ import { Pool } from "pg";
 import bcrypt from "bcryptjs";
 
 const databaseUrl = process.env.DATABASE_URL;
+const seedDefaultPassword = process.env.SEED_DEFAULT_PASSWORD;
 
 if (!databaseUrl) {
     console.error("❌ DATABASE_URL belum diset. Pastikan ada di .env.local atau .env");
+    process.exit(1);
+}
+
+if (!seedDefaultPassword) {
+    console.error("❌ SEED_DEFAULT_PASSWORD belum diset.");
     process.exit(1);
 }
 
@@ -18,7 +24,7 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
     console.log("🌱 Menambahkan user HRD baru...\n");
 
-    const passwordHash = await bcrypt.hash("Demo123!", 12);
+    const passwordHash = await bcrypt.hash(seedDefaultPassword, 12);
     const tenantId = "tenant-kreatifindo";
     const domain = "kreatifindo";
     
@@ -96,7 +102,7 @@ async function main() {
     console.log("\n✅ Berhasil menambahkan user HRD.");
     console.log("\nCredential Login:");
     console.log(`Email: ${hrdData.email}`);
-    console.log(`Password: Demo123!`);
+    console.log("Password: [diambil dari env SEED_DEFAULT_PASSWORD]");
 }
 
 main()
